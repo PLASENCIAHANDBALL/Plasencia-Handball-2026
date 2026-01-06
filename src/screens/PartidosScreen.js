@@ -1,7 +1,15 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { partidos } from '../data/partidos';
+import { useEffect, useState } from 'react';
+import { escucharPartidos } from '../services/partidosService';
 
 export default function PartidosScreen({ navigation }) {
+  const [partidos, setPartidos] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = escucharPartidos(setPartidos);
+    return () => unsubscribe();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Partidos</Text>
@@ -35,34 +43,21 @@ export default function PartidosScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 15
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10
-  },
+  container: { flex: 1, padding: 15 },
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   card: {
     backgroundColor: '#f2f2f2',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10
   },
-  equipos: {
-    fontSize: 16,
-    fontWeight: '600'
-  },
+  equipos: { fontSize: 16, fontWeight: '600' },
   marcador: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 5
   },
-  estado: {
-    textAlign: 'center',
-    color: '#666'
-  }
+  estado: { textAlign: 'center', color: '#666' }
 });
 

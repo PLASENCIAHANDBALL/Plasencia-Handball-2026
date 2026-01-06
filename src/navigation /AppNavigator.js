@@ -18,16 +18,28 @@ export default function AppNavigator() {
           component={HomeScreen}
           options={{ title: 'Plasencia Handball 2026' }}
         />
-        <Stack.Screen name="Partidos" component={PartidosScreen} />
-        <Stack.Screen name="Clasificacion" component={ClasificacionScreen} />
-        <Stack.Screen name="Grupos" component={GruposScreen} />
-      </Stack.Navigator>
-          <Stack.Screen
-  name="PartidoLive"
-  component={PartidoLiveScreen}
-  options={{ title: 'Partido en directo' }}
-/>
 
+        <Stack.Screen
+          name="Partidos"
+          component={PartidosScreen}
+        />
+
+        <Stack.Screen
+          name="Clasificacion"
+          component={ClasificacionScreen}
+        />
+
+        <Stack.Screen
+          name="Grupos"
+          component={GruposScreen}
+        />
+
+        <Stack.Screen
+          name="PartidoLive"
+          component={PartidoLiveScreen}
+          options={{ title: 'Partido en directo' }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

@@ -1,11 +1,36 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
+import { actualizarMarcador } from '../services/partidosService';
 
 export default function PartidoLiveScreen({ route }) {
   const { partido } = route.params;
 
   const [golesLocal, setGolesLocal] = useState(partido.golesLocal);
   const [golesVisitante, setGolesVisitante] = useState(partido.golesVisitante);
+
+  const sumarLocal = () => {
+    const nuevo = golesLocal + 1;
+    setGolesLocal(nuevo);
+    actualizarMarcador(partido.id, nuevo, golesVisitante);
+  };
+
+  const restarLocal = () => {
+    const nuevo = Math.max(0, golesLocal - 1);
+    setGolesLocal(nuevo);
+    actualizarMarcador(partido.id, nuevo, golesVisitante);
+  };
+
+  const sumarVisitante = () => {
+    const nuevo = golesVisitante + 1;
+    setGolesVisitante(nuevo);
+    actualizarMarcador(partido.id, golesLocal, nuevo);
+  };
+
+  const restarVisitante = () => {
+    const nuevo = Math.max(0, golesVisitante - 1);
+    setGolesVisitante(nuevo);
+    actualizarMarcador(partido.id, golesLocal, nuevo);
+  };
 
   return (
     <View style={styles.container}>
@@ -21,33 +46,21 @@ export default function PartidoLiveScreen({ route }) {
 
       <View style={styles.botones}>
         <View style={styles.columna}>
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={() => setGolesLocal(golesLocal + 1)}
-          >
+          <TouchableOpacity style={styles.boton} onPress={sumarLocal}>
             <Text style={styles.botonTexto}>+1</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={() => setGolesLocal(Math.max(0, golesLocal - 1))}
-          >
+          <TouchableOpacity style={styles.boton} onPress={restarLocal}>
             <Text style={styles.botonTexto}>-1</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.columna}>
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={() => setGolesVisitante(golesVisitante + 1)}
-          >
+          <TouchableOpacity style={styles.boton} onPress={sumarVisitante}>
             <Text style={styles.botonTexto}>+1</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={() => setGolesVisitante(Math.max(0, golesVisitante - 1))}
-          >
+          <TouchableOpacity style={styles.boton} onPress={restarVisitante}>
             <Text style={styles.botonTexto}>-1</Text>
           </TouchableOpacity>
         </View>

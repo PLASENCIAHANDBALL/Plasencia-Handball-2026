@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import HomeScreen from '../screens/HomeScreen';
 import PartidosScreen from '../screens/PartidosScreen';
+import PartidoLiveScreen from '../screens/PartidoLiveScreen';
 import ClasificacionScreen from '../screens/ClasificacionScreen';
 import GruposScreen from '../screens/GruposScreen';
 
@@ -21,6 +22,12 @@ export default function AppNavigator() {
         <Stack.Screen name="Clasificacion" component={ClasificacionScreen} />
         <Stack.Screen name="Grupos" component={GruposScreen} />
       </Stack.Navigator>
+          <Stack.Screen
+  name="PartidoLive"
+  component={PartidoLiveScreen}
+  options={{ title: 'Partido en directo' }}
+/>
+
     </NavigationContainer>
   );
 }

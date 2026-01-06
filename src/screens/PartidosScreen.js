@@ -1,15 +1,62 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { partidos } from '../data/partidos';
 
 export default function PartidosScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Partidos</Text>
-      <Text>Aquí se mostrarán los partidos en tiempo real</Text>
+
+      <FlatList
+        data={partidos}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.equipos}>
+              {item.local} vs {item.visitante}
+            </Text>
+
+            <Text style={styles.marcador}>
+              {item.golesLocal} - {item.golesVisitante}
+            </Text>
+
+            <Text style={styles.estado}>
+              Grupo {item.grupo} · {item.estado}
+            </Text>
+          </View>
+        )}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold' }
+  container: {
+    flex: 1,
+    padding: 15
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  card: {
+    backgroundColor: '#f2f2f2',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10
+  },
+  equipos: {
+    fontSize: 16,
+    fontWeight: '600'
+  },
+  marcador: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 5
+  },
+  estado: {
+    textAlign: 'center',
+    color: '#666'
+  }
 });

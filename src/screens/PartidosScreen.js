@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { partidos } from '../data/partidos';
 
-export default function PartidosScreen() {
+export default function PartidosScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Partidos</Text>
@@ -10,7 +10,12 @@ export default function PartidosScreen() {
         data={partidos}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() =>
+              navigation.navigate('PartidoLive', { partido: item })
+            }
+          >
             <Text style={styles.equipos}>
               {item.local} vs {item.visitante}
             </Text>
@@ -22,7 +27,7 @@ export default function PartidosScreen() {
             <Text style={styles.estado}>
               Grupo {item.grupo} · {item.estado}
             </Text>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -60,3 +65,4 @@ const styles = StyleSheet.create({
     color: '#666'
   }
 });
+

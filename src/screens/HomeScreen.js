@@ -5,7 +5,14 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Plasencia Handball 2026</Text>
 
-      <TouchableOpacity
+     <TouchableOpacity
+  style={styles.card}
+  onPress={() => navigation.navigate('Admin')}
+>
+  <Text style={styles.cardText}>Panel Admin</Text>
+</TouchableOpacity>
+
+    <TouchableOpacity
         style={styles.card}
         onPress={() => navigation.navigate('Partidos')}
       >

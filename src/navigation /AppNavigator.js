@@ -6,6 +6,7 @@ import PartidosScreen from '../screens/PartidosScreen';
 import PartidoLiveScreen from '../screens/PartidoLiveScreen';
 import ClasificacionScreen from '../screens/ClasificacionScreen';
 import GruposScreen from '../screens/GruposScreen';
+import AdminScreen from '../screens/AdminScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,6 +40,14 @@ export default function AppNavigator() {
           component={PartidoLiveScreen}
           options={{ title: 'Partido en directo' }}
         />
+
+        {/* 👑 PANEL ADMIN */}
+        <Stack.Screen
+          name="Admin"
+          component={AdminScreen}
+          options={{ title: 'Panel Admin' }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

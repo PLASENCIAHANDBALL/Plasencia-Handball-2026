@@ -1,8 +1,17 @@
-export function calcularClasificacion(partidos) {
+export function calcularClasificacion(partidos, equiposGrupo = null) {
   const tabla = {};
 
   partidos.forEach((p) => {
     if (p.estado !== 'Finalizado') return;
+
+    if (equiposGrupo) {
+      if (
+        !equiposGrupo.includes(p.local) ||
+        !equiposGrupo.includes(p.visitante)
+      ) {
+        return;
+      }
+    }
 
     if (!tabla[p.local]) {
       tabla[p.local] = {
@@ -59,8 +68,7 @@ export function calcularClasificacion(partidos) {
 
   return Object.values(tabla).sort((a, b) => {
     if (b.puntos !== a.puntos) return b.puntos - a.puntos;
-    const diffA = a.gf - a.gc;
-    const diffB = b.gf - b.gc;
-    return diffB - diffA;
+    return (b.gf - b.gc) - (a.gf - a.gc);
   });
 }
+

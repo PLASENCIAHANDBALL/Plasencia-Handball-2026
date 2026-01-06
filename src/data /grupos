@@ -1,0 +1,12 @@
+export const grupos = {
+  A: [
+    'BM Plasencia',
+    'BM Cáceres',
+    'BM Mérida',
+    'BM Don Benito'
+  ],
+  B: [
+    'BM Badajoz',
+    'BM Coria'
+  ]
+};

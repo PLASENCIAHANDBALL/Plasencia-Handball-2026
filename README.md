@@ -1,3 +1,9 @@
 # Plasencia Handball 2026
 
-App de gestión de torneo de balonmano.
+App móvil para la gestión y seguimiento de un torneo de balonmano.
+
+## Funcionalidades previstas
+- Partidos en tiempo real
+- Grupos
+- Clasificaciones
+- Gestión de equipos y partidos

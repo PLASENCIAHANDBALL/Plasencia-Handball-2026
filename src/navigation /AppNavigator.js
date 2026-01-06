@@ -1,0 +1,26 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import HomeScreen from '../screens/HomeScreen';
+import PartidosScreen from '../screens/PartidosScreen';
+import ClasificacionScreen from '../screens/ClasificacionScreen';
+import GruposScreen from '../screens/GruposScreen';
+
+const Stack = createNativeStackNavigator();
+
+export default function AppNavigator() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ title: 'Plasencia Handball 2026' }}
+        />
+        <Stack.Screen name="Partidos" component={PartidosScreen} />
+        <Stack.Screen name="Clasificacion" component={ClasificacionScreen} />
+        <Stack.Screen name="Grupos" component={GruposScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}

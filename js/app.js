@@ -1,4 +1,7 @@
 const contenido = document.getElementById("contenido");
+const PIN_ADMIN = "1234";
+let adminActivo = localStorage.getItem("admin") === "true";
+
 
 let partidos = obtenerPartidos();
 let partidoActual = null;
@@ -12,6 +15,11 @@ function mostrarHome() {
 
 function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
+  let botonAdmin = adminActivo
+  ? `<button class="volver" onclick="salirAdmin()">Salir de Admin</button>`
+  : `<button onclick="activarAdmin()">Entrar como Admin</button>`;
+
+  html += botonAdmin;
 
   partidos.forEach((p) => {
     html += `
@@ -45,14 +53,26 @@ function abrirPartido(id) {
     <span>${partidoActual.golesVisitante}</span>
   </div>
 
-  <button class="boton-local" onclick="sumarLocal()">➕ Gol Local</button>
-  <button class="boton-local" onclick="restarLocal()">➖ Gol Local</button>
-
-  <button class="boton-visitante" onclick="sumarVisitante()">➕ Gol Visitante</button>
-  <button class="boton-visitante" onclick="restarVisitante()">➖ Gol Visitante</button>
+  ${botones}
 
   <button class="volver" onclick="mostrarPartidos()">⬅ Volver a partidos</button>
 `;
+  
+  let botones = "";
+
+if (adminActivo) {
+  botones = `
+    <button class="boton-local" onclick="sumarLocal()">➕ Gol Local</button>
+    <button class="boton-local" onclick="restarLocal()">➖ Gol Local</button>
+
+    <button class="boton-visitante" onclick="sumarVisitante()">➕ Gol Visitante</button>
+    <button class="boton-visitante" onclick="restarVisitante()">➖ Gol Visitante</button>
+  `;
+} else {
+  botones = `<p style="text-align:center;color:#777">
+    Modo solo lectura. Activa Admin para editar.
+  </p>`;
+}
 
 function sumarLocal() {
   partidoActual.golesLocal++;
@@ -84,3 +104,22 @@ function actualizarPartido() {
 }
 
 mostrarHome();
+
+function activarAdmin() {
+  const pin = prompt("Introduce el PIN de administrador:");
+  if (pin === PIN_ADMIN) {
+    adminActivo = true;
+    localStorage.setItem("admin", "true");
+    alert("Modo administrador activado");
+    mostrarPartidos();
+  } else {
+    alert("PIN incorrecto");
+  }
+}
+
+function salirAdmin() {
+  adminActivo = false;
+  localStorage.removeItem("admin");
+  alert("Modo administrador desactivado");
+  mostrarPartidos();
+}

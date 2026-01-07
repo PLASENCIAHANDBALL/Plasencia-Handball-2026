@@ -158,6 +158,69 @@ function salirAdmin() {
 /* ================== INICIO ================== */
 mostrarHome();
 
+/* ================== CATEGORÍAS ================== */
+function mostrarCategorias() {
+  contenido.innerHTML = `
+    <h2>Categorías</h2>
+
+    <label>Categoría</label>
+    <select id="cat" onchange="filtrarCategorias()">
+      <option value="">-- Seleccionar --</option>
+      <option>Alevín</option>
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="gen" onchange="filtrarCategorias()">
+      <option value="">-- Seleccionar --</option>
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Grupo</label>
+    <select id="grp" onchange="filtrarCategorias()">
+      <option value="">Todos</option>
+      <option>Grupo A</option>
+      <option>Grupo B</option>
+      <option>Grupo C</option>
+      <option>Grupo D</option>
+      <option>Grupo Único</option>
+    </select>
+
+    <div id="listaCategorias"></div>
+  `;
+}
+
+function filtrarCategorias() {
+  const cat = document.getElementById("cat").value;
+  const gen = document.getElementById("gen").value;
+  const grp = document.getElementById("grp").value;
+
+  let filtrados = partidos.filter(p =>
+    (!cat || p.categoria === cat) &&
+    (!gen || p.genero === gen) &&
+    (!grp || p.grupo === grp)
+  );
+
+  let html = "";
+
+  filtrados.forEach(p => {
+    html += `
+      <div class="card">
+        <strong>${p.local} vs ${p.visitante}</strong>
+        <div>🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
+        <div>${p.golesLocal} - ${p.golesVisitante}</div>
+        <button onclick="abrirPartido(${p.id})">Abrir</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("listaCategorias").innerHTML =
+    html || "<p>No hay partidos</p>";
+}
+
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
   let html = `<h2>Grupos</h2>`;

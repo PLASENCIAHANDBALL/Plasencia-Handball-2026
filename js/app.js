@@ -15,12 +15,17 @@ function mostrarPartidos() {
 
   partidos.forEach((p) => {
     html += `
-      <div style="margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:6px">
-        <strong>${p.local} vs ${p.visitante}</strong><br>
-        ${p.golesLocal} - ${p.golesVisitante}<br>
-        <button onclick="abrirPartido(${p.id})">Abrir</button>
-      </div>
-    `;
+  <div class="card">
+    <div class="partido-nombre">
+      ${p.local} vs ${p.visitante}
+    </div>
+    <div class="partido-marcador">
+      ${p.golesLocal} - ${p.golesVisitante}
+    </div>
+    <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+  </div>
+`;
+
   });
 
   contenido.innerHTML = html;
@@ -34,29 +39,19 @@ function abrirPartido(id) {
     ${partidoActual.local} vs ${partidoActual.visitante}
   </h2>
 
-  <div style="
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:48px;
-    margin:20px 0;
-  ">
-    <span style="margin:0 20px">${partidoActual.golesLocal}</span>
+  <div class="marcador">
+    <span>${partidoActual.golesLocal}</span>
     <span>-</span>
-    <span style="margin:0 20px">${partidoActual.golesVisitante}</span>
+    <span>${partidoActual.golesVisitante}</span>
   </div>
 
-  <div style="display:grid;gap:10px">
-    <button onclick="sumarLocal()">➕ Gol Local</button>
-    <button onclick="restarLocal()">➖ Gol Local</button>
+  <button class="boton-local" onclick="sumarLocal()">➕ Gol Local</button>
+  <button class="boton-local" onclick="restarLocal()">➖ Gol Local</button>
 
-    <button onclick="sumarVisitante()">➕ Gol Visitante</button>
-    <button onclick="restarVisitante()">➖ Gol Visitante</button>
-  </div>
+  <button class="boton-visitante" onclick="sumarVisitante()">➕ Gol Visitante</button>
+  <button class="boton-visitante" onclick="restarVisitante()">➖ Gol Visitante</button>
 
-  <button onclick="mostrarPartidos()" style="margin-top:20px">
-    ⬅ Volver a partidos
-  </button>
+  <button class="volver" onclick="mostrarPartidos()">⬅ Volver a partidos</button>
 `;
 
 function sumarLocal() {

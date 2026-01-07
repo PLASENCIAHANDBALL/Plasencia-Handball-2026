@@ -109,6 +109,23 @@ function salirAdmin() {
   localStorage.removeItem("admin");
   mostrarPartidos();
 }
+/* ================== GRUPOS ================== */
+function mostrarGrupos() {
+  let html = "<h2>Grupos</h2>";
+
+  grupos.forEach((grupo) => {
+    html += `
+      <div class="card">
+        <h3>${grupo.nombre}</h3>
+        <ul>
+          ${grupo.equipos.map(e => `<li>${e}</li>`).join("")}
+        </ul>
+      </div>
+    `;
+  });
+
+  contenido.innerHTML = html;
+}
 
 /* ================== INICIO ================== */
 mostrarHome();

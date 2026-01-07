@@ -7,6 +7,9 @@ let adminActivo = localStorage.getItem("admin") === "true";
 let partidos = obtenerPartidos();
 let partidoActual = null;
 
+let grupos = obtenerGrupos();
+let grupoActual = null;
+
 /* ================== HOME ================== */
 function mostrarHome() {
   contenido.innerHTML = `
@@ -116,25 +119,126 @@ function salirAdmin() {
   mostrarPartidos();
 }
 
+
 /* ================== INICIO ================== */
 mostrarHome();
 
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
-  let html = "<h2>Grupos</h2>";
+  let html = `<h2>Grupos</h2>`;
 
-  grupos.forEach((grupo) => {
+  if (adminActivo) {
+    html += `<button onclick="formNuevoGrupo()">➕ Crear grupo</button>`;
+  }
+
+  grupos.forEach(g => {
     html += `
       <div class="card">
-        <h3>${grupo.nombre}</h3>
+        <h3>${g.categoria} ${g.genero}</h3>
+        <p><strong>${g.nombre}</strong></p>
         <ul>
-          ${grupo.equipos.map(e => `<li>${e}</li>`).join("")}
+          ${g.equipos.map(e => `<li>${e}</li>`).join("")}
         </ul>
+        ${adminActivo ? `<button onclick="editarGrupo(${g.id})">✏️ Editar</button>` : ""}
       </div>
     `;
   });
 
   contenido.innerHTML = html;
+}
+
+function formNuevoGrupo() {
+  contenido.innerHTML = `
+    <h2>Nuevo grupo</h2>
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option>Alevín</option>
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Nombre del grupo</label>
+    <input id="nombre" placeholder="Grupo A">
+
+    <label>Equipos (uno por línea)</label>
+    <textarea id="equipos" rows="5"></textarea>
+
+    <button onclick="guardarNuevoGrupo()">💾 Guardar grupo</button>
+    <button class="volver" onclick="mostrarGrupos()">⬅ Volver</button>
+  `;
+}
+
+function guardarNuevoGrupo() {
+  const categoria = document.getElementById("categoria").value;
+  const genero = document.getElementById("genero").value;
+  const nombre = document.getElementById("nombre").value;
+  const equipos = document.getElementById("equipos").value
+    .split("\n")
+    .filter(e => e.trim() !== "");
+
+  const nuevoGrupo = {
+    id: Date.now(),
+    categoria,
+    genero,
+    nombre,
+    equipos
+  };
+
+  grupos.push(nuevoGrupo);
+  guardarGrupos(grupos);
+  mostrarGrupos();
+}
+
+function editarGrupo(id) {
+  grupoActual = grupos.find(g => g.id === id);
+
+  contenido.innerHTML = `
+    <h2>Editar grupo</h2>
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option ${grupoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
+      <option ${grupoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
+      <option ${grupoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
+      <option ${grupoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option ${grupoActual.genero==="Masculino"?"selected":""}>Masculino</option>
+      <option ${grupoActual.genero==="Femenino"?"selected":""}>Femenino</option>
+    </select>
+
+    <label>Nombre</label>
+    <input id="nombre" value="${grupoActual.nombre}">
+
+    <label>Equipos</label>
+    <textarea id="equipos" rows="5">${grupoActual.equipos.join("\n")}</textarea>
+
+    <button onclick="guardarEdicionGrupo()">💾 Guardar cambios</button>
+    <button class="volver" onclick="mostrarGrupos()">⬅ Volver</button>
+  `;
+}
+
+function guardarEdicionGrupo() {
+  grupoActual.categoria = document.getElementById("categoria").value;
+  grupoActual.genero = document.getElementById("genero").value;
+  grupoActual.nombre = document.getElementById("nombre").value;
+  grupoActual.equipos = document.getElementById("equipos").value
+    .split("\n")
+    .filter(e => e.trim() !== "");
+
+  grupos = grupos.map(g => g.id === grupoActual.id ? grupoActual : g);
+  guardarGrupos(grupos);
+  mostrarGrupos();
 }
 
 /* ================== CLASIFICACIÓN ================== */

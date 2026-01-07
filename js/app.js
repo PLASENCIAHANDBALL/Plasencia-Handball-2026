@@ -351,7 +351,7 @@ function guardarEdicionGrupo() {
   mostrarGrupos();
 }
 
-/* ================== CLASIFICACIÓN ================== */
+/* ================== CATEGORIAS ================== */
 function mostrarCategorias() {
   contenido.innerHTML = `
     <h2>Categorías</h2>
@@ -398,6 +398,91 @@ function seleccionarCategoria(cat, boton) {
   boton.classList.add("active");
 
   filtrarCategorias();
+}
+/* ================== CLASIFICACION ================== */
+function mostrarClasificacion() {
+  contenido.innerHTML = `
+    <h2>Clasificación</h2>
+
+    <div class="subfiltros">
+      <select id="clas-cat" onchange="actualizarClasificacion()">
+        <option>Alevín</option>
+        <option>Infantil</option>
+        <option>Cadete</option>
+        <option>Juvenil</option>
+      </select>
+
+      <select id="clas-gen" onchange="actualizarClasificacion()">
+        <option>Masculino</option>
+        <option>Femenino</option>
+      </select>
+
+      <select id="clas-grp" onchange="actualizarClasificacion()">
+        <option value="">Todos</option>
+        <option>Grupo A</option>
+        <option>Grupo B</option>
+        <option>Grupo C</option>
+        <option>Grupo D</option>
+        <option>Grupo Único</option>
+      </select>
+    </div>
+
+    <div id="tablaClasificacion"></div>
+  `;
+
+  actualizarClasificacion();
+}
+
+function actualizarClasificacion() {
+  const categoria = document.getElementById("clas-cat").value;
+  const genero = document.getElementById("clas-gen").value;
+  const grupo = document.getElementById("clas-grp").value;
+
+  if (typeof calcularClasificacionFiltrada !== "function") {
+    document.getElementById("tablaClasificacion").innerHTML =
+      "<p>No hay clasificación disponible</p>";
+    return;
+  }
+
+  const clasificacion = calcularClasificacionFiltrada(
+    categoria,
+    genero,
+    grupo
+  );
+
+  let html = `
+    <table class="tabla">
+      <tr>
+        <th>Equipo</th>
+        <th>PJ</th>
+        <th>PG</th>
+        <th>PE</th>
+        <th>PP</th>
+        <th>GF</th>
+        <th>GC</th>
+        <th>Pts</th>
+      </tr>
+  `;
+
+  clasificacion.forEach(e => {
+    html += `
+      <tr>
+        <td>${e.nombre}</td>
+        <td>${e.pj}</td>
+        <td>${e.pg}</td>
+        <td>${e.pe}</td>
+        <td>${e.pp}</td>
+        <td>${e.gf}</td>
+        <td>${e.gc}</td>
+        <td><strong>${e.puntos}</strong></td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("tablaClasificacion").innerHTML =
+    clasificacion.length ? html : "<p>No hay datos para esta selección</p>";
 }
 
 /* ================== ARRANQUE ================== */

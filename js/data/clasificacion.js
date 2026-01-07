@@ -2,12 +2,8 @@ function calcularClasificacion() {
   const tabla = {};
 
   partidos.forEach(p => {
-    if (!tabla[p.local]) {
-      tabla[p.local] = crearEquipo(p.local);
-    }
-    if (!tabla[p.visitante]) {
-      tabla[p.visitante] = crearEquipo(p.visitante);
-    }
+    if (!tabla[p.local]) tabla[p.local] = crearEquipo(p.local);
+    if (!tabla[p.visitante]) tabla[p.visitante] = crearEquipo(p.visitante);
 
     tabla[p.local].pj++;
     tabla[p.visitante].pj++;
@@ -28,13 +24,13 @@ function calcularClasificacion() {
     } else {
       tabla[p.local].pe++;
       tabla[p.visitante].pe++;
-      tabla[p.local].puntos += 1;
-      tabla[p.visitante].puntos += 1;
+      tabla[p.local].puntos++;
+      tabla[p.visitante].puntos++;
     }
   });
 
-  return Object.values(tabla).sort((a, b) =>
-    b.puntos - a.puntos || (b.gf - b.gc) - (a.gf - a.gc)
+  return Object.values(tabla).sort(
+    (a, b) => b.puntos - a.puntos || (b.gf - b.gc) - (a.gf - a.gc)
   );
 }
 

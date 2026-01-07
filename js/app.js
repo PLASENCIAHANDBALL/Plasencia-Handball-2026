@@ -109,6 +109,10 @@ function salirAdmin() {
   localStorage.removeItem("admin");
   mostrarPartidos();
 }
+
+/* ================== INICIO ================== */
+mostrarHome();
+
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
   let html = "<h2>Grupos</h2>";
@@ -126,6 +130,3 @@ function mostrarGrupos() {
 
   contenido.innerHTML = html;
 }
-
-/* ================== INICIO ================== */
-mostrarHome();

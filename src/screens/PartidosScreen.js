@@ -1,39 +1,49 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { useEffect, useState } from 'react';
-import { escucharPartidos } from '../services/partidosService';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { partidosIniciales } from '../data/partidos';
 
 export default function PartidosScreen({ navigation }) {
-  const [partidos, setPartidos] = useState([]);
-
-  useEffect(() => {
-    const unsubscribe = escucharPartidos(setPartidos);
-    return () => unsubscribe();
-  }, []);
+  const [partidos, setPartidos] = useState(partidosIniciales);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Partidos</Text>
-
       <FlatList
         data={partidos}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.card}
+            style={styles.partido}
             onPress={() =>
-              navigation.navigate('PartidoLive', { partido: item })
+              navigation.navigate('PartidoLive', {
+                partido: item,
+                actualizarPartidos: setPartidos
+              })
             }
           >
             <Text style={styles.equipos}>
               {item.local} vs {item.visitante}
             </Text>
-
             <Text style={styles.marcador}>
               {item.golesLocal} - {item.golesVisitante}
             </Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
+}
 
-            <Text style={styles.estado}>
-              Grupo {item.grupo} · {item.estado}
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  partido: {
+    padding: 15,
+    backgroundColor: '#eee',
+    marginBottom: 10,
+    borderRadius: 8
+  },
+  equipos: { fontSize: 16, fontWeight: 'bold' },
+  marcador: { fontSize: 18, textAlign: 'right' }
+});
             </Text>
           </TouchableOpacity>
         )}

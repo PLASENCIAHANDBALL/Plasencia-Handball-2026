@@ -250,3 +250,55 @@ button:active {
 main {
   padding-bottom: 110px;
 }
+
+/* =========================
+   PARTIDOS – VISTA PRO
+========================= */
+.partido-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+/* Equipos + marcador */
+.partido-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.equipo {
+  width: 35%;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+}
+
+.marcador {
+  width: 30%;
+  background: #111;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 8px 0;
+  border-radius: 12px;
+  text-align: center;
+}
+
+/* Botón abrir */
+.abrir-btn {
+  width: 100%;
+  background: var(--rojo);
+  color: white;
+  font-weight: 600;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 4px 8px rgba(196,22,28,0.3);
+}
+
+.abrir-btn:active {
+  transform: scale(0.96);
+}

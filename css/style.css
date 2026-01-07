@@ -1,37 +1,95 @@
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #f5f5f5;
+:root {
+  --rojo: #c4161c;
+  --gris: #f5f5f5;
+  --blanco: #ffffff;
+  --sombra: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--gris);
+}
+
+/* CABECERA */
 header {
-  background: #c4161c;
+  background: var(--rojo);
   color: white;
   padding: 15px;
   text-align: center;
+  font-size: 20px;
+  font-weight: bold;
 }
 
+/* CONTENIDO */
 main {
-  padding: 20px;
+  padding: 15px;
 }
 
+/* BOTONES GENERALES */
 button {
   width: 100%;
-  padding: 15px;
-  margin-bottom: 10px;
+  padding: 14px;
   font-size: 16px;
   border: none;
-  border-radius: 8px;
-  background: #eaeaea;
+  border-radius: 10px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
 }
 
-button:hover {
-  background: #ddd;
+button:active {
+  transform: scale(0.98);
 }
 
-#contenido {
-  margin-top: 20px;
-  background: white;
+/* TARJETAS */
+.card {
+  background: var(--blanco);
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+  margin-bottom: 12px;
+}
+
+/* PARTIDOS */
+.partido-nombre {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.partido-marcador {
+  font-size: 18px;
+  text-align: right;
+}
+
+/* MARCADOR */
+.marcador {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 52px;
+  margin: 25px 0;
+}
+
+.marcador span {
+  margin: 0 20px;
+}
+
+/* BOTONES MARCADOR */
+.boton-local {
+  background: #ffe5e5;
+}
+
+.boton-visitante {
+  background: #e5f0ff;
+}
+
+.volver {
+  background: var(--rojo);
+  color: white;
+}
 }

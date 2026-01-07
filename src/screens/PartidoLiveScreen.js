@@ -1,39 +1,67 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
-import { actualizarMarcador } from '../services/partidosService';
 
-export default function PartidoLiveScreen({ route }) {
-  const { partido } = route.params;
+export default function PartidoLiveScreen({ route, navigation }) {
+  const { partido, actualizarPartidos } = route.params;
 
   const [golesLocal, setGolesLocal] = useState(partido.golesLocal);
   const [golesVisitante, setGolesVisitante] = useState(partido.golesVisitante);
 
-  const sumarLocal = () => {
-    const nuevo = golesLocal + 1;
-    setGolesLocal(nuevo);
-    actualizarMarcador(partido.id, nuevo, golesVisitante);
-  };
-
-  const restarLocal = () => {
-    const nuevo = Math.max(0, golesLocal - 1);
-    setGolesLocal(nuevo);
-    actualizarMarcador(partido.id, nuevo, golesVisitante);
-  };
-
-  const sumarVisitante = () => {
-    const nuevo = golesVisitante + 1;
-    setGolesVisitante(nuevo);
-    actualizarMarcador(partido.id, golesLocal, nuevo);
-  };
-
-  const restarVisitante = () => {
-    const nuevo = Math.max(0, golesVisitante - 1);
-    setGolesVisitante(nuevo);
-    actualizarMarcador(partido.id, golesLocal, nuevo);
+  const guardarCambios = () => {
+    actualizarPartidos((prev) =>
+      prev.map((p) =>
+        p.id === partido.id
+          ? { ...p, golesLocal, golesVisitante }
+          : p
+      )
+    );
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.equipos}>
+        {partido.local} vs {partido.visitante}
+      </Text>
+
+      <View style={styles.marcador}>
+        <Text style={styles.goles}>{golesLocal}</Text>
+        <Text style={styles.goles}>-</Text>
+        <Text style={styles.goles}>{golesVisitante}</Text>
+      </View>
+
+      <View style={styles.botones}>
+        <TouchableOpacity onPress={() => setGolesLocal(golesLocal + 1)}>
+          <Text style={styles.boton}>+ Local</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setGolesVisitante(golesVisitante + 1)}>
+          <Text style={styles.boton}>+ Visitante</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.guardar} onPress={guardarCambios}>
+        <Text style={styles.guardarTexto}>Guardar marcador</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, justifyContent: 'center' },
+  equipos: { fontSize: 20, textAlign: 'center', marginBottom: 30 },
+  marcador: { flexDirection: 'row', justifyContent: 'center', marginBottom: 30 },
+  goles: { fontSize: 40, marginHorizontal: 10 },
+  botones: { flexDirection: 'row', justifyContent: 'space-around' },
+  boton: { fontSize: 18, color: '#c4161c' },
+  guardar: {
+    marginTop: 30,
+    backgroundColor: '#c4161c',
+    padding: 15,
+    borderRadius: 10
+  },
+  guardarTexto: { color: '#fff', textAlign: 'center', fontSize: 16 }
+});
       <Text style={styles.equipos}>
         {partido.local} vs {partido.visitante}
       </Text>

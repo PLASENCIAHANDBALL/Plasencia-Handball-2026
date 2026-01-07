@@ -30,16 +30,20 @@ function mostrarPartidos() {
 
   partidos.forEach((p) => {
     html += `
-  <div class="partido-card">
-    <div class="partido-header">
-      <span class="equipo">${p.local}</span>
-      <span class="marcador">${p.golesLocal} - ${p.golesVisitante}</span>
-      <span class="equipo">${p.visitante}</span>
+  <div class="card">
+    <div class="partido-nombre">
+      ${p.local} vs ${p.visitante}
     </div>
 
-    <button class="abrir-btn" onclick="abrirPartido(${p.id})">
-      ▶ Abrir partido
-    </button>
+    <div class="partido-info">
+      🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}
+    </div>
+
+    <div class="partido-marcador">
+      ${p.golesLocal} - ${p.golesVisitante}
+    </div>
+
+    <button onclick="abrirPartido(${p.id})">Abrir partido</button>
   </div>
 `;
   });
@@ -55,20 +59,39 @@ function abrirPartido(id) {
 
   if (adminActivo) {
     botones = `
-      <button onclick="sumarLocal()">+ Local</button>
-      <button onclick="restarLocal()">- Local</button>
-      <button onclick="sumarVisitante()">+ Visitante</button>
-      <button onclick="restarVisitante()">- Visitante</button>
+      <div class="admin-datos">
+        <label>Hora</label>
+        <input type="time" id="hora" value="${partidoActual.hora || ""}">
+
+        <label>Lugar</label>
+        <input type="text" id="lugar" value="${partidoActual.lugar || ""}">
+
+        <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
+
+        <hr>
+
+        <button onclick="sumarLocal()">+ Local</button>
+        <button onclick="restarLocal()">- Local</button>
+        <button onclick="sumarVisitante()">+ Visitante</button>
+        <button onclick="restarVisitante()">- Visitante</button>
+      </div>
     `;
   } else {
-    botones = `<p>Modo solo lectura</p>`;
+    botones = `
+      <p>🕒 ${partidoActual.hora || "-"}</p>
+      <p>📍 ${partidoActual.lugar || "-"}</p>
+    `;
   }
 
   contenido.innerHTML = `
     <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
-    <h1>${partidoActual.golesLocal} - ${partidoActual.golesVisitante}</h1>
+    <div class="marcador">
+      <span>${partidoActual.golesLocal}</span>
+      <span>-</span>
+      <span>${partidoActual.golesVisitante}</span>
+    </div>
     ${botones}
-    <button onclick="mostrarPartidos()">⬅ Volver</button>
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
 }
 
@@ -97,6 +120,18 @@ function actualizar() {
   partidos = partidos.map((p) =>
     p.id === partidoActual.id ? partidoActual : p
   );
+  guardarPartidos(partidos);
+  abrirPartido(partidoActual.id);
+}
+
+function guardarDatosPartido() {
+  partidoActual.hora = document.getElementById("hora").value;
+  partidoActual.lugar = document.getElementById("lugar").value;
+
+  partidos = partidos.map(p =>
+    p.id === partidoActual.id ? partidoActual : p
+  );
+
   guardarPartidos(partidos);
   abrirPartido(partidoActual.id);
 }

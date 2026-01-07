@@ -27,12 +27,18 @@ function mostrarPartidos() {
 
   partidos.forEach((p) => {
     html += `
-      <div class="card">
-        <div><strong>${p.local} vs ${p.visitante}</strong></div>
-        <div>${p.golesLocal} - ${p.golesVisitante}</div>
-        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-      </div>
-    `;
+  <div class="partido-card">
+    <div class="partido-header">
+      <span class="equipo">${p.local}</span>
+      <span class="marcador">${p.golesLocal} - ${p.golesVisitante}</span>
+      <span class="equipo">${p.visitante}</span>
+    </div>
+
+    <button class="abrir-btn" onclick="abrirPartido(${p.id})">
+      ▶ Abrir partido
+    </button>
+  </div>
+`;
   });
 
   contenido.innerHTML = html;

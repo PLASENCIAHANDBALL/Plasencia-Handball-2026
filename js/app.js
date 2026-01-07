@@ -206,13 +206,13 @@ function mostrarCategorias() {
 }
 
 function filtrarCategorias() {
-  const cat = document.getElementById("cat").value;
   const gen = document.getElementById("gen").value;
   const grp = document.getElementById("grp").value;
+  const cat = window.categoriaSeleccionada;
 
   let filtrados = partidos.filter(p =>
-    (!cat || p.categoria === cat) &&
-    (!gen || p.genero === gen) &&
+    p.categoria === cat &&
+    p.genero === gen &&
     (!grp || p.grupo === grp)
   );
 
@@ -230,7 +230,7 @@ function filtrarCategorias() {
   });
 
   document.getElementById("listaCategorias").innerHTML =
-    html || "<p>No hay partidos</p>";
+    html || "<p>No hay partidos en esta categoría</p>";
 }
 
 /* ================== GRUPOS ================== */
@@ -352,50 +352,52 @@ function guardarEdicionGrupo() {
 }
 
 /* ================== CLASIFICACIÓN ================== */
-function mostrarClasificacion() {
-  if (typeof calcularClasificacion !== "function") {
-    contenido.innerHTML = `
-      <h2>Clasificación</h2>
-      <p>⚠️ La clasificación aún no está configurada.</p>
-    `;
-    return;
-  }
+function mostrarCategorias() {
+  contenido.innerHTML = `
+    <h2>Categorías</h2>
 
-  const clasificacion = calcularClasificacion();
+    <!-- TABS DE CATEGORÍA -->
+    <div class="tabs">
+      <button class="tab active" onclick="seleccionarCategoria('Alevín', this)">Alevín</button>
+      <button class="tab" onclick="seleccionarCategoria('Infantil', this)">Infantil</button>
+      <button class="tab" onclick="seleccionarCategoria('Cadete', this)">Cadete</button>
+      <button class="tab" onclick="seleccionarCategoria('Juvenil', this)">Juvenil</button>
+    </div>
 
-  let html = `
-    <h2>Clasificación</h2>
-    <table class="tabla">
-      <tr>
-        <th>Equipo</th>
-        <th>PJ</th>
-        <th>PG</th>
-        <th>PE</th>
-        <th>PP</th>
-        <th>GF</th>
-        <th>GC</th>
-        <th>Pts</th>
-      </tr>
+    <!-- SUBFILTROS -->
+    <div class="subfiltros">
+      <select id="gen" onchange="filtrarCategorias()">
+        <option>Masculino</option>
+        <option>Femenino</option>
+      </select>
+
+      <select id="grp" onchange="filtrarCategorias()">
+        <option value="">Todos los grupos</option>
+        <option>Grupo A</option>
+        <option>Grupo B</option>
+        <option>Grupo C</option>
+        <option>Grupo D</option>
+        <option>Grupo Único</option>
+      </select>
+    </div>
+
+    <div id="listaCategorias"></div>
   `;
 
-  clasificacion.forEach(e => {
-    html += `
-      <tr>
-        <td>${e.nombre}</td>
-        <td>${e.pj}</td>
-        <td>${e.pg}</td>
-        <td>${e.pe}</td>
-        <td>${e.pp}</td>
-        <td>${e.gf}</td>
-        <td>${e.gc}</td>
-        <td><strong>${e.puntos}</strong></td>
-      </tr>
-    `;
-  });
+  // categoría por defecto
+  window.categoriaSeleccionada = "Alevín";
+  filtrarCategorias();
+}
 
-  html += "</table>";
+function seleccionarCategoria(cat, boton) {
+  window.categoriaSeleccionada = cat;
 
-  contenido.innerHTML = html;
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.remove("active")
+  );
+  boton.classList.add("active");
+
+  filtrarCategorias();
 }
 
 /* ================== ARRANQUE ================== */

@@ -456,6 +456,174 @@ function seleccionarCategoria(cat, boton) {
   filtrarCategorias();
 }
 
+function filtrarCategorias() {
+  const categoria = window.categoriaSeleccionada;
+  const genero = document.getElementById("gen").value;
+  const grupo = document.getElementById("grp").value;
+
+  let html = "";
+
+  /* ====== EQUIPOS ====== */
+  html += `<h3>Equipos</h3>`;
+
+  if (adminActivo) {
+    html += `<button onclick="formNuevoEquipo()">➕ Crear equipo</button>`;
+  }
+
+  const equiposFiltrados = equipos.filter(e =>
+    e.categoria === categoria &&
+    e.genero === genero &&
+    (!grupo || e.grupo === grupo)
+  );
+
+  if (equiposFiltrados.length === 0) {
+    html += `<p>No hay equipos en esta categoría</p>`;
+  }
+
+  equiposFiltrados.forEach(e => {
+    html += `
+      <div class="card">
+        <strong>${e.nombre}</strong>
+        <div>${e.grupo}</div>
+
+        ${adminActivo ? `
+          <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
+          <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
+        ` : ""}
+      </div>
+    `;
+  });
+
+  /* ====== PARTIDOS ====== */
+  html += `<h3>Partidos</h3>`;
+
+  const partidosFiltrados = partidos.filter(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    (!grupo || p.grupo === grupo)
+  );
+
+  if (partidosFiltrados.length === 0) {
+    html += `<p>No hay partidos en esta categoría</p>`;
+  }
+
+  partidosFiltrados.forEach(p => {
+    html += `
+      <div class="card">
+        <strong>${p.local} vs ${p.visitante}</strong>
+        <div>🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
+        <div>${p.golesLocal} - ${p.golesVisitante}</div>
+        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("listaCategorias").innerHTML = html;
+}
+
+function formNuevoEquipo() {
+  contenido.innerHTML = `
+    <h2>Nuevo equipo</h2>
+
+    <label>Nombre del equipo</label>
+    <input id="nombre">
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option>Alevín</option>
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Grupo</label>
+    <select id="grupo">
+      <option>Grupo A</option>
+      <option>Grupo B</option>
+      <option>Grupo C</option>
+      <option>Grupo D</option>
+      <option>Grupo Único</option>
+    </select>
+
+    <button onclick="guardarNuevoEquipo()">💾 Guardar equipo</button>
+    <button class="volver" onclick="mostrarCategorias()">⬅ Volver</button>
+  `;
+}
+
+function guardarNuevoEquipo() {
+  const nuevo = {
+    id: Date.now(),
+    nombre: document.getElementById("nombre").value,
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value
+  };
+
+  equipos.push(nuevo);
+  guardarEquipos(equipos);
+  mostrarCategorias();
+}
+
+function editarEquipo(id) {
+  equipoActual = equipos.find(e => e.id === id);
+
+  contenido.innerHTML = `
+    <h2>Editar equipo</h2>
+
+    <input id="nombre" value="${equipoActual.nombre}">
+
+    <select id="categoria">
+      <option ${equipoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
+      <option ${equipoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
+      <option ${equipoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
+      <option ${equipoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
+    </select>
+
+    <select id="genero">
+      <option ${equipoActual.genero==="Masculino"?"selected":""}>Masculino</option>
+      <option ${equipoActual.genero==="Femenino"?"selected":""}>Femenino</option>
+    </select>
+
+    <select id="grupo">
+      <option ${equipoActual.grupo==="Grupo A"?"selected":""}>Grupo A</option>
+      <option ${equipoActual.grupo==="Grupo B"?"selected":""}>Grupo B</option>
+      <option ${equipoActual.grupo==="Grupo C"?"selected":""}>Grupo C</option>
+      <option ${equipoActual.grupo==="Grupo D"?"selected":""}>Grupo D</option>
+      <option ${equipoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
+    </select>
+
+    <button onclick="guardarEdicionEquipo()">💾 Guardar cambios</button>
+    <button class="volver" onclick="mostrarCategorias()">⬅ Volver</button>
+  `;
+}
+
+function guardarEdicionEquipo() {
+  equipoActual.nombre = document.getElementById("nombre").value;
+  equipoActual.categoria = document.getElementById("categoria").value;
+  equipoActual.genero = document.getElementById("genero").value;
+  equipoActual.grupo = document.getElementById("grupo").value;
+
+  equipos = equipos.map(e =>
+    e.id === equipoActual.id ? equipoActual : e
+  );
+
+  guardarEquipos(equipos);
+  mostrarCategorias();
+}
+
+function borrarEquipo(id) {
+  if (!confirm("¿Eliminar este equipo?")) return;
+  equipos = equipos.filter(e => e.id !== id);
+  guardarEquipos(equipos);
+  mostrarCategorias();
+}
+
 /* ================== CLASIFICACION ================== */
 function mostrarClasificacion() {
   contenido.innerHTML = `

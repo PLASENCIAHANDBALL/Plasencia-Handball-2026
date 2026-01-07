@@ -93,3 +93,21 @@ button:active {
   color: white;
 }
 }
+
+/* CLASIFICACION */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.tabla th, .tabla td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
+}
+
+.tabla th {
+  background: #c4161c;
+  color: white;
+}

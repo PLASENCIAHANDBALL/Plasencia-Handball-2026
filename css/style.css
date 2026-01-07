@@ -341,3 +341,23 @@ main {
   border: none;
   box-shadow: var(--sombra);
 }
+
+/* BOTÓN ADMIN FLOTANTE */
+#admin-fab {
+  position: fixed;
+  bottom: 85px; /* por encima de la barra inferior */
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--rojo);
+  color: white;
+  font-size: 22px;
+  box-shadow: var(--sombra);
+  z-index: 1200;
+}
+
+#admin-fab.admin-activo {
+  background: #2ecc71;
+}

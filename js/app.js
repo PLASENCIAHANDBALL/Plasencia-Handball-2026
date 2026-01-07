@@ -18,6 +18,12 @@ let grupos = typeof obtenerGrupos === "function"
 
 let grupoActual = null;
 
+let equipos = typeof obtenerEquipos === "function"
+  ? obtenerEquipos()
+  : [];
+
+let equipoActual = null;
+
 /* ================== HOME ================== */
 function mostrarHome() {
   contenido.innerHTML = `

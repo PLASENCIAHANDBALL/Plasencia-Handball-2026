@@ -1,7 +1,8 @@
 console.log("✅ app.js cargado");
+
 const contenido = document.getElementById("contenido");
 
-/* ================== DATOS ================== */
+/* ================== ESTADO GLOBAL ================== */
 const PIN_ADMIN = "1234";
 let adminActivo = localStorage.getItem("admin") === "true";
 
@@ -9,9 +10,13 @@ let partidos = typeof obtenerPartidos === "function"
   ? obtenerPartidos()
   : [];
 
+let partidoActual = null;
+
 let grupos = typeof obtenerGrupos === "function"
   ? obtenerGrupos()
   : [];
+
+let grupoActual = null;
 
 /* ================== HOME ================== */
 function mostrarHome() {
@@ -54,37 +59,49 @@ function mostrarPartidos() {
   contenido.innerHTML = html;
 }
 
-/* ================== PARTIDO ================== */
-function abrirPartido(id) {
-  partidoActual = partidos.find((p) => p.id === id);
+/* ================== PARTIDOS ================== */
+function mostrarPartidos() {
+  let html = `<h2>Partidos</h2>`;
 
-  let botones = "";
+  html += adminActivo
+    ? `<button onclick="salirAdmin()">Salir de Admin</button>
+       <button onclick="formNuevoPartido()">➕ Crear partido</button>`
+    : `<button onclick="activarAdmin()">Entrar como Admin</button>`;
 
-  if (adminActivo) {
-    botones = `
-      <div class="admin-datos">
-        <label>Hora</label>
-        <input type="time" id="hora" value="${partidoActual.hora || ""}">
-
-        <label>Lugar</label>
-        <input type="text" id="lugar" value="${partidoActual.lugar || ""}">
-
-        <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
-
-        <hr>
-
-        <button onclick="sumarLocal()">+ Local</button>
-        <button onclick="restarLocal()">- Local</button>
-        <button onclick="sumarVisitante()">+ Visitante</button>
-        <button onclick="restarVisitante()">- Visitante</button>
+  partidos.forEach(p => {
+    html += `
+      <div class="card">
+        <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
+        <div class="partido-info">🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
+        <div class="partido-marcador">${p.golesLocal} - ${p.golesVisitante}</div>
+        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
       </div>
     `;
-  } else {
-    botones = `
-      <p>🕒 ${partidoActual.hora || "-"}</p>
-      <p>📍 ${partidoActual.lugar || "-"}</p>
-    `;
-  }
+  });
+
+  contenido.innerHTML = html;
+}
+
+function abrirPartido(id) {
+  partidoActual = partidos.find(p => p.id === id);
+
+  let adminBloque = adminActivo ? `
+    <label>Hora</label>
+    <input type="time" id="hora" value="${partidoActual.hora || ""}">
+
+    <label>Lugar</label>
+    <input id="lugar" value="${partidoActual.lugar || ""}">
+
+    <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
+    <hr>
+    <button onclick="sumarLocal()">+ Local</button>
+    <button onclick="restarLocal()">- Local</button>
+    <button onclick="sumarVisitante()">+ Visitante</button>
+    <button onclick="restarVisitante()">- Visitante</button>
+  ` : `
+    <p>🕒 ${partidoActual.hora || "-"}</p>
+    <p>📍 ${partidoActual.lugar || "-"}</p>
+  `;
 
   contenido.innerHTML = `
     <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
@@ -93,48 +110,41 @@ function abrirPartido(id) {
       <span>-</span>
       <span>${partidoActual.golesVisitante}</span>
     </div>
-    ${botones}
+    ${adminBloque}
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
 }
 
-/* ================== MARCADOR ================== */
 function sumarLocal() {
   partidoActual.golesLocal++;
-  actualizar();
+  actualizarPartido();
 }
 
 function restarLocal() {
   if (partidoActual.golesLocal > 0) partidoActual.golesLocal--;
-  actualizar();
+  actualizarPartido();
 }
 
 function sumarVisitante() {
   partidoActual.golesVisitante++;
-  actualizar();
+  actualizarPartido();
 }
 
 function restarVisitante() {
   if (partidoActual.golesVisitante > 0) partidoActual.golesVisitante--;
-  actualizar();
-}
-
-function actualizar() {
-  partidos = partidos.map((p) =>
-    p.id === partidoActual.id ? partidoActual : p
-  );
-  guardarPartidos(partidos);
-  abrirPartido(partidoActual.id);
+  actualizarPartido();
 }
 
 function guardarDatosPartido() {
   partidoActual.hora = document.getElementById("hora").value;
   partidoActual.lugar = document.getElementById("lugar").value;
+  actualizarPartido();
+}
 
+function actualizarPartido() {
   partidos = partidos.map(p =>
     p.id === partidoActual.id ? partidoActual : p
   );
-
   guardarPartidos(partidos);
   abrirPartido(partidoActual.id);
 }
@@ -156,7 +166,6 @@ function salirAdmin() {
   localStorage.removeItem("admin");
   mostrarPartidos();
 }
-
 
 /* ================== INICIO ================== */
 mostrarHome();
@@ -389,11 +398,12 @@ function mostrarClasificacion() {
   contenido.innerHTML = html;
 }
 
+/* ================== ARRANQUE ================== */
+mostrarHome();
+
 window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
   if (splash) {
-    setTimeout(() => {
-      splash.style.display = "none";
-    }, 1200);
+    setTimeout(() => splash.style.display = "none", 1200);
   }
 });

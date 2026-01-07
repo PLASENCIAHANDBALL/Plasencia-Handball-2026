@@ -30,21 +30,34 @@ function abrirPartido(id) {
   partidoActual = partidos.find((p) => p.id === id);
 
   contenido.innerHTML = `
-    <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
+  <h2 style="text-align:center">
+    ${partidoActual.local} vs ${partidoActual.visitante}
+  </h2>
 
-    <h1 style="text-align:center">
-      ${partidoActual.golesLocal} - ${partidoActual.golesVisitante}
-    </h1>
+  <div style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:48px;
+    margin:20px 0;
+  ">
+    <span style="margin:0 20px">${partidoActual.golesLocal}</span>
+    <span>-</span>
+    <span style="margin:0 20px">${partidoActual.golesVisitante}</span>
+  </div>
 
-    <button onclick="sumarLocal()">+ Gol Local</button>
-    <button onclick="restarLocal()">- Gol Local</button>
+  <div style="display:grid;gap:10px">
+    <button onclick="sumarLocal()">➕ Gol Local</button>
+    <button onclick="restarLocal()">➖ Gol Local</button>
 
-    <button onclick="sumarVisitante()">+ Gol Visitante</button>
-    <button onclick="restarVisitante()">- Gol Visitante</button>
+    <button onclick="sumarVisitante()">➕ Gol Visitante</button>
+    <button onclick="restarVisitante()">➖ Gol Visitante</button>
+  </div>
 
-    <button onclick="mostrarPartidos()">⬅ Volver</button>
-  `;
-}
+  <button onclick="mostrarPartidos()" style="margin-top:20px">
+    ⬅ Volver a partidos
+  </button>
+`;
 
 function sumarLocal() {
   partidoActual.golesLocal++;

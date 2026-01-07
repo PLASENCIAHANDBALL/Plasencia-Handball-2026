@@ -43,6 +43,7 @@ function mostrarPartidos() {
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 
         ${adminActivo ? `
+          <button onclick="editarPartido(${p.id})">✏️ Editar</button>
           <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
         ` : ""}
       </div>
@@ -50,6 +51,132 @@ function mostrarPartidos() {
   });
 
   contenido.innerHTML = html;
+}
+
+function formNuevoPartido() {
+  contenido.innerHTML = `
+    <h2>Nuevo partido</h2>
+
+    <label>Equipo local</label>
+    <input id="local" placeholder="Equipo local">
+
+    <label>Equipo visitante</label>
+    <input id="visitante" placeholder="Equipo visitante">
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option>Alevín</option>
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Grupo</label>
+    <select id="grupo">
+      <option>Grupo A</option>
+      <option>Grupo B</option>
+      <option>Grupo C</option>
+      <option>Grupo D</option>
+      <option>Grupo Único</option>
+    </select>
+
+    <label>Hora</label>
+    <input type="time" id="hora">
+
+    <label>Lugar</label>
+    <input id="lugar" placeholder="Pabellón / pista">
+
+    <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+}
+
+function editarPartido(id) {
+  partidoActual = partidos.find(p => p.id === id);
+
+  contenido.innerHTML = `
+    <h2>Editar partido</h2>
+
+    <label>Equipo local</label>
+    <input id="local" value="${partidoActual.local}">
+
+    <label>Equipo visitante</label>
+    <input id="visitante" value="${partidoActual.visitante}">
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option ${partidoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
+      <option ${partidoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
+      <option ${partidoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
+      <option ${partidoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option ${partidoActual.genero==="Masculino"?"selected":""}>Masculino</option>
+      <option ${partidoActual.genero==="Femenino"?"selected":""}>Femenino</option>
+    </select>
+
+    <label>Grupo</label>
+    <select id="grupo">
+      <option ${partidoActual.grupo==="Grupo A"?"selected":""}>Grupo A</option>
+      <option ${partidoActual.grupo==="Grupo B"?"selected":""}>Grupo B</option>
+      <option ${partidoActual.grupo==="Grupo C"?"selected":""}>Grupo C</option>
+      <option ${partidoActual.grupo==="Grupo D"?"selected":""}>Grupo D</option>
+      <option ${partidoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
+    </select>
+
+    <label>Hora</label>
+    <input type="time" id="hora" value="${partidoActual.hora || ""}">
+
+    <label>Lugar</label>
+    <input id="lugar" value="${partidoActual.lugar || ""}">
+
+    <button onclick="guardarEdicionPartido()">💾 Guardar cambios</button>
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+}
+
+function guardarEdicionPartido() {
+  partidoActual.local = document.getElementById("local").value;
+  partidoActual.visitante = document.getElementById("visitante").value;
+  partidoActual.categoria = document.getElementById("categoria").value;
+  partidoActual.genero = document.getElementById("genero").value;
+  partidoActual.grupo = document.getElementById("grupo").value;
+  partidoActual.hora = document.getElementById("hora").value;
+  partidoActual.lugar = document.getElementById("lugar").value;
+
+  partidos = partidos.map(p =>
+    p.id === partidoActual.id ? partidoActual : p
+  );
+
+  guardarPartidos(partidos);
+  mostrarPartidos();
+}
+
+function guardarNuevoPartido() {
+  const nuevoPartido = {
+    id: Date.now(),
+    local: document.getElementById("local").value,
+    visitante: document.getElementById("visitante").value,
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value,
+    hora: document.getElementById("hora").value,
+    lugar: document.getElementById("lugar").value,
+    golesLocal: 0,
+    golesVisitante: 0
+  };
+
+  partidos.push(nuevoPartido);
+  guardarPartidos(partidos);
+  mostrarPartidos();
 }
 
 function abrirPartido(id) {

@@ -135,3 +135,41 @@ button:active {
   font-weight: bold;
   color: #000;
 }
+
+/* MENÚ INFERIOR */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bottom-nav button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+}
+
+.bottom-nav button span {
+  font-size: 12px;
+}
+
+.bottom-nav button:active {
+  color: #c4161c;
+}
+
+/* Para que el contenido no quede tapado */
+main {
+  padding-bottom: 80px;
+}

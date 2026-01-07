@@ -380,7 +380,9 @@ function mostrarClasificacion() {
 
 window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
-  setTimeout(() => {
-    splash.style.display = "none";
-  }, 1200);
+  if (splash) {
+    setTimeout(() => {
+      splash.style.display = "none";
+    }, 1200);
+  }
 });

@@ -92,7 +92,6 @@ button:active {
   background: var(--rojo);
   color: white;
 }
-}
 
 /* CLASIFICACION */
 .tabla {
@@ -172,4 +171,82 @@ button:active {
 /* Para que el contenido no quede tapado */
 main {
   padding-bottom: 80px;
+}
+
+/* =========================
+   BOTONES GENERALES (MEJORADOS)
+========================= */
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 14px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   MENÚ INFERIOR TIPO APP
+========================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  height: 75px;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Cada botón del menú */
+.bottom-nav button {
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+}
+
+/* Icono circular */
+.nav-icon {
+  width: 46px;
+  height: 46px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+/* Texto debajo */
+.bottom-nav span {
+  font-size: 11px;
+}
+
+/* Botón activo (cuando pulses) */
+.bottom-nav button:active .nav-icon {
+  background: var(--rojo);
+  color: white;
+}
+
+/* Evitar que el contenido quede tapado */
+main {
+  padding-bottom: 110px;
 }

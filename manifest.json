@@ -1,0 +1,9 @@
+{
+  "name": "Plasencia Handball 2026",
+  "short_name": "Handball 2026",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c4161c",
+  "icons": []
+}

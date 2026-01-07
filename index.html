@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plasencia Handball 2026</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+  <header>
+    <h1>Plasencia Handball 2026</h1>
+  </header>
+
+  <main>
+    <button onclick="mostrarHome()">Inicio</button>
+    <button onclick="mostrarPartidos()">Partidos</button>
+    <button onclick="mostrarGrupos()">Grupos</button>
+    <button onclick="mostrarClasificacion()">Clasificación</button>
+
+    <section id="contenido"></section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+</body>
+</html>

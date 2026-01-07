@@ -169,3 +169,10 @@ function mostrarClasificacion() {
 
   contenido.innerHTML = html;
 }
+
+window.addEventListener("load", () => {
+  const splash = document.getElementById("splash");
+  setTimeout(() => {
+    splash.style.display = "none";
+  }, 1200);
+});

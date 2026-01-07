@@ -1,14 +1,17 @@
+console.log("✅ app.js cargado");
 const contenido = document.getElementById("contenido");
 
 /* ================== DATOS ================== */
 const PIN_ADMIN = "1234";
 let adminActivo = localStorage.getItem("admin") === "true";
 
-let partidos = obtenerPartidos();
-let partidoActual = null;
+let partidos = typeof obtenerPartidos === "function"
+  ? obtenerPartidos()
+  : [];
 
-let grupos = obtenerGrupos();
-let grupoActual = null;
+let grupos = typeof obtenerGrupos === "function"
+  ? obtenerGrupos()
+  : [];
 
 /* ================== HOME ================== */
 function mostrarHome() {

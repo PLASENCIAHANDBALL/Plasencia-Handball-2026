@@ -30,43 +30,9 @@ function mostrarHome() {
 function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
 
-  let botonAdmin = adminActivo
-    ? `<button onclick="salirAdmin()">Salir de Admin</button>`
-    : `<button onclick="activarAdmin()">Entrar como Admin</button>`;
-
-  html += botonAdmin;
-
-  partidos.forEach((p) => {
-    html += `
-  <div class="card">
-    <div class="partido-nombre">
-      ${p.local} vs ${p.visitante}
-    </div>
-
-    <div class="partido-info">
-      🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}
-    </div>
-
-    <div class="partido-marcador">
-      ${p.golesLocal} - ${p.golesVisitante}
-    </div>
-
-    <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-  </div>
-`;
-  });
-
-  contenido.innerHTML = html;
-}
-
-/* ================== PARTIDOS ================== */
-function mostrarPartidos() {
-  let html = `<h2>Partidos</h2>`;
-
-  html += adminActivo
-    ? `<button onclick="salirAdmin()">Salir de Admin</button>
-       <button onclick="formNuevoPartido()">➕ Crear partido</button>`
-    : `<button onclick="activarAdmin()">Entrar como Admin</button>`;
+  if (adminActivo) {
+    html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
+  }
 
   partidos.forEach(p => {
     html += `
@@ -75,6 +41,10 @@ function mostrarPartidos() {
         <div class="partido-info">🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
         <div class="partido-marcador">${p.golesLocal} - ${p.golesVisitante}</div>
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+
+        ${adminActivo ? `
+          <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
+        ` : ""}
       </div>
     `;
   });
@@ -149,20 +119,29 @@ function actualizarPartido() {
   abrirPartido(partidoActual.id);
 }
 
+function borrarPartido(id) {
+  if (!confirm("¿Eliminar este partido?")) return;
+  partidos = partidos.filter(p => p.id !== id);
+  guardarPartidos(partidos);
+  mostrarPartidos();
+}
+
 /* ================== ADMIN ================== */
 function toggleAdmin() {
+  const boton = document.getElementById("admin-fab");
+
   if (adminActivo) {
     adminActivo = false;
     localStorage.removeItem("admin");
-    document.getElementById("admin-fab").classList.remove("admin-activo");
-    alert("Modo admin desactivado");
+    boton.classList.remove("admin-activo");
+    alert("Modo administrador desactivado");
   } else {
-    const pin = prompt("PIN administrador:");
+    const pin = prompt("Introduce el PIN de administrador:");
     if (pin === PIN_ADMIN) {
       adminActivo = true;
       localStorage.setItem("admin", "true");
-      document.getElementById("admin-fab").classList.add("admin-activo");
-      alert("Modo admin activado");
+      boton.classList.add("admin-activo");
+      alert("Modo administrador activado");
     } else {
       alert("PIN incorrecto");
     }
@@ -177,69 +156,6 @@ function salirAdmin() {
 
 /* ================== INICIO ================== */
 mostrarHome();
-
-/* ================== CATEGORÍAS ================== */
-function mostrarCategorias() {
-  contenido.innerHTML = `
-    <h2>Categorías</h2>
-
-    <label>Categoría</label>
-    <select id="cat" onchange="filtrarCategorias()">
-      <option value="">-- Seleccionar --</option>
-      <option>Alevín</option>
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="gen" onchange="filtrarCategorias()">
-      <option value="">-- Seleccionar --</option>
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <label>Grupo</label>
-    <select id="grp" onchange="filtrarCategorias()">
-      <option value="">Todos</option>
-      <option>Grupo A</option>
-      <option>Grupo B</option>
-      <option>Grupo C</option>
-      <option>Grupo D</option>
-      <option>Grupo Único</option>
-    </select>
-
-    <div id="listaCategorias"></div>
-  `;
-}
-
-function filtrarCategorias() {
-  const gen = document.getElementById("gen").value;
-  const grp = document.getElementById("grp").value;
-  const cat = window.categoriaSeleccionada;
-
-  let filtrados = partidos.filter(p =>
-    p.categoria === cat &&
-    p.genero === gen &&
-    (!grp || p.grupo === grp)
-  );
-
-  let html = "";
-
-  filtrados.forEach(p => {
-    html += `
-      <div class="card">
-        <strong>${p.local} vs ${p.visitante}</strong>
-        <div>🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
-        <div>${p.golesLocal} - ${p.golesVisitante}</div>
-        <button onclick="abrirPartido(${p.id})">Abrir</button>
-      </div>
-    `;
-  });
-
-  document.getElementById("listaCategorias").innerHTML =
-    html || "<p>No hay partidos en esta categoría</p>";
-}
 
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {

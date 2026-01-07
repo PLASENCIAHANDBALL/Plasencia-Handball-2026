@@ -150,14 +150,22 @@ function actualizarPartido() {
 }
 
 /* ================== ADMIN ================== */
-function activarAdmin() {
-  const pin = prompt("PIN administrador:");
-  if (pin === PIN_ADMIN) {
-    adminActivo = true;
-    localStorage.setItem("admin", "true");
-    mostrarPartidos();
+function toggleAdmin() {
+  if (adminActivo) {
+    adminActivo = false;
+    localStorage.removeItem("admin");
+    document.getElementById("admin-fab").classList.remove("admin-activo");
+    alert("Modo admin desactivado");
   } else {
-    alert("PIN incorrecto");
+    const pin = prompt("PIN administrador:");
+    if (pin === PIN_ADMIN) {
+      adminActivo = true;
+      localStorage.setItem("admin", "true");
+      document.getElementById("admin-fab").classList.add("admin-activo");
+      alert("Modo admin activado");
+    } else {
+      alert("PIN incorrecto");
+    }
   }
 }
 
@@ -493,4 +501,7 @@ window.addEventListener("load", () => {
   if (splash) {
     setTimeout(() => splash.style.display = "none", 1200);
   }
+  if (adminActivo) {
+  document.getElementById("admin-fab")?.classList.add("admin-activo");
+}
 });

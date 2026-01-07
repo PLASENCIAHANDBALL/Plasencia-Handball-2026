@@ -341,6 +341,14 @@ function guardarEdicionGrupo() {
 
 /* ================== CLASIFICACIÓN ================== */
 function mostrarClasificacion() {
+  if (typeof calcularClasificacion !== "function") {
+    contenido.innerHTML = `
+      <h2>Clasificación</h2>
+      <p>⚠️ La clasificación aún no está configurada.</p>
+    `;
+    return;
+  }
+
   const clasificacion = calcularClasificacion();
 
   let html = `

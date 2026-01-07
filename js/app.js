@@ -288,7 +288,7 @@ function salirAdmin() {
 }
 
 /* ================== INICIO ================== */
-mostrarHome();
+
 
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
@@ -449,10 +449,11 @@ function mostrarCategorias() {
 function seleccionarCategoria(cat, boton) {
   window.categoriaSeleccionada = cat;
 
-  document.querySelectorAll(".tab").forEach(t =>
-    t.classList.remove("active")
-  boton.classList.add("active");
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.remove("active");
+  });
 
+  boton.classList.add("active");
   filtrarCategorias();
 }
 

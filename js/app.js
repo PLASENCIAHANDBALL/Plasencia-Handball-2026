@@ -130,3 +130,42 @@ function mostrarGrupos() {
 
   contenido.innerHTML = html;
 }
+
+/* ================== CLASIFICACIÓN ================== */
+function mostrarClasificacion() {
+  const clasificacion = calcularClasificacion();
+
+  let html = `
+    <h2>Clasificación</h2>
+    <table class="tabla">
+      <tr>
+        <th>Equipo</th>
+        <th>PJ</th>
+        <th>PG</th>
+        <th>PE</th>
+        <th>PP</th>
+        <th>GF</th>
+        <th>GC</th>
+        <th>Pts</th>
+      </tr>
+  `;
+
+  clasificacion.forEach(e => {
+    html += `
+      <tr>
+        <td>${e.nombre}</td>
+        <td>${e.pj}</td>
+        <td>${e.pg}</td>
+        <td>${e.pe}</td>
+        <td>${e.pp}</td>
+        <td>${e.gf}</td>
+        <td>${e.gc}</td>
+        <td><strong>${e.puntos}</strong></td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  contenido.innerHTML = html;
+}

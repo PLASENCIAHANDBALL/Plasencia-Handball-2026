@@ -249,11 +249,6 @@ function abrirPartido(id) {
     <input id="lugar" value="${partidoActual.lugar || ""}">
 
     <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
-    <hr>
-    <button onclick="sumarLocal()">+ Local</button>
-    <button onclick="restarLocal()">- Local</button>
-    <button onclick="sumarVisitante()">+ Visitante</button>
-    <button onclick="restarVisitante()">- Visitante</button>
   ` : `
     <p>🕒 ${partidoActual.hora || "-"}</p>
     <p>📍 ${partidoActual.lugar || "-"}</p>

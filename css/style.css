@@ -21,7 +21,7 @@ body {
 /* CABECERA APP */
 .app-header {
   background: var(--principal);
-  height: 140px;
+  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -30,7 +30,7 @@ body {
 
 /* LOGO */
 .app-header img {
-  max-height: 110px;
+  max-height: 200px;
   width: auto;
   display: block;
 }

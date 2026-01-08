@@ -429,3 +429,38 @@ main {
 .btn-visitante:active {
   transform: scale(0.96);
 }
+
+.marcador-pro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  margin: 25px 0;
+}
+
+.equipo-marcador {
+  width: 90px;
+  height: 90px;
+  background: #111;
+  color: white;
+  font-size: 42px;
+  font-weight: bold;
+  border-radius: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.equipo-marcador.local {
+  background: linear-gradient(135deg, #ffb26b, #ff8c3a);
+}
+
+.equipo-marcador.visitante {
+  background: linear-gradient(135deg, #6bbcff, #3a7dff);
+}
+
+.separador {
+  font-size: 42px;
+  font-weight: bold;
+  color: #555;
+}

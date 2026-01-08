@@ -18,18 +18,21 @@ body {
   color: var(--oscuro);
 }
 
-/* CABECERA */
+/* CABECERA APP */
 .app-header {
   background: var(--principal);
-  padding: 18px 10px;
+  height: 120px;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 10px;
 }
 
+/* LOGO CABECERA */
 .app-header img {
-  max-width: 260px;
-  height: auto;
+  max-height: 90px;
+  width: auto;
+  object-fit: contain;
 }
 
 /* CONTENIDO */

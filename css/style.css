@@ -370,3 +370,62 @@ main {
 #admin-fab.admin-activo {
   background: #2ecc71;
 }
+
+/* =========================
+   MARCADOR ANIMADO PRO
+========================= */
+
+.marcador {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  font-size: 56px;
+  font-weight: 800;
+  margin: 25px 0;
+}
+
+.marcador span {
+  min-width: 70px;
+  text-align: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.marcador span.animar {
+  transform: scale(1.25);
+  color: var(--principal);
+}
+
+/* Separador */
+.marcador .guion {
+  font-size: 40px;
+  font-weight: 400;
+}
+
+/* =========================
+   BOTONES + / -
+========================= */
+
+.marcador-botones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-local {
+  background: #fff3e0;
+  color: #e65100;
+  font-weight: 700;
+}
+
+.btn-visitante {
+  background: #e3f2fd;
+  color: #0d47a1;
+  font-weight: 700;
+}
+
+.btn-local:active,
+.btn-visitante:active {
+  transform: scale(0.96);
+}

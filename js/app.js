@@ -37,12 +37,6 @@ function refrescarVistaActual() {
   }
 }
 
-function formatearHora(hora) {
-  if (!hora) return "-";
-  const [h, m] = hora.split(":");
-  return `${h}:${m}`;
-}
-
 function formatearHora(hora24) {
   if (!hora24) return "-";
 

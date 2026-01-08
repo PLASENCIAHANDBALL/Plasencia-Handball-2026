@@ -241,15 +241,54 @@ function abrirPartido(id) {
   `;
 
   contenido.innerHTML = `
-    <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
-    <div class="marcador">
-      <span>${partidoActual.golesLocal}</span>
-      <span>-</span>
-      <span>${partidoActual.golesVisitante}</span>
+  <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
+
+  <div class="marcador">
+    <span id="golesLocal">${partidoActual.golesLocal}</span>
+    <span class="guion">-</span>
+    <span id="golesVisitante">${partidoActual.golesVisitante}</span>
+  </div>
+
+  ${adminBloque}
+
+  ${adminActivo ? `
+    <div class="marcador-botones">
+      <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
+      <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
+      <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
+      <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
     </div>
-    ${adminBloque}
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
-  `;
+  ` : ""}
+
+  <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+`;
+}
+
+function cambiarGol(equipo, cambio) {
+  if (equipo === "local") {
+    partidoActual.golesLocal = Math.max(0, partidoActual.golesLocal + cambio);
+    animarMarcador("golesLocal");
+  } else {
+    partidoActual.golesVisitante = Math.max(0, partidoActual.golesVisitante + cambio);
+    animarMarcador("golesVisitante");
+  }
+
+  guardarPartidos(partidos);
+}
+
+function animarMarcador(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent = id === "golesLocal"
+    ? partidoActual.golesLocal
+    : partidoActual.golesVisitante;
+
+  el.classList.add("animar");
+
+  setTimeout(() => {
+    el.classList.remove("animar");
+  }, 200);
 }
 
 function refrescarVistaPartido() {

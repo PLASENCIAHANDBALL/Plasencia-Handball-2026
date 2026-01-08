@@ -608,30 +608,6 @@ function filtrarCategorias() {
     `;
   });
 
-  /* ====== PARTIDOS ====== */
-  html += `<h3>Partidos</h3>`;
-
-  const partidosFiltrados = partidos.filter(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    (!grupo || p.grupo === grupo)
-  );
-
-  if (partidosFiltrados.length === 0) {
-    html += `<p>No hay partidos en esta categoría</p>`;
-  }
-
-  partidosFiltrados.forEach(p => {
-    html += `
-      <div class="card">
-        <strong>${p.local} vs ${p.visitante}</strong>
-        <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
-        <div>${p.golesLocal} - ${p.golesVisitante}</div>
-        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-      </div>
-    `;
-  });
-
   document.getElementById("listaCategorias").innerHTML = html;
 }
 

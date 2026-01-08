@@ -43,6 +43,16 @@ function formatearHora(hora) {
   return `${h}:${m}`;
 }
 
+function formatearHora(hora24) {
+  if (!hora24) return "-";
+
+  const [h, m] = hora24.split(":").map(Number);
+  const ampm = h >= 12 ? "p. m." : "a. m.";
+  const hora12 = h % 12 || 12;
+
+  return `${hora12}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
 /* ================== HOME ================== */
 function mostrarHome() {
   contenido.innerHTML = `
@@ -250,18 +260,24 @@ function abrirPartido(id) {
 
     <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
   ` : `
-    <p>🕒 ${partidoActual.hora || "-"}</p>
+    <p>🕒 ${formatearHora(partidoActual.hora)}</p>
     <p>📍 ${partidoActual.lugar || "-"}</p>
   `;
 
   contenido.innerHTML = `
   <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
 
-  <div class="marcador">
+  <div class="marcador-pro">
+  <div class="equipo-marcador local">
     <span id="golesLocal">${partidoActual.golesLocal}</span>
-    <span class="guion">-</span>
+  </div>
+
+  <div class="separador">-</div>
+
+  <div class="equipo-marcador visitante">
     <span id="golesVisitante">${partidoActual.golesVisitante}</span>
   </div>
+</div>
 
   ${adminBloque}
 

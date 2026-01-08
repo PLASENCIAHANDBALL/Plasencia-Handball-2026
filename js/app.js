@@ -64,10 +64,10 @@ function formNuevoPartido() {
     <h2>Nuevo partido</h2>
 
     <label>Equipo local</label>
-    <input id="local" placeholder="Equipo local">
+    <select id="local"></select>
 
     <label>Equipo visitante</label>
-    <input id="visitante" placeholder="Equipo visitante">
+    <select id="visitante"></select>
 
     <label>Categoría</label>
     <select id="categoria">
@@ -101,6 +101,35 @@ function formNuevoPartido() {
     <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
+  // cargar equipos según categoría / género / grupo
+const categoria = document.getElementById("categoria");
+const genero = document.getElementById("genero");
+const grupo = document.getElementById("grupo");
+
+function cargarEquiposPartido() {
+  const lista = equipos.filter(e =>
+    e.categoria === categoria.value &&
+    e.genero === genero.value &&
+    e.grupo === grupo.value
+  );
+
+  const localSel = document.getElementById("local");
+  const visitanteSel = document.getElementById("visitante");
+
+  localSel.innerHTML = "";
+  visitanteSel.innerHTML = "";
+
+  lista.forEach(e => {
+    localSel.innerHTML += `<option>${e.nombre}</option>`;
+    visitanteSel.innerHTML += `<option>${e.nombre}</option>`;
+  });
+}
+
+categoria.onchange = cargarEquiposPartido;
+genero.onchange = cargarEquiposPartido;
+grupo.onchange = cargarEquiposPartido;
+
+cargarEquiposPartido();
 }
 
 function editarPartido(id) {

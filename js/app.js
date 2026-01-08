@@ -37,6 +37,16 @@ function refrescarVistaActual() {
   }
 }
 
+function cambiarVistaConAnimacion(html, tipo = "slide") {
+  contenido.classList.remove("fade-enter", "slide-enter");
+  contenido.innerHTML = html;
+
+  // fuerza reflow para reiniciar animación
+  void contenido.offsetWidth;
+
+  contenido.classList.add(tipo === "fade" ? "fade-enter" : "slide-enter");
+}
+
 function formatearHora(hora24) {
   if (!hora24) return "-";
 
@@ -611,6 +621,13 @@ function filtrarCategorias() {
   document.getElementById("listaCategorias").innerHTML = html;
 }
 
+function volverCategoriasAnimado() {
+  mostrarCategorias();
+  contenido.classList.remove("fade-enter", "slide-enter");
+  void contenido.offsetWidth;
+  contenido.classList.add("fade-enter");
+}
+
 function verPartidosEquipo(idEquipo) {
   const equipo = equipos.find(e => e.id === idEquipo);
   if (!equipo) return;
@@ -642,10 +659,10 @@ function verPartidosEquipo(idEquipo) {
   });
 
   html += `
-    <button class="volver" onclick="mostrarCategorias()">⬅ Volver a categorías</button>
+    <button class="volver" onclick="volverCategoriasAnimado()">⬅ Volver a categorías</button>
   `;
 
-  contenido.innerHTML = html;
+  cambiarVistaConAnimacion(html, "slide");
 }
 
 function formNuevoEquipo() {

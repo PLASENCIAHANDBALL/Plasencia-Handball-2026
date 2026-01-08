@@ -464,3 +464,35 @@ main {
   font-weight: bold;
   color: #555;
 }
+
+/* =========================
+   ANIMACIONES DE TRANSICIÓN
+========================= */
+
+.fade-enter {
+  animation: fadeEnter 0.25s ease-out;
+}
+
+.slide-enter {
+  animation: slideEnter 0.3s ease-out;
+}
+
+@keyframes fadeEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

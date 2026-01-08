@@ -1,8 +1,10 @@
 :root {
-  --rojo: #c4161c;
-  --gris: #f5f5f5;
+  --principal: #f4a261;       /* naranja claro */
+  --principal-suave: #fde8d7; /* fondo suave */
+  --oscuro: #1f2933;          /* texto */
+  --gris: #f6f6f6;
   --blanco: #ffffff;
-  --sombra: 0 2px 6px rgba(0,0,0,0.15);
+  --sombra: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 * {

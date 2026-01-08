@@ -595,20 +595,57 @@ function filtrarCategorias() {
   }
 
   equiposFiltrados.forEach(e => {
+  html += `
+    <div class="card" onclick="verPartidosEquipo(${e.id})" style="cursor:pointer">
+      <strong>${e.nombre}</strong>
+      <div>${e.grupo}</div>
+
+      ${adminActivo ? `
+        <button onclick="event.stopPropagation(); editarEquipo(${e.id})">✏️ Editar</button>
+        <button onclick="event.stopPropagation(); borrarEquipo(${e.id})">🗑️ Borrar</button>
+      ` : ""}
+    </div>
+  `;
+});
+
+  document.getElementById("listaCategorias").innerHTML = html;
+}
+
+function verPartidosEquipo(idEquipo) {
+  const equipo = equipos.find(e => e.id === idEquipo);
+  if (!equipo) return;
+
+  const partidosEquipo = partidos.filter(p =>
+    p.local === equipo.nombre || p.visitante === equipo.nombre
+  );
+
+  let html = `
+    <h2>${equipo.nombre}</h2>
+    <p>${equipo.categoria} · ${equipo.genero} · ${equipo.grupo}</p>
+
+    <h3>Partidos</h3>
+  `;
+
+  if (partidosEquipo.length === 0) {
+    html += `<p>No hay partidos para este equipo</p>`;
+  }
+
+  partidosEquipo.forEach(p => {
     html += `
       <div class="card">
-        <strong>${e.nombre}</strong>
-        <div>${e.grupo}</div>
-
-        ${adminActivo ? `
-          <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
-          <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
-        ` : ""}
+        <strong>${p.local} vs ${p.visitante}</strong>
+        <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
+        <div>${p.golesLocal} - ${p.golesVisitante}</div>
+        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
       </div>
     `;
   });
 
-  document.getElementById("listaCategorias").innerHTML = html;
+  html += `
+    <button class="volver" onclick="mostrarCategorias()">⬅ Volver a categorías</button>
+  `;
+
+  contenido.innerHTML = html;
 }
 
 function formNuevoEquipo() {

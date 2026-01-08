@@ -33,6 +33,11 @@ function mostrarHome() {
 }
 
 /* ================== PARTIDOS ================== */
+function refrescarPartidos() {
+  partidos = obtenerPartidos();
+  mostrarPartidos();
+}
+
 function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
 
@@ -192,7 +197,7 @@ function guardarEdicionPartido() {
   );
 
   guardarPartidos(partidos);
-  mostrarPartidos();
+  refrescarPartidos();
 }
 
 function guardarNuevoPartido() {
@@ -211,7 +216,7 @@ function guardarNuevoPartido() {
 
   partidos.push(nuevoPartido);
   guardarPartidos(partidos);
-  mostrarPartidos();
+  refrescarPartidos();
 }
 
 function abrirPartido(id) {
@@ -247,24 +252,40 @@ function abrirPartido(id) {
   `;
 }
 
+function refrescarVistaPartido() {
+  const index = partidos.findIndex(p => p.id === partidoActual.id);
+  if (index !== -1) {
+    partidoActual = partidos[index];
+  }
+  abrirPartido(partidoActual.id);
+}
+
 function sumarLocal() {
   partidoActual.golesLocal++;
-  actualizarPartido();
+  guardarPartidos(partidos);
+  refrescarVistaPartido();
 }
 
 function restarLocal() {
-  if (partidoActual.golesLocal > 0) partidoActual.golesLocal--;
-  actualizarPartido();
+  if (partidoActual.golesLocal > 0) {
+    partidoActual.golesLocal--;
+    guardarPartidos(partidos);
+    refrescarVistaPartido();
+  }
 }
 
 function sumarVisitante() {
   partidoActual.golesVisitante++;
-  actualizarPartido();
+  guardarPartidos(partidos);
+  refrescarVistaPartido();
 }
 
 function restarVisitante() {
-  if (partidoActual.golesVisitante > 0) partidoActual.golesVisitante--;
-  actualizarPartido();
+  if (partidoActual.golesVisitante > 0) {
+    partidoActual.golesVisitante--;
+    guardarPartidos(partidos);
+    refrescarVistaPartido();
+  }
 }
 
 function guardarDatosPartido() {
@@ -285,7 +306,7 @@ function borrarPartido(id) {
   if (!confirm("¿Eliminar este partido?")) return;
   partidos = partidos.filter(p => p.id !== id);
   guardarPartidos(partidos);
-  mostrarPartidos();
+  refrescarPartidos();
 }
 
 /* ================== ADMIN ================== */

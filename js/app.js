@@ -24,6 +24,25 @@ let equipos = typeof obtenerEquipos === "function"
 
 let equipoActual = null;
 
+function refrescarVistaActual() {
+  // Detecta qué vista estás usando y la vuelve a pintar
+  if (document.querySelector("h2")?.textContent.includes("Partidos")) {
+    mostrarPartidos();
+  } else if (document.querySelector("h2")?.textContent.includes("Editar partido")) {
+    editarPartido(partidoActual.id);
+  } else if (document.querySelector("h2")?.textContent.includes("vs")) {
+    abrirPartido(partidoActual.id);
+  } else if (document.querySelector("h2")?.textContent.includes("Categorías")) {
+    mostrarCategorias();
+  }
+}
+
+function formatearHora(hora) {
+  if (!hora) return "-";
+  const [h, m] = hora.split(":");
+  return `${h}:${m}`;
+}
+
 /* ================== HOME ================== */
 function mostrarHome() {
   contenido.innerHTML = `
@@ -49,7 +68,7 @@ function mostrarPartidos() {
     html += `
       <div class="card">
         <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
-        <div class="partido-info">🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
+        <div class="partido-info">🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
         <div class="partido-marcador">${p.golesLocal} - ${p.golesVisitante}</div>
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 
@@ -197,7 +216,7 @@ function guardarEdicionPartido() {
   );
 
   guardarPartidos(partidos);
-  refrescarPartidos();
+  mostrarPartidos();
 }
 
 function guardarNuevoPartido() {
@@ -216,7 +235,7 @@ function guardarNuevoPartido() {
 
   partidos.push(nuevoPartido);
   guardarPartidos(partidos);
-  refrescarPartidos();
+  mostrarPartidos();
 }
 
 function abrirPartido(id) {
@@ -302,28 +321,28 @@ function refrescarVistaPartido() {
 function sumarLocal() {
   partidoActual.golesLocal++;
   guardarPartidos(partidos);
-  refrescarVistaPartido();
+  abrirPartido(partidoActual.id);
 }
 
 function restarLocal() {
   if (partidoActual.golesLocal > 0) {
     partidoActual.golesLocal--;
     guardarPartidos(partidos);
-    refrescarVistaPartido();
+    abrirPartido(partidoActual.id);
   }
 }
 
 function sumarVisitante() {
   partidoActual.golesVisitante++;
   guardarPartidos(partidos);
-  refrescarVistaPartido();
+  abrirPartido(partidoActual.id);
 }
 
 function restarVisitante() {
   if (partidoActual.golesVisitante > 0) {
     partidoActual.golesVisitante--;
     guardarPartidos(partidos);
-    refrescarVistaPartido();
+    abrirPartido(partidoActual.id);
   }
 }
 
@@ -345,7 +364,7 @@ function borrarPartido(id) {
   if (!confirm("¿Eliminar este partido?")) return;
   partidos = partidos.filter(p => p.id !== id);
   guardarPartidos(partidos);
-  refrescarPartidos();
+  mostrarPartidos();
 }
 
 /* ================== ADMIN ================== */
@@ -601,7 +620,7 @@ function filtrarCategorias() {
     html += `
       <div class="card">
         <strong>${p.local} vs ${p.visitante}</strong>
-        <div>🕒 ${p.hora || "-"} · 📍 ${p.lugar || "-"}</div>
+        <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
         <div>${p.golesLocal} - ${p.golesVisitante}</div>
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
       </div>

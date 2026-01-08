@@ -21,18 +21,18 @@ body {
 /* CABECERA APP */
 .app-header {
   background: var(--principal);
-  height: 120px;
+  height: 140px;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 10px;
 }
 
-/* LOGO CABECERA */
+/* LOGO */
 .app-header img {
-  max-height: 90px;
+  max-height: 110px;
   width: auto;
-  object-fit: contain;
+  display: block;
 }
 
 /* CONTENIDO */

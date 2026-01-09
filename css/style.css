@@ -517,3 +517,42 @@ main {
     transform: translateX(0);
   }
 }
+
+/* PATROCINADORES */
+.patrocinadores-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 10px 0 20px;
+}
+
+.patrocinador-card {
+  min-width: 120px;
+  height: 80px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: var(--sombra);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.patrocinador-card img {
+  max-width: 90%;
+  max-height: 70%;
+  object-fit: contain;
+}
+
+.patrocinador-card button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff5c5c;
+  color: white;
+  font-size: 14px;
+  padding: 0;
+}

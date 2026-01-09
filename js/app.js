@@ -70,7 +70,7 @@ function formatearHora(hora24) {
 function mostrarHome() {
   let html = `
     <h2>Inicio</h2>
-    <p>Selecciona una opción del menú.</p>
+    <p>App en Proceso</p>
 
     <h3>Patrocinadores</h3>
     <div class="patrocinadores-scroll">

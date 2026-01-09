@@ -414,6 +414,11 @@ function finalizarPartido() {
 
   guardarPartidos(partidos);
 
+  // 🔹 SI ESTÁS EN CLASIFICACIÓN, ACTUALIZA
+  if (document.querySelector("h2")?.textContent.includes("Clasificación")) {
+    actualizarClasificacion();
+  }
+
   alert("Partido finalizado y clasificación actualizada");
   mostrarPartidos();
 }

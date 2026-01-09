@@ -346,7 +346,7 @@ function guardarNuevoPartido() {
     hora: document.getElementById("hora").value,
     lugar: document.getElementById("lugar").value,
     golesLocal: 0,
-    golesVisitante: 0
+    golesVisitante: 0,
     estado: "pendiente"
   };
 

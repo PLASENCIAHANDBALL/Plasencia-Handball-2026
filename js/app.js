@@ -148,6 +148,15 @@ function abrirWeb(url) {
   window.open(url, "_blank");
 }
 
+function borrarPatrocinador(id) {
+  if (!confirm("¿Eliminar este patrocinador?")) return;
+
+  patrocinadores = patrocinadores.filter(p => p.id !== id);
+
+  guardarPatrocinadores(patrocinadores);
+  mostrarHome();
+}
+
 /* ================== PARTIDOS ================== */
 function refrescarPartidos() {
   partidos = obtenerPartidos();

@@ -14,9 +14,7 @@ function crearEquipo(nombre) {
 function calcularClasificacionFiltrada(categoria, genero, grupo) {
   const tabla = {};
 
-  /* ===============================
-     1️⃣ CREAR TABLA BASE CON EQUIPOS
-     =============================== */
+  // 1️⃣ Inicializar equipos del grupo
   equipos
     .filter(e =>
       e.categoria === categoria &&
@@ -27,9 +25,7 @@ function calcularClasificacionFiltrada(categoria, genero, grupo) {
       tabla[e.nombre] = crearEquipo(e.nombre);
     });
 
-  /* ===============================
-     2️⃣ APLICAR PARTIDOS FINALIZADOS
-     =============================== */
+  // 2️⃣ Partidos finalizados
   const partidosValidos = partidos.filter(p =>
     p.estado === "finalizado" &&
     p.categoria === categoria &&
@@ -38,44 +34,32 @@ function calcularClasificacionFiltrada(categoria, genero, grupo) {
   );
 
   partidosValidos.forEach(p => {
-    const local = tabla[p.local];
-    const visitante = tabla[p.visitante];
+    tabla[p.local].pj++;
+    tabla[p.visitante].pj++;
 
-    if (!local || !visitante) return;
-
-    local.pj++;
-    visitante.pj++;
-
-    local.gf += p.golesLocal;
-    local.gc += p.golesVisitante;
-    visitante.gf += p.golesVisitante;
-    visitante.gc += p.golesLocal;
+    tabla[p.local].gf += p.golesLocal;
+    tabla[p.local].gc += p.golesVisitante;
+    tabla[p.visitante].gf += p.golesVisitante;
+    tabla[p.visitante].gc += p.golesLocal;
 
     if (p.golesLocal > p.golesVisitante) {
-      local.pg++;
-      local.puntos += 2;
-      visitante.pp++;
-    } 
-    else if (p.golesLocal < p.golesVisitante) {
-      visitante.pg++;
-      visitante.puntos += 2;
-      local.pp++;
-    } 
-    else {
-      local.pe++;
-      visitante.pe++;
-      local.puntos++;
-      visitante.puntos++;
+      tabla[p.local].pg++;
+      tabla[p.local].puntos += 2;
+      tabla[p.visitante].pp++;
+    } else if (p.golesLocal < p.golesVisitante) {
+      tabla[p.visitante].pg++;
+      tabla[p.visitante].puntos += 2;
+      tabla[p.local].pp++;
+    } else {
+      tabla[p.local].pe++;
+      tabla[p.visitante].pe++;
+      tabla[p.local].puntos++;
+      tabla[p.visitante].puntos++;
     }
   });
 
-  /* ===============================
-     3️⃣ ORDENAR CLASIFICACIÓN
-     =============================== */
-  return Object.values(tabla).sort(
-    (a, b) =>
-      b.puntos - a.puntos ||
-      (b.gf - b.gc) - (a.gf - a.gc) ||
-      b.gf - a.gf
-  );
+  return Object.values(tabla).sort((a, b) => {
+    if (b.puntos !== a.puntos) return b.puntos - a.puntos;
+    return (b.gf - b.gc) - (a.gf - a.gc);
+  });
 }

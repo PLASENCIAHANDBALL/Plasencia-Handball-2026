@@ -527,6 +527,7 @@ main {
 }
 
 .patrocinador-card {
+  position: relative;
   min-width: 160px;
   background: white;
   border-radius: 16px;
@@ -570,4 +571,20 @@ main {
 
 .patrocinador-card img:active {
   transform: scale(0.95);
+}
+
+.btn-borrar-patrocinador {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
 }

@@ -556,3 +556,12 @@ main {
   font-size: 14px;
   padding: 0;
 }
+
+.patrocinador-card img {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.patrocinador-card img:active {
+  transform: scale(0.95);
+}

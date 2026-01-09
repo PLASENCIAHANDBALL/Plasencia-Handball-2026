@@ -50,11 +50,12 @@ function crearEquipo(nombre) {
 function calcularClasificacionFiltrada(categoria, genero, grupo) {
   const tabla = {};
 
-  const partidosFiltrados = partidos.filter(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    (!grupo || p.grupo === grupo)
-  );
+  const partidosValidos = partidos.filter(p =>
+  p.estado === "finalizado" &&
+  p.categoria === categoria &&
+  p.genero === genero &&
+  (!grupo || p.grupo === grupo)
+);
 
   partidosFiltrados.forEach(p => {
     if (!tabla[p.local]) tabla[p.local] = crearEquipo(p.local);

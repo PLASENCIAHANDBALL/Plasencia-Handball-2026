@@ -155,6 +155,11 @@ button:active {
   }
 }
 
+/* Ocultar contenido mientras está el splash */
+body.splash-activo main {
+  display: none;
+}
+
 /* MENÚ INFERIOR */
 .bottom-nav {
   position: fixed;

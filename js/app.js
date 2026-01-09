@@ -4,7 +4,12 @@ const contenido = document.getElementById("contenido");
 
 /* ================== ESTADO GLOBAL ================== */
 const PIN_ADMIN = "1234";
-let adminActivo = localStorage.getItem("admin") === "true";
+const PIN_MESA = "5678";
+
+let rolUsuario = localStorage.getItem("rol") || null;
+
+let adminActivo = rolUsuario === "admin";
+let mesaActiva = rolUsuario === "mesa";
 
 let partidos = typeof obtenerPartidos === "function"
   ? obtenerPartidos()
@@ -377,14 +382,15 @@ function abrirPartido(id) {
 
   ${adminBloque}
 
-  ${adminActivo ? `
-    <div class="marcador-botones">
-      <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
-      <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
-      <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
-      <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
-    </div>
-  ` : ""}
+  ${(adminActivo || mesaActiva) ? `
+  <div class="marcador-botones">
+    <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
+    <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
+    <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
+    <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
+    <button onclick="guardarMarcadorMesa()">💾 Guardar marcador</button>
+  </div>
+` : ""}
 
   <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
 `;
@@ -474,26 +480,50 @@ function borrarPartido(id) {
   mostrarPartidos();
 }
 
+function guardarMarcadorMesa() {
+  partidos = partidos.map(p =>
+    p.id === partidoActual.id ? partidoActual : p
+  );
+  guardarPartidos(partidos);
+  alert("Marcador guardado");
+}
+
 /* ================== ADMIN ================== */
 function toggleAdmin() {
-  const boton = document.getElementById("admin-fab");
-
-  if (adminActivo) {
+  if (rolUsuario) {
+    // salir
+    rolUsuario = null;
     adminActivo = false;
-    localStorage.removeItem("admin");
-    boton.classList.remove("admin-activo");
-    alert("Modo administrador desactivado");
-  } else {
-    const pin = prompt("Introduce el PIN de administrador:");
-    if (pin === PIN_ADMIN) {
-      adminActivo = true;
-      localStorage.setItem("admin", "true");
-      boton.classList.add("admin-activo");
-      alert("Modo administrador activado");
-    } else {
-      alert("PIN incorrecto");
-    }
+    mesaActiva = false;
+    localStorage.removeItem("rol");
+    document.getElementById("admin-fab")?.classList.remove("admin-activo");
+    alert("Sesión cerrada");
+    refrescarVistaActual();
+    return;
   }
+
+  const pin = prompt("Introduce PIN:");
+  if (pin === PIN_ADMIN) {
+    rolUsuario = "admin";
+    adminActivo = true;
+    mesaActiva = false;
+    localStorage.setItem("rol", "admin");
+    document.getElementById("admin-fab")?.classList.add("admin-activo");
+    alert("Modo ADMIN activado");
+  } 
+  else if (pin === PIN_MESA) {
+    rolUsuario = "mesa";
+    adminActivo = false;
+    mesaActiva = true;
+    document.getElementById("admin-fab")?.classList.add("admin-activo");
+    localStorage.setItem("rol", "mesa");
+    alert("Modo MESA activado");
+  } 
+  else {
+    alert("PIN incorrecto");
+  }
+
+  refrescarVistaActual();
 }
 
 function salirAdmin() {

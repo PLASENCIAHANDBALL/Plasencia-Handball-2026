@@ -860,7 +860,7 @@ mostrarHome();
 window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
   if (splash) {
-    setTimeout(() => splash.style.display = "none", 1200);
+    setTimeout(() => splash.style.display = "none", 1100);
   }
   if (adminActivo) {
   document.getElementById("admin-fab")?.classList.add("admin-activo");

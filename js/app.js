@@ -24,6 +24,10 @@ let equipos = typeof obtenerEquipos === "function"
 
 let equipoActual = null;
 
+let patrocinadores = typeof obtenerPatrocinadores === "function"
+  ? obtenerPatrocinadores()
+  : [];
+
 function refrescarVistaActual() {
   // Detecta qué vista estás usando y la vuelve a pintar
   if (document.querySelector("h2")?.textContent.includes("Partidos")) {
@@ -59,10 +63,66 @@ function formatearHora(hora24) {
 
 /* ================== HOME ================== */
 function mostrarHome() {
-  contenido.innerHTML = `
+  let html = `
     <h2>Inicio</h2>
     <p>Selecciona una opción del menú.</p>
+
+    <h3>Patrocinadores</h3>
+    <div class="patrocinadores-scroll">
   `;
+
+  patrocinadores.forEach(p => {
+    html += `
+      <div class="patrocinador-card">
+        <img src="${p.imagen}" alt="${p.nombre}">
+        ${adminActivo ? `
+          <button onclick="borrarPatrocinador(${p.id})">✖</button>
+        ` : ""}
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  if (adminActivo) {
+    html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
+  }
+
+  contenido.innerHTML = html;
+}
+
+function formNuevoPatrocinador() {
+  contenido.innerHTML = `
+    <h2>Nuevo patrocinador</h2>
+
+    <label>Nombre</label>
+    <input id="nombre">
+
+    <label>Imagen (URL)</label>
+    <input id="imagen" placeholder="https://...">
+
+    <button onclick="guardarNuevoPatrocinador()">💾 Guardar</button>
+    <button class="volver" onclick="mostrarHome()">⬅ Volver</button>
+  `;
+}
+
+function guardarNuevoPatrocinador() {
+  const nuevo = {
+    id: Date.now(),
+    nombre: document.getElementById("nombre").value,
+    imagen: document.getElementById("imagen").value
+  };
+
+  patrocinadores.push(nuevo);
+  guardarPatrocinadores(patrocinadores);
+  mostrarHome();
+}
+
+function borrarPatrocinador(id) {
+  if (!confirm("¿Eliminar patrocinador?")) return;
+  patrocinadores = patrocinadores.filter(p => p.id !== id);
+  guardarPatrocinadores(patrocinadores);
+  mostrarHome();
 }
 
 /* ================== PARTIDOS ================== */

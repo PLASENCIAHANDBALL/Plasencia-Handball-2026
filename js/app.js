@@ -950,6 +950,21 @@ function actualizarClasificacion() {
   const categoria = document.getElementById("clas-cat").value;
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
+    // ====== EQUIPOS DEL GRUPO ======
+  const equiposGrupo = equipos.filter(e =>
+    e.categoria === categoria &&
+    e.genero === genero &&
+    (!grupo || e.grupo === grupo)
+  );
+
+  let htmlEquipos = `
+    <div class="equipos-grupo">
+      <h3>Equipos del grupo</h3>
+      <ul>
+        ${equiposGrupo.map(e => `<li>${e.nombre}</li>`).join("")}
+      </ul>
+    </div>
+  `;
 
   if (typeof calcularClasificacionFiltrada !== "function") {
     document.getElementById("tablaClasificacion").innerHTML =
@@ -995,7 +1010,7 @@ function actualizarClasificacion() {
   html += "</table>";
 
   document.getElementById("tablaClasificacion").innerHTML =
-    clasificacion.length ? html : "<p>No hay datos para esta selección</p>";
+  htmlEquipos + (clasificacion.length ? html : "<p>No hay partidos finalizados</p>");
 }
 
 /* ================== ARRANQUE ================== */

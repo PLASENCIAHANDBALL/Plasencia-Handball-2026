@@ -74,6 +74,14 @@ function mostrarHome() {
   patrocinadores.forEach(p => {
   html += `
     <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
+
+      ${adminActivo ? `
+        <button class="btn-borrar-patrocinador"
+          onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
+          ✖
+        </button>
+      ` : ""}
+
       <img src="${p.imagen}">
       <div class="patrocinador-nombre">${p.nombre}</div>
     </div>

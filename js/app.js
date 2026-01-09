@@ -179,8 +179,13 @@ function mostrarPartidos() {
     html += `
       <div class="card">
         <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
-        <div class="partido-info">🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
-        <div class="partido-marcador">${p.golesLocal} - ${p.golesVisitante}</div>
+        <div class="partido-info">
+           🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+        </div>
+
+        <div class="partido-grupo">
+           🏷️ ${p.grupo}
+        </div>
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 
         ${adminActivo ? `
@@ -342,6 +347,7 @@ function guardarNuevoPartido() {
     lugar: document.getElementById("lugar").value,
     golesLocal: 0,
     golesVisitante: 0
+    estado: "pendiente"
   };
 
   partidos.push(nuevoPartido);
@@ -389,11 +395,27 @@ function abrirPartido(id) {
     <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
     <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
     <button onclick="guardarMarcadorMesa()">💾 Guardar marcador</button>
+    <button class="btn-finalizar" onclick="finalizarPartido()">🏁 Finalizar partido</button>
   </div>
 ` : ""}
 
   <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
 `;
+}
+
+function finalizarPartido() {
+  if (!confirm("¿Finalizar este partido?")) return;
+
+  partidoActual.estado = "finalizado";
+
+  partidos = partidos.map(p =>
+    p.id === partidoActual.id ? partidoActual : p
+  );
+
+  guardarPartidos(partidos);
+
+  alert("Partido finalizado y clasificación actualizada");
+  mostrarPartidos();
 }
 
 function cambiarGol(equipo, cambio) {

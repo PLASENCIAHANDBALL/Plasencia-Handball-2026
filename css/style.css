@@ -137,7 +137,7 @@ button:active {
 
 /* Logo central */
 #splash img {
-  width: 260px;      /* 👈 tamaño ideal móvil */
+  width: 400px;      /* 👈 tamaño ideal móvil */
   max-width: 70%;
   height: auto;
   animation: splashZoom 0.8s ease-out;

@@ -74,7 +74,8 @@ function mostrarHome() {
   patrocinadores.forEach(p => {
     html += `
       <div class="patrocinador-card">
-        <img src="${p.imagen}" alt="${p.nombre}">
+        <img src="${p.imagen}" onclick="abrirWeb('${p.web}')">
+ alt="${p.nombre}">
         ${adminActivo ? `
           <button onclick="borrarPatrocinador(${p.id})">✖</button>
         ` : ""}
@@ -98,8 +99,11 @@ function formNuevoPatrocinador() {
     <label>Nombre</label>
     <input id="nombre">
 
-    <label>Imagen (URL)</label>
-    <input id="imagen" placeholder="https://...">
+    <label>Web</label>
+    <input id="web" placeholder="https://">
+
+    <label>Logo</label>
+    <input type="file" id="imagen" accept="image/*">
 
     <button onclick="guardarNuevoPatrocinador()">💾 Guardar</button>
     <button class="volver" onclick="mostrarHome()">⬅ Volver</button>
@@ -107,22 +111,36 @@ function formNuevoPatrocinador() {
 }
 
 function guardarNuevoPatrocinador() {
-  const nuevo = {
-    id: Date.now(),
-    nombre: document.getElementById("nombre").value,
-    imagen: document.getElementById("imagen").value
+  const nombre = document.getElementById("nombre").value;
+  const web = document.getElementById("web").value;
+  const file = document.getElementById("imagen").files[0];
+
+  if (!file) {
+    alert("Selecciona una imagen");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    const nuevo = {
+      id: Date.now(),
+      nombre,
+      web,
+      imagen: reader.result // base64
+    };
+
+    patrocinadores.push(nuevo);
+    guardarPatrocinadores(patrocinadores);
+    mostrarHome();
   };
 
-  patrocinadores.push(nuevo);
-  guardarPatrocinadores(patrocinadores);
-  mostrarHome();
+  reader.readAsDataURL(file);
 }
 
-function borrarPatrocinador(id) {
-  if (!confirm("¿Eliminar patrocinador?")) return;
-  patrocinadores = patrocinadores.filter(p => p.id !== id);
-  guardarPatrocinadores(patrocinadores);
-  mostrarHome();
+function abrirWeb(url) {
+  if (!url) return;
+  window.open(url, "_blank");
 }
 
 /* ================== PARTIDOS ================== */

@@ -160,6 +160,12 @@ body.splash-activo main {
   display: none;
 }
 
+body.splash-activo header,
+body.splash-activo #admin-fab,
+body.splash-activo .bottom-nav {
+  display: none !important;
+}
+
 /* MENÚ INFERIOR */
 .bottom-nav {
   position: fixed;

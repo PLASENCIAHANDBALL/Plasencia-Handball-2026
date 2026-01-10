@@ -791,10 +791,6 @@ function filtrarCategorias() {
   /* ====== EQUIPOS ====== */
   html += `<h3>Equipos</h3>`;
 
-  if (adminActivo) {
-    html += `<button onclick="formNuevoEquipo()">➕ Crear equipo</button>`;
-  }
-
   const equiposFiltrados = equipos.filter(e =>
     e.categoria === categoria &&
     e.genero === genero &&
@@ -867,11 +863,21 @@ function verPartidosEquipo(idEquipo) {
 }
 
 function formNuevoEquipo() {
+  if (clubes.length === 0) {
+    alert("Primero debes crear un club");
+    return;
+  }
+
   contenido.innerHTML = `
     <h2>Nuevo equipo</h2>
 
-    <label>Nombre del equipo</label>
-    <input id="nombre">
+    <label>Club</label>
+    <select id="club">
+      ${clubes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join("")}
+    </select>
+
+    <label>Nombre del equipo (opcional)</label>
+    <input id="nombre" placeholder="Ej: BM Plasencia Infantil">
 
     <label>Categoría</label>
     <select id="categoria">
@@ -897,14 +903,21 @@ function formNuevoEquipo() {
     </select>
 
     <button onclick="guardarNuevoEquipo()">💾 Guardar equipo</button>
-    <button class="volver" onclick="mostrarCategorias()">⬅ Volver</button>
+    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
   `;
 }
 
 function guardarNuevoEquipo() {
+  const clubId = Number(document.getElementById("club").value);
+  const nombreInput = document.getElementById("nombre").value;
+
+  const club = clubes.find(c => c.id === clubId);
+
   const nuevo = {
     id: Date.now(),
-    nombre: document.getElementById("nombre").value,
+    clubId,
+    clubNombre: club.nombre, // útil para mostrar rápido
+    nombre: nombreInput || club.nombre,
     categoria: document.getElementById("categoria").value,
     genero: document.getElementById("genero").value,
     grupo: document.getElementById("grupo").value
@@ -912,7 +925,7 @@ function guardarNuevoEquipo() {
 
   equipos.push(nuevo);
   guardarEquipos(equipos);
-  mostrarCategorias();
+  mostrarEquipos();
 }
 
 function editarEquipo(id) {
@@ -1059,12 +1072,15 @@ function actualizarClasificacion() {
 
   document.getElementById("tablaClasificacion").innerHTML = html;
 }
-/* ================== EQUIPOS ================== */
+/* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
   let html = `<h2>Equipos participantes</h2>`;
 
   if (adminActivo) {
-    html += `<button onclick="formNuevoClub()">➕ Añadir club</button>`;
+    html += `
+      <button onclick="formNuevoClub()">➕ Añadir club</button>
+      <button onclick="formNuevoEquipo()">➕ Añadir equipo</button>
+    `;
   }
 
   if (clubes.length === 0) {

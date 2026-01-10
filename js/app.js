@@ -420,13 +420,8 @@ function finalizarPartido() {
 
   guardarPartidos(partidos);
 
-  // ✅ recalcular clasificación con filtros activos
-  if (document.getElementById("tablaClasificacion")) {
-    actualizarClasificacion();
-  }
-
-  alert("Partido finalizado y clasificación actualizada");
-  mostrarPartidos();
+  alert("Partido finalizado");
+  mostrarPartidos(); // ⛔ NO tocar clasificación aquí
 }
 
 function cambiarGol(equipo, cambio) {
@@ -958,44 +953,11 @@ function mostrarClasificacion() {
 }
 
 function actualizarClasificacion() {
-  clasificacionFiltro.categoria =
-    document.getElementById("clas-cat").value;
+  const categoria = document.getElementById("clas-cat").value;
+  const genero = document.getElementById("clas-gen").value;
+  const grupo = document.getElementById("clas-grp").value;
 
-  clasificacionFiltro.genero =
-    document.getElementById("clas-gen").value;
-
-  clasificacionFiltro.grupo =
-    document.getElementById("clas-grp").value;
-
-  const { categoria, genero, grupo } = clasificacionFiltro;
-
-    // ====== EQUIPOS DEL GRUPO ======
-  const equiposGrupo = equipos.filter(e =>
-    e.categoria === categoria &&
-    e.genero === genero &&
-    (!grupo || e.grupo === grupo)
-  );
-
-  let htmlEquipos = `
-    <div class="equipos-grupo">
-      <h3>Equipos del grupo</h3>
-      <ul>
-        ${equiposGrupo.map(e => `<li>${e.nombre}</li>`).join("")}
-      </ul>
-    </div>
-  `;
-
-  if (typeof calcularClasificacionFiltrada !== "function") {
-    document.getElementById("tablaClasificacion").innerHTML =
-      "<p>No hay clasificación disponible</p>";
-    return;
-  }
-
-  const clasificacion = calcularClasificacionFiltrada(
-    categoria,
-    genero,
-    grupo
-  );
+  const clasificacion = calcularClasificacion(categoria, genero, grupo);
 
   let html = `
     <table class="tabla">
@@ -1029,7 +991,7 @@ function actualizarClasificacion() {
   html += "</table>";
 
   document.getElementById("tablaClasificacion").innerHTML =
-  htmlEquipos + (clasificacion.length ? html : "<p>No hay partidos finalizados</p>");
+    clasificacion.length ? html : "<p>No hay equipos en este grupo</p>";
 }
 
 /* ================== ARRANQUE ================== */

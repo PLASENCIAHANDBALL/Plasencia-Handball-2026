@@ -1066,6 +1066,9 @@ function actualizarClasificacion() {
 `;
 
   clasificacion.forEach((e, index) => {
+    const equipo = equipos.find(eq => eq.nombre === e.nombre);
+const club = clubes.find(c => c.id === equipo?.clubId);
+
   let puesto = index + 1;
   let icono = puesto === 1 ? "🥇" :
                puesto === 2 ? "🥈" :

@@ -186,65 +186,64 @@ function mostrarPartidos() {
   }
 
   partidos.forEach(p => {
-    const estadoCalculado = calcularEstadoPartido(p);
+  const estadoCalculado = calcularEstadoPartido(p);
 
-    html += `
-      <div class="card">
-        const equipoLocal = equipos.find(e => e.nombre === p.local);
-const equipoVisitante = equipos.find(e => e.nombre === p.visitante);
+  // 🔹 Buscar equipos
+  const equipoLocal = equipos.find(e => e.nombre === p.local);
+  const equipoVisitante = equipos.find(e => e.nombre === p.visitante);
 
-const clubLocal = clubes.find(c => c.id === equipoLocal?.clubId);
-const clubVisitante = clubes.find(c => c.id === equipoVisitante?.clubId);
+  // 🔹 Buscar clubes
+  const clubLocal = clubes.find(c => c.id === equipoLocal?.clubId);
+  const clubVisitante = clubes.find(c => c.id === equipoVisitante?.clubId);
 
-html += `
-  <div class="partido-equipos">
+  html += `
+    <div class="card">
 
-    <div class="equipo-partido">
-      <img src="${clubLocal?.escudo}" class="escudo-partido">
-      <span>${p.local}</span>
-    </div>
-
-    <span class="vs">vs</span>
-
-    <div class="equipo-partido">
-      <img src="${clubVisitante?.escudo}" class="escudo-partido">
-      <span>${p.visitante}</span>
-    </div>
-
-  </div>
-`;
-
-        <div class="partido-estado estado-${estadoCalculado}">
-          ${
-            estadoCalculado === "en_juego"
-              ? "🟢 En juego"
-              : estadoCalculado === "finalizado"
-              ? "🏁 Finalizado"
-              : "⏳ Pendiente"
-          }
+      <div class="partido-equipos">
+        <div class="equipo-partido">
+          ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-partido">` : ""}
+          <span>${p.local}</span>
         </div>
 
-        <div class="partido-info">
-          🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+        <span class="vs">vs</span>
+
+        <div class="equipo-partido">
+          ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
+          <span>${p.visitante}</span>
         </div>
+      </div>
 
-        <div class="partido-grupo">
-          🏷️ ${p.grupo}
-        </div>
-
-        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-
+      <div class="partido-estado estado-${estadoCalculado}">
         ${
-          adminActivo
-            ? `
-              <button onclick="editarPartido(${p.id})">✏️ Editar</button>
-              <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
-            `
-            : ""
+          estadoCalculado === "en_juego"
+            ? "🟢 En juego"
+            : estadoCalculado === "finalizado"
+            ? "🏁 Finalizado"
+            : "⏳ Pendiente"
         }
       </div>
-    `;
-  });
+
+      <div class="partido-info">
+        🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+      </div>
+
+      <div class="partido-grupo">
+        🏷️ ${p.grupo}
+      </div>
+
+      <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+
+      ${
+        adminActivo
+          ? `
+            <button onclick="editarPartido(${p.id})">✏️ Editar</button>
+            <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
+          `
+          : ""
+      }
+    </div>
+  `;
+});
 
   contenido.innerHTML = html;
 }

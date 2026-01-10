@@ -825,11 +825,10 @@ function filtrarCategorias() {
 
   html += `
     <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
-      <img src="${club?.escudo}" class="equipo-escudo">
-
+      <img src="${club?.escudo}" class="escudo-equipo-mini">
       <div class="equipo-info">
         <strong>${e.nombre}</strong>
-        <div>${e.grupo}</div>
+        <div class="equipo-grupo">${e.grupo}</div>
       </div>
     </div>
   `;

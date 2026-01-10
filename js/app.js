@@ -11,6 +11,10 @@ let rolUsuario = localStorage.getItem("rol") || null;
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
+let clubes = typeof obtenerClubes === "function"
+  ? obtenerClubes()
+  : [];
+
 let clasificacionFiltro = {
   categoria: "Alevín",
   genero: "Masculino",

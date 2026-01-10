@@ -1044,61 +1044,55 @@ function actualizarClasificacion() {
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
 
-  const clasificacion = calcularClasificacion(
-  categoria,
-  genero,
-  grupo
-);
+  const clasificacion = calcularClasificacion(categoria, genero, grupo);
 
   let html = `
-  <table class="tabla clasificacion-pro">
-    <tr>
-      <th>#</th>
-      <th>Equipo</th>
-      <th>PJ</th>
-      <th>PG</th>
-      <th>PE</th>
-      <th>PP</th>
-      <th>GF</th>
-      <th>GC</th>
-      <th>Pts</th>
-    </tr>
-`;
+    <table class="tabla clasificacion-pro">
+      <tr>
+        <th>#</th>
+        <th>Equipo</th>
+        <th>PJ</th>
+        <th>PG</th>
+        <th>PE</th>
+        <th>PP</th>
+        <th>GF</th>
+        <th>GC</th>
+        <th>Pts</th>
+      </tr>
+  `;
 
   clasificacion.forEach((e, index) => {
+    const equipo = equipos.find(eq => eq.nombre === e.nombre);
+    const club = clubes.find(c => c.id === equipo?.clubId);
 
-  const equipo = equipos.find(eq => eq.nombre === e.nombre);
-  const club = clubes.find(c => c.id === equipo?.clubId);
+    let puesto = index + 1;
+    let icono =
+      puesto === 1 ? "🥇" :
+      puesto === 2 ? "🥈" :
+      puesto === 3 ? "🥉" :
+      puesto;
 
-  let puesto = index + 1;
-  let icono = puesto === 1 ? "🥇" :
-               puesto === 2 ? "🥈" :
-               puesto === 3 ? "🥉" :
-               puesto;
+    html += `
+      <tr>
+        <td>${icono}</td>
+        <td>
+          <div class="equipo-tabla">
+            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
+            <span>${e.nombre}</span>
+          </div>
+        </td>
+        <td>${e.pj}</td>
+        <td>${e.pg}</td>
+        <td>${e.pe}</td>
+        <td>${e.pp}</td>
+        <td>${e.gf}</td>
+        <td>${e.gc}</td>
+        <td>${e.puntos}</td>
+      </tr>
+    `;
+  });
 
-  html += `
-    <tr>
-      <td>${icono}</td>
-
-      <td class="equipo">
-        <div class="equipo-tabla">
-          ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
-          <span>${e.nombre}</span>
-        </div>
-      </td>
-
-      <td>${e.pj}</td>
-      <td>${e.pg}</td>
-      <td>${e.pe}</td>
-      <td>${e.pp}</td>
-      <td>${e.gf}</td>
-      <td>${e.gc}</td>
-      <td>${e.puntos}</td>
-    </tr>
-  `;
-});
-
-  html += "</table>";
+  html += `</table>`;
 
   document.getElementById("tablaClasificacion").innerHTML = html;
 }

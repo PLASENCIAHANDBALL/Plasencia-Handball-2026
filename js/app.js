@@ -1059,6 +1059,101 @@ function actualizarClasificacion() {
 
   document.getElementById("tablaClasificacion").innerHTML = html;
 }
+/* ================== EQUIPOS ================== */
+function mostrarEquipos() {
+  let html = `<h2>Equipos participantes</h2>`;
+
+  if (adminActivo) {
+    html += `<button onclick="formNuevoClub()">➕ Añadir club</button>`;
+  }
+
+  if (clubes.length === 0) {
+    html += `<p>No hay clubes creados</p>`;
+  }
+
+  clubes.forEach(c => {
+    html += `
+      <div class="card club-card" onclick="verClub(${c.id})">
+        <img src="${c.escudo}" class="club-escudo">
+        <strong>${c.nombre}</strong>
+      </div>
+    `;
+  });
+
+  contenido.innerHTML = html;
+}
+
+function verClub(idClub) {
+  const club = clubes.find(c => c.id === idClub);
+  if (!club) return;
+
+  const equiposClub = equipos.filter(e => e.clubId === idClub);
+
+  let html = `
+    <h2>${club.nombre}</h2>
+    <img src="${club.escudo}" class="club-escudo-grande">
+
+    <h3>Equipos</h3>
+  `;
+
+  if (equiposClub.length === 0) {
+    html += `<p>Este club no tiene equipos</p>`;
+  }
+
+  equiposClub.forEach(e => {
+    html += `
+      <div class="card">
+        <strong>${e.categoria} ${e.genero}</strong>
+        <div>${e.grupo}</div>
+      </div>
+    `;
+  });
+
+  html += `<button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>`;
+
+  contenido.innerHTML = html;
+}
+
+function formNuevoClub() {
+  contenido.innerHTML = `
+    <h2>Nuevo club</h2>
+
+    <label>Nombre del club</label>
+    <input id="nombre">
+
+    <label>Escudo</label>
+    <input type="file" id="escudo" accept="image/*">
+
+    <button onclick="guardarNuevoClub()">💾 Guardar</button>
+    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+  `;
+}
+
+function guardarNuevoClub() {
+  const nombre = document.getElementById("nombre").value;
+  const file = document.getElementById("escudo").files[0];
+
+  if (!file) {
+    alert("Selecciona un escudo");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    const nuevo = {
+      id: Date.now(),
+      nombre,
+      escudo: reader.result
+    };
+
+    clubes.push(nuevo);
+    guardarClubes(clubes);
+    mostrarEquipos();
+  };
+
+  reader.readAsDataURL(file);
+}
 
 /* ================== ARRANQUE ================== */
 mostrarHome();

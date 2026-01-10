@@ -1008,7 +1008,7 @@ function actualizarClasificacion() {
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
 
-  const clasificacion = calcularClasificacionFiltrada(
+  const clasificacion = calcularClasificacion(
   categoria,
   genero,
   grupo

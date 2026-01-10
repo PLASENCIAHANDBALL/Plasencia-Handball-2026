@@ -1015,33 +1015,41 @@ function actualizarClasificacion() {
 );
 
   let html = `
-    <table class="tabla">
-      <tr>
-        <th>Equipo</th>
-        <th>PJ</th>
-        <th>PG</th>
-        <th>PE</th>
-        <th>PP</th>
-        <th>GF</th>
-        <th>GC</th>
-        <th>Pts</th>
-      </tr>
-  `;
+  <table class="tabla clasificacion-pro">
+    <tr>
+      <th>#</th>
+      <th>Equipo</th>
+      <th>PJ</th>
+      <th>PG</th>
+      <th>PE</th>
+      <th>PP</th>
+      <th>GF</th>
+      <th>GC</th>
+      <th>Pts</th>
+    </tr>
+`;
 
-  clasificacion.forEach(e => {
-    html += `
-      <tr>
-        <td>${e.nombre}</td>
-        <td>${e.pj}</td>
-        <td>${e.pg}</td>
-        <td>${e.pe}</td>
-        <td>${e.pp}</td>
-        <td>${e.gf}</td>
-        <td>${e.gc}</td>
-        <td><strong>${e.puntos}</strong></td>
-      </tr>
-    `;
-  });
+  clasificacion.forEach((e, index) => {
+  let puesto = index + 1;
+  let icono = puesto === 1 ? "🥇" :
+               puesto === 2 ? "🥈" :
+               puesto === 3 ? "🥉" :
+               puesto;
+
+  html += `
+    <tr class="${puesto === 1 ? "lider" : ""}">
+      <td class="puesto">${icono}</td>
+      <td class="equipo">${e.nombre}</td>
+      <td>${e.pj}</td>
+      <td>${e.pg}</td>
+      <td>${e.pe}</td>
+      <td>${e.pp}</td>
+      <td>${e.gf}</td>
+      <td>${e.gc}</td>
+      <td class="puntos">${e.puntos}</td>
+    </tr>
+  `;
+});
 
   html += "</table>";
 

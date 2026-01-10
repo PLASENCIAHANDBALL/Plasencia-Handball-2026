@@ -1084,54 +1084,62 @@ function mostrarEquipos() {
 
   clubes.forEach(c => {
   html += `
-    <div class="card club-card">
-      <div onclick="verClub(${c.id})" style="cursor:pointer">
-        <img src="${c.escudo}" class="club-escudo">
-        <strong>${c.nombre}</strong>
-      </div>
+  <div class="club-card" onclick="verClub(${club.id})">
 
-      ${adminActivo ? `
-        <div class="acciones-club">
-          <button onclick="editarClub(${c.id})">✏️ Editar</button>
-          <button onclick="borrarClub(${c.id})">🗑️ Borrar</button>
-        </div>
-      ` : ""}
+    <div class="club-info">
+      <img src="${club.escudo}" class="club-escudo">
+      <strong>${club.nombre}</strong>
     </div>
-  `;
+
+    ${adminActivo ? `
+      <div class="club-acciones">
+        <button onclick="event.stopPropagation(); editarClub(${club.id})">
+          ✏️ Editar
+        </button>
+        <button onclick="event.stopPropagation(); borrarClub(${club.id})">
+          🗑️ Borrar
+        </button>
+      </div>
+    ` : ""}
+
+  </div>
+`;
 });
 
   contenido.innerHTML = html;
 }
 
-function verClub(idClub) {
-  const club = clubes.find(c => c.id === idClub);
-  if (!club) return;
+function verClub(id) {
+  const club = clubes.find(c => c.id === id);
+  const equiposClub = equipos.filter(e => e.clubId === id);
 
-  const equiposClub = equipos.filter(e => e.clubId === club.id);
+  let html = `
+    <h2>${club.nombre}</h2>
 
-html += `<h3>Equipos</h3>`;
-
-if (adminActivo) {
-  html += `<button onclick="formNuevoEquipoClub(${club.id})">➕ Añadir equipo</button>`;
-}
-
-if (equiposClub.length === 0) {
-  html += `<p>No hay equipos en este club</p>`;
-}
-
-equiposClub.forEach(e => {
-  html += `
-    <div class="card">
-      <strong>${e.nombre}</strong>
-      <div>${e.categoria} · ${e.genero} · ${e.grupo}</div>
-
-      ${adminActivo ? `
-        <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
-        <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
-      ` : ""}
-    </div>
+    <h3>Equipos</h3>
   `;
-});
+
+  if (adminActivo) {
+    html += `<button onclick="formNuevoEquipoClub(${club.id})">➕ Añadir equipo</button>`;
+  }
+
+  if (equiposClub.length === 0) {
+    html += `<p>No hay equipos en este club</p>`;
+  }
+
+  equiposClub.forEach(e => {
+    html += `
+      <div class="card">
+        <strong>${e.nombre}</strong>
+        <div>${e.categoria} · ${e.genero} · ${e.grupo}</div>
+
+        ${adminActivo ? `
+          <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
+          <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
+        ` : ""}
+      </div>
+    `;
+  });
 
   html += `<button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>`;
 

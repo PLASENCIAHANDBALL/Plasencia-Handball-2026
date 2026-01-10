@@ -1,16 +1,16 @@
 const partidosIniciales = [
   {
-  id: 1,
-  local: "Plasencia BM",
-  visitante: "Cáceres BM",
-  golesLocal: 0,
-  golesVisitante: 0,
-  lugar: "Pabellón Municipal",
-  hora: "18:00",
-  categoria: "Infantil",
-  genero: "Masculino",
-  grupo: "Grupo A"
-}
+    id: 1,
+    local: "Plasencia BM",
+    visitante: "Cáceres BM",
+    golesLocal: 0,
+    golesVisitante: 0,
+    lugar: "Pabellón Municipal",
+    hora: "18:00",
+    categoria: "Infantil",
+    genero: "Masculino",
+    grupo: "Grupo A"
+  }, // ✅ COMA AQUÍ
 
   {
     id: 2,

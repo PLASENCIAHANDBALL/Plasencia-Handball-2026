@@ -1066,8 +1066,9 @@ function actualizarClasificacion() {
 `;
 
   clasificacion.forEach((e, index) => {
-    const equipo = equipos.find(eq => eq.nombre === e.nombre);
-const club = clubes.find(c => c.id === equipo?.clubId);
+
+  const equipo = equipos.find(eq => eq.nombre === e.nombre);
+  const club = clubes.find(c => c.id === equipo?.clubId);
 
   let puesto = index + 1;
   let icono = puesto === 1 ? "🥇" :
@@ -1076,24 +1077,23 @@ const club = clubes.find(c => c.id === equipo?.clubId);
                puesto;
 
   html += `
-    <tr class="${puesto === 1 ? "lider" : ""}">
-      <td class="puesto">${icono}</td>
-      const equipo = equipos.find(eq => eq.nombre === e.nombre);
-const club = clubes.find(c => c.id === equipo?.clubId);
+    <tr>
+      <td>${icono}</td>
 
-<td class="equipo">
-  <div class="equipo-tabla">
-    <img src="${club?.escudo || ''}" class="escudo-tabla">
-    <span>${e.nombre}</span>
-  </div>
-</td>
+      <td class="equipo">
+        <div class="equipo-tabla">
+          <img src="${club?.escudo || ''}" class="escudo-tabla">
+          <span>${e.nombre}</span>
+        </div>
+      </td>
+
       <td>${e.pj}</td>
       <td>${e.pg}</td>
       <td>${e.pe}</td>
       <td>${e.pp}</td>
       <td>${e.gf}</td>
       <td>${e.gc}</td>
-      <td class="puntos">${e.puntos}</td>
+      <td>${e.puntos}</td>
     </tr>
   `;
 });

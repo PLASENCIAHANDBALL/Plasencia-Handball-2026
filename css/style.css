@@ -657,3 +657,48 @@ main {
   display: block;
   margin: 15px auto;
 }
+
+.club-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #f4f4f4;
+  cursor: pointer;
+}
+
+.club-card:hover {
+  background: #ececec;
+}
+
+.club-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.club-escudo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.club-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.club-acciones button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.club-acciones button:hover {
+  background: #eaeaea;
+}

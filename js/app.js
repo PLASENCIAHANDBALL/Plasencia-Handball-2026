@@ -11,6 +11,12 @@ let rolUsuario = localStorage.getItem("rol") || null;
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
+let clasificacionFiltro = {
+  categoria: "Alevín",
+  genero: "Masculino",
+  grupo: ""
+};
+
 let partidos = typeof obtenerPartidos === "function"
   ? obtenerPartidos()
   : [];
@@ -414,11 +420,12 @@ function finalizarPartido() {
 
   guardarPartidos(partidos);
 
-  // 🔥 FORZAR RECÁLCULO SI ESTÁS EN CLASIFICACIÓN
+  // ✅ recalcular clasificación con filtros activos
   if (document.getElementById("tablaClasificacion")) {
     actualizarClasificacion();
   }
 
+  alert("Partido finalizado y clasificación actualizada");
   mostrarPartidos();
 }
 
@@ -951,9 +958,17 @@ function mostrarClasificacion() {
 }
 
 function actualizarClasificacion() {
-  const categoria = document.getElementById("clas-cat").value;
-  const genero = document.getElementById("clas-gen").value;
-  const grupo = document.getElementById("clas-grp").value;
+  clasificacionFiltro.categoria =
+    document.getElementById("clas-cat").value;
+
+  clasificacionFiltro.genero =
+    document.getElementById("clas-gen").value;
+
+  clasificacionFiltro.grupo =
+    document.getElementById("clas-grp").value;
+
+  const { categoria, genero, grupo } = clasificacionFiltro;
+
     // ====== EQUIPOS DEL GRUPO ======
   const equiposGrupo = equipos.filter(e =>
     e.categoria === categoria &&

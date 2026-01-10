@@ -181,6 +181,10 @@ function mostrarPartidos() {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
 
+<div class="partido-estado estado-${estadoCalculado}">
+  ${estadoCalculado === "en_juego" ? "🟢 En juego" : "⏳ Pendiente"}
+</div>
+
   partidos.forEach(p => {
     html += `
       <div class="card">
@@ -238,6 +242,9 @@ function formNuevoPartido() {
       <option>Grupo Único</option>
     </select>
 
+    <label>Fecha</label>
+    <input type="date" id="fecha">
+    
     <label>Hora</label>
     <input type="time" id="hora">
 
@@ -343,18 +350,19 @@ function guardarEdicionPartido() {
 
 function guardarNuevoPartido() {
   const nuevoPartido = {
-    id: Date.now(),
-    local: document.getElementById("local").value,
-    visitante: document.getElementById("visitante").value,
-    categoria: document.getElementById("categoria").value,
-    genero: document.getElementById("genero").value,
-    grupo: document.getElementById("grupo").value,
-    hora: document.getElementById("hora").value,
-    lugar: document.getElementById("lugar").value,
-    golesLocal: 0,
-    golesVisitante: 0,
-    estado: "pendiente"
-  };
+  id: Date.now(),
+  local: document.getElementById("local").value,
+  visitante: document.getElementById("visitante").value,
+  categoria: document.getElementById("categoria").value,
+  genero: document.getElementById("genero").value,
+  grupo: document.getElementById("grupo").value,
+  fecha: document.getElementById("fecha").value, // 👈 NUEVO
+  hora: document.getElementById("hora").value,
+  lugar: document.getElementById("lugar").value,
+  golesLocal: 0,
+  golesVisitante: 0,
+  estado: "pendiente"
+};
 
   partidos.push(nuevoPartido);
   guardarPartidos(partidos);
@@ -517,6 +525,28 @@ function guardarMarcadorMesa() {
   );
   guardarPartidos(partidos);
   alert("Marcador guardado");
+}
+
+function calcularEstadoPartido(partido) {
+  if (partido.estado === "finalizado") return "finalizado";
+
+  if (!partido.fecha || !partido.hora) return "pendiente";
+
+  const ahora = new Date();
+
+  const inicio = new Date(`${partido.fecha}T${partido.hora}`);
+  const DURACION_MINUTOS = 50; // AJUSTA si quieres
+  const fin = new Date(inicio.getTime() + DURACION_MINUTOS * 60000);
+
+  if (ahora >= inicio && ahora <= fin) {
+    return "en_juego";
+  }
+
+  if (ahora < inicio) {
+    return "pendiente";
+  }
+
+  return "pendiente";
 }
 
 /* ================== ADMIN ================== */

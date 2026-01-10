@@ -1082,8 +1082,10 @@ const club = clubes.find(c => c.id === equipo?.clubId);
 const club = clubes.find(c => c.id === equipo?.clubId);
 
 <td class="equipo">
-  <img src="${club?.escudo}" class="tabla-escudo">
-  ${e.nombre}
+  <div class="equipo-tabla">
+    <img src="${club?.escudo || ''}" class="escudo-tabla">
+    <span>${e.nombre}</span>
+  </div>
 </td>
       <td>${e.pj}</td>
       <td>${e.pg}</td>

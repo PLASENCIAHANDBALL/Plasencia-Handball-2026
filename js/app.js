@@ -190,7 +190,29 @@ function mostrarPartidos() {
 
     html += `
       <div class="card">
-        <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
+        const equipoLocal = equipos.find(e => e.nombre === p.local);
+const equipoVisitante = equipos.find(e => e.nombre === p.visitante);
+
+const clubLocal = clubes.find(c => c.id === equipoLocal?.clubId);
+const clubVisitante = clubes.find(c => c.id === equipoVisitante?.clubId);
+
+html += `
+  <div class="partido-equipos">
+
+    <div class="equipo-partido">
+      <img src="${clubLocal?.escudo}" class="escudo-partido">
+      <span>${p.local}</span>
+    </div>
+
+    <span class="vs">vs</span>
+
+    <div class="equipo-partido">
+      <img src="${clubVisitante?.escudo}" class="escudo-partido">
+      <span>${p.visitante}</span>
+    </div>
+
+  </div>
+`;
 
         <div class="partido-estado estado-${estadoCalculado}">
           ${
@@ -802,10 +824,16 @@ function filtrarCategorias() {
   }
 
   equiposFiltrados.forEach(e => {
+  const club = clubes.find(c => c.id === e.clubId);
+
   html += `
-    <div class="card" onclick="verPartidosEquipo(${e.id})" style="cursor:pointer">
-      <strong>${e.nombre}</strong>
-      <div>${e.grupo}</div>
+    <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
+      <img src="${club?.escudo}" class="equipo-escudo">
+
+      <div class="equipo-info">
+        <strong>${e.nombre}</strong>
+        <div>${e.grupo}</div>
+      </div>
     </div>
   `;
 });
@@ -1051,7 +1079,13 @@ function actualizarClasificacion() {
   html += `
     <tr class="${puesto === 1 ? "lider" : ""}">
       <td class="puesto">${icono}</td>
-      <td class="equipo">${e.nombre}</td>
+      const equipo = equipos.find(eq => eq.nombre === e.nombre);
+const club = clubes.find(c => c.id === equipo?.clubId);
+
+<td class="equipo">
+  <img src="${club?.escudo}" class="tabla-escudo">
+  ${e.nombre}
+</td>
       <td>${e.pj}</td>
       <td>${e.pg}</td>
       <td>${e.pe}</td>

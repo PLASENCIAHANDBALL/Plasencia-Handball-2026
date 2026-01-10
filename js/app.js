@@ -806,11 +806,6 @@ function filtrarCategorias() {
     <div class="card" onclick="verPartidosEquipo(${e.id})" style="cursor:pointer">
       <strong>${e.nombre}</strong>
       <div>${e.grupo}</div>
-
-      ${adminActivo ? `
-        <button onclick="event.stopPropagation(); editarEquipo(${e.id})">✏️ Editar</button>
-        <button onclick="event.stopPropagation(); borrarEquipo(${e.id})">🗑️ Borrar</button>
-      ` : ""}
     </div>
   `;
 });
@@ -1112,27 +1107,31 @@ function verClub(idClub) {
   const club = clubes.find(c => c.id === idClub);
   if (!club) return;
 
-  const equiposClub = equipos.filter(e => e.clubId === idClub);
+  const equiposClub = equipos.filter(e => e.clubId === club.id);
 
-  let html = `
-    <h2>${club.nombre}</h2>
-    <img src="${club.escudo}" class="club-escudo-grande">
+html += `<h3>Equipos</h3>`;
 
-    <h3>Equipos</h3>
+if (adminActivo) {
+  html += `<button onclick="formNuevoEquipoClub(${club.id})">➕ Añadir equipo</button>`;
+}
+
+if (equiposClub.length === 0) {
+  html += `<p>No hay equipos en este club</p>`;
+}
+
+equiposClub.forEach(e => {
+  html += `
+    <div class="card">
+      <strong>${e.nombre}</strong>
+      <div>${e.categoria} · ${e.genero} · ${e.grupo}</div>
+
+      ${adminActivo ? `
+        <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
+        <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
+      ` : ""}
+    </div>
   `;
-
-  if (equiposClub.length === 0) {
-    html += `<p>Este club no tiene equipos</p>`;
-  }
-
-  equiposClub.forEach(e => {
-    html += `
-      <div class="card">
-        <strong>${e.categoria} ${e.genero}</strong>
-        <div>${e.grupo}</div>
-      </div>
-    `;
-  });
+});
 
   html += `<button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>`;
 
@@ -1238,6 +1237,57 @@ function borrarClub(id) {
   guardarClubes(clubes);
 
   mostrarEquipos();
+}
+
+function formNuevoEquipoClub(clubId) {
+  contenido.innerHTML = `
+    <h2>Nuevo equipo</h2>
+
+    <label>Nombre del equipo</label>
+    <input id="nombre">
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option>Alevín</option>
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Grupo</label>
+    <select id="grupo">
+      <option>Grupo A</option>
+      <option>Grupo B</option>
+      <option>Grupo C</option>
+      <option>Grupo D</option>
+      <option>Grupo Único</option>
+    </select>
+
+    <button onclick="guardarNuevoEquipoClub(${clubId})">💾 Guardar</button>
+    <button class="volver" onclick="verClub(${clubId})">⬅ Volver</button>
+  `;
+}
+
+function guardarNuevoEquipoClub(clubId) {
+  const nuevo = {
+    id: Date.now(),
+    nombre: document.getElementById("nombre").value,
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value,
+    clubId
+  };
+
+  equipos.push(nuevo);
+  guardarEquipos(equipos);
+
+  verClub(clubId);
 }
 
 /* ================== ARRANQUE ================== */

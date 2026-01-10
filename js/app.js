@@ -1088,13 +1088,22 @@ function mostrarEquipos() {
   }
 
   clubes.forEach(c => {
-    html += `
-      <div class="card club-card" onclick="verClub(${c.id})">
+  html += `
+    <div class="card club-card">
+      <div onclick="verClub(${c.id})" style="cursor:pointer">
         <img src="${c.escudo}" class="club-escudo">
         <strong>${c.nombre}</strong>
       </div>
-    `;
-  });
+
+      ${adminActivo ? `
+        <div class="acciones-club">
+          <button onclick="editarClub(${c.id})">✏️ Editar</button>
+          <button onclick="borrarClub(${c.id})">🗑️ Borrar</button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+});
 
   contenido.innerHTML = html;
 }
@@ -1169,6 +1178,66 @@ function guardarNuevoClub() {
   };
 
   reader.readAsDataURL(file);
+}
+
+function editarClub(id) {
+  const club = clubes.find(c => c.id === id);
+  if (!club) return;
+
+  contenido.innerHTML = `
+    <h2>Editar club</h2>
+
+    <label>Nombre</label>
+    <input id="nombre" value="${club.nombre}">
+
+    <label>Escudo</label>
+    <input type="file" id="escudo" accept="image/*">
+
+    <button onclick="guardarEdicionClub(${id})">💾 Guardar cambios</button>
+    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+  `;
+}
+
+function guardarEdicionClub(id) {
+  const club = clubes.find(c => c.id === id);
+  if (!club) return;
+
+  const nuevoNombre = document.getElementById("nombre").value;
+  const file = document.getElementById("escudo").files[0];
+
+  club.nombre = nuevoNombre;
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      club.escudo = reader.result;
+      guardarClubes(clubes);
+      mostrarEquipos();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    guardarClubes(clubes);
+    mostrarEquipos();
+  }
+}
+
+function borrarClub(id) {
+  const club = clubes.find(c => c.id === id);
+  if (!club) return;
+
+  if (!confirm(`¿Eliminar el club "${club.nombre}" y TODOS sus equipos?`)) {
+    return;
+  }
+
+  // 1️⃣ borrar equipos del club
+  equipos = equipos.filter(e => e.clubId !== id);
+  guardarEquipos(equipos);
+
+  // 2️⃣ borrar club
+  clubes = clubes.filter(c => c.id !== id);
+  guardarClubes(clubes);
+
+  mostrarEquipos();
 }
 
 /* ================== ARRANQUE ================== */

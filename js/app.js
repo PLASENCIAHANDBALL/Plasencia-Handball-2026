@@ -420,8 +420,11 @@ function finalizarPartido() {
 
   guardarPartidos(partidos);
 
+  // 🔔 avisar a la app
+  document.dispatchEvent(new Event("partido-finalizado"));
+
   alert("Partido finalizado");
-  mostrarPartidos(); // ⛔ NO tocar clasificación aquí
+  mostrarPartidos();
 }
 
 function cambiarGol(equipo, cambio) {
@@ -951,6 +954,10 @@ function mostrarClasificacion() {
 
   actualizarClasificacion();
 }
+
+document.addEventListener("partido-finalizado", () => {
+  actualizarClasificacion();
+});
 
 function actualizarClasificacion() {
   const categoria = document.getElementById("clas-cat").value;

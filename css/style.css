@@ -752,3 +752,16 @@ main {
   font-size: 0.85em;
   opacity: 0.7;
 }
+
+/* ===== CLASIFICACIÓN ===== */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escudo-tabla {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}

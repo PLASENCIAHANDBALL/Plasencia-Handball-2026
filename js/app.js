@@ -181,27 +181,41 @@ function mostrarPartidos() {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
 
-<div class="partido-estado estado-${estadoCalculado}">
-  ${estadoCalculado === "en_juego" ? "🟢 En juego" : "⏳ Pendiente"}
-</div>
-
   partidos.forEach(p => {
+    const estadoCalculado = calcularEstadoPartido(p);
+
     html += `
       <div class="card">
         <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
+
+        <div class="partido-estado estado-${estadoCalculado}">
+          ${
+            estadoCalculado === "en_juego"
+              ? "🟢 En juego"
+              : estadoCalculado === "finalizado"
+              ? "🏁 Finalizado"
+              : "⏳ Pendiente"
+          }
+        </div>
+
         <div class="partido-info">
-           🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+          🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
         </div>
 
         <div class="partido-grupo">
-           🏷️ ${p.grupo}
+          🏷️ ${p.grupo}
         </div>
+
         <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 
-        ${adminActivo ? `
-          <button onclick="editarPartido(${p.id})">✏️ Editar</button>
-          <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
-        ` : ""}
+        ${
+          adminActivo
+            ? `
+              <button onclick="editarPartido(${p.id})">✏️ Editar</button>
+              <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
+            `
+            : ""
+        }
       </div>
     `;
   });
@@ -994,7 +1008,11 @@ function actualizarClasificacion() {
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
 
-  const clasificacion = calcularClasificacion(categoria, genero, grupo);
+  const clasificacion = calcularClasificacionFiltrada(
+  categoria,
+  genero,
+  grupo
+);
 
   let html = `
     <table class="tabla">

@@ -639,3 +639,21 @@ main {
 .clasificacion-pro tr:hover {
   background: #fef3c7;
 }
+
+.club-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.club-escudo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.club-escudo-grande {
+  width: 120px;
+  display: block;
+  margin: 15px auto;
+}

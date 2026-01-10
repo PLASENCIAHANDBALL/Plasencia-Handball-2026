@@ -1045,8 +1045,7 @@ function actualizarClasificacion() {
 
   html += "</table>";
 
-  document.getElementById("tablaClasificacion").innerHTML =
-    clasificacion.length ? html : "<p>No hay equipos en este grupo</p>";
+  document.getElementById("tablaClasificacion").innerHTML = html;
 }
 
 /* ================== ARRANQUE ================== */

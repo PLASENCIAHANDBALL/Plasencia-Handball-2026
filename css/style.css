@@ -587,3 +587,55 @@ main {
   font-size: 16px;
   cursor: pointer;
 }
+
+/* =========================
+   CLASIFICACIÓN PRO
+========================= */
+
+.clasificacion-pro {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.clasificacion-pro th {
+  background: #f59e0b; /* naranja */
+  color: white;
+  font-size: 13px;
+  padding: 10px 6px;
+}
+
+.clasificacion-pro td {
+  padding: 8px 6px;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.clasificacion-pro .equipo {
+  text-align: left;
+  font-weight: 600;
+}
+
+.clasificacion-pro .puesto {
+  font-weight: bold;
+  width: 40px;
+}
+
+.clasificacion-pro .puntos {
+  font-weight: bold;
+  color: #d97706;
+}
+
+/* Líder */
+.clasificacion-pro tr.lider {
+  background: #fff7ed;
+}
+
+/* Hover */
+.clasificacion-pro tr:hover {
+  background: #fef3c7;
+}

@@ -1084,26 +1084,22 @@ function mostrarEquipos() {
 
   clubes.forEach(c => {
   html += `
-  <div class="club-card" onclick="verClub(${club.id})">
+    <div class="club-card" onclick="verClub(${c.id})">
 
-    <div class="club-info">
-      <img src="${club.escudo}" class="club-escudo">
-      <strong>${club.nombre}</strong>
-    </div>
-
-    ${adminActivo ? `
-      <div class="club-acciones">
-        <button onclick="event.stopPropagation(); editarClub(${club.id})">
-          ✏️ Editar
-        </button>
-        <button onclick="event.stopPropagation(); borrarClub(${club.id})">
-          🗑️ Borrar
-        </button>
+      <div class="club-info">
+        <img src="${c.escudo}" class="club-escudo">
+        <strong>${c.nombre}</strong>
       </div>
-    ` : ""}
 
-  </div>
-`;
+      ${adminActivo ? `
+        <div class="club-acciones">
+          <button onclick="event.stopPropagation(); editarClub(${c.id})">✏️ Editar</button>
+          <button onclick="event.stopPropagation(); borrarClub(${c.id})">🗑️ Borrar</button>
+        </div>
+      ` : ""}
+
+    </div>
+  `;
 });
 
   contenido.innerHTML = html;

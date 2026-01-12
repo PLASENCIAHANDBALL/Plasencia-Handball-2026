@@ -765,3 +765,23 @@ main {
   height: 26px;
   object-fit: contain;
 }
+
+main {
+  min-height: 100vh;
+  padding-bottom: 80px; /* espacio para el bottom nav */
+}
+
+#contenido {
+  display: block;
+}
+
+#splash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 9999;
+}
+
+body:not(.splash-activo) #splash {
+  display: none;
+}

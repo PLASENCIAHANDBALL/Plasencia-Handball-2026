@@ -1365,6 +1365,13 @@ function guardarNuevoEquipoClub(clubId) {
 
   verClub(clubId);
 }
+/* ================== PABELLONES ================== */
+function mostrarPabellones() {
+  contenido.innerHTML = `
+    <h2>Pabellones</h2>
+    <p>Sección en construcción</p>
+  `;
+}
 
 /* ================== EXPONER FUNCIONES A HTML ================== */
 

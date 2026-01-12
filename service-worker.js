@@ -4,10 +4,18 @@ const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./css/style.css",
+
+  // JS principal
   "./js/app.js",
+  "./supabase.js",
+
+  // datos locales
+  "./js/data/clubes.js",
+  "./js/data/equipos.js",
   "./js/data/partidos.js",
   "./js/data/grupos.js",
   "./js/data/clasificacion.js",
+
   "./manifest.json"
 ];
 
@@ -21,6 +29,8 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request))
+    caches.match(e.request).then(
+      (response) => response || fetch(e.request)
+    )
   );
 });

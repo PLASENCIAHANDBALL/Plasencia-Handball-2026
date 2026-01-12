@@ -1,7 +1,15 @@
+import { supabase } from "./supabase.js";
+
+const { data, error } = await supabase
+  .from("clubes")
+  .select("*");
+
+console.log("CLUBES DESDE SUPABASE:", data);
+console.log("ERROR:", error);
+
 console.log("✅ app.js cargado");
 
 const contenido = document.getElementById("contenido");
-import { supabase } from "./supabase.js";
 
 /* ================== ESTADO GLOBAL ================== */
 const PIN_ADMIN = "1234";

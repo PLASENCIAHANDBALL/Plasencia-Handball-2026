@@ -1364,6 +1364,56 @@ function guardarNuevoEquipoClub(clubId) {
   verClub(clubId);
 }
 
+/* ================== EXPONER FUNCIONES A HTML ================== */
+
+// navegación principal
+window.mostrarHome = mostrarHome;
+window.mostrarPartidos = mostrarPartidos;
+window.mostrarCategorias = mostrarCategorias;
+window.mostrarEquipos = mostrarEquipos;
+window.mostrarClasificacion = mostrarClasificacion;
+window.mostrarPabellones = mostrarPabellones; // aunque aún no exista, no pasa nada
+
+// admin
+window.toggleAdmin = toggleAdmin;
+
+// partidos
+window.abrirPartido = abrirPartido;
+window.editarPartido = editarPartido;
+window.borrarPartido = borrarPartido;
+window.formNuevoPartido = formNuevoPartido;
+window.guardarNuevoPartido = guardarNuevoPartido;
+window.guardarEdicionPartido = guardarEdicionPartido;
+window.finalizarPartido = finalizarPartido;
+window.cambiarGol = cambiarGol;
+window.guardarMarcadorMesa = guardarMarcadorMesa;
+
+// categorías / equipos
+window.seleccionarCategoria = seleccionarCategoria;
+window.filtrarCategorias = filtrarCategorias;
+window.verPartidosEquipo = verPartidosEquipo;
+window.formNuevoEquipo = formNuevoEquipo;
+window.guardarNuevoEquipo = guardarNuevoEquipo;
+window.editarEquipo = editarEquipo;
+window.borrarEquipo = borrarEquipo;
+window.verClub = verClub;
+window.formNuevoClub = formNuevoClub;
+window.guardarNuevoClub = guardarNuevoClub;
+window.editarClub = editarClub;
+window.borrarClub = borrarClub;
+window.formNuevoEquipoClub = formNuevoEquipoClub;
+window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
+
+// grupos
+window.mostrarGrupos = mostrarGrupos;
+window.formNuevoGrupo = formNuevoGrupo;
+window.guardarNuevoGrupo = guardarNuevoGrupo;
+window.editarGrupo = editarGrupo;
+window.guardarEdicionGrupo = guardarEdicionGrupo;
+
+// utilidades usadas en HTML
+window.abrirWeb = abrirWeb;
+
 /* ================== ARRANQUE ================== */
 mostrarHome();
 

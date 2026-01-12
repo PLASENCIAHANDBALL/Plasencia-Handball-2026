@@ -633,6 +633,22 @@ function salirAdmin() {
 /* ================== INICIO ================== */
 
 
+/* ================== CLUBES ================== */
+async function obtenerClubesSupabase() {
+  const { data, error } = await supabase
+    .from("clubes")
+    .select("*")
+    .order("id");
+
+  if (error) {
+    console.error("Error cargando clubes:", error);
+    return [];
+  }
+
+  return data;
+}
+
+
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
   let html = `<h2>Grupos</h2>`;

@@ -11,9 +11,14 @@ let rolUsuario = localStorage.getItem("rol") || null;
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
-let clubes = typeof obtenerClubes === "function"
-  ? obtenerClubes()
-  : [];
+let clubes = [];
+
+async function cargarClubes() {
+  clubes = await obtenerClubesSupabase();
+  mostrarEquipos(); // o mostrarHome(), según dónde quieras verlos
+}
+
+cargarClubes();
 
 let clasificacionFiltro = {
   categoria: "Alevín",

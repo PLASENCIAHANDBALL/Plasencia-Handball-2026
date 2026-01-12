@@ -122,28 +122,27 @@ button:active {
 }
 
 /* =========================
-   SPLASH SCREEN PRO
+   SPLASH SCREEN (CORRECTO)
 ========================= */
 
 #splash {
   position: fixed;
   inset: 0;
-  background: var(--naranja);
+  background: white;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
 }
 
-/* Logo central */
+/* Logo */
 #splash img {
-  width: 400px;      /* 👈 tamaño ideal móvil */
+  width: 400px;
   max-width: 70%;
   height: auto;
   animation: splashZoom 0.8s ease-out;
 }
 
-/* Animación suave */
 @keyframes splashZoom {
   from {
     opacity: 0;
@@ -775,13 +774,4 @@ main {
   display: block;
 }
 
-#splash {
-  position: fixed;
-  inset: 0;
-  background: white;
-  z-index: 9999;
-}
 
-body:not(.splash-activo) #splash {
-  display: none;
-}

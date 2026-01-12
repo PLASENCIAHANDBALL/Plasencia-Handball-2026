@@ -24,7 +24,7 @@ let clubes = [];
 
 async function cargarClubes() {
   clubes = await obtenerClubesSupabase();
-  mostrarEquipos(); // o mostrarHome(), según dónde quieras verlos
+  cargarClubes();
 }
 
 cargarClubes();
@@ -1415,7 +1415,6 @@ window.guardarEdicionGrupo = guardarEdicionGrupo;
 window.abrirWeb = abrirWeb;
 
 /* ================== ARRANQUE ================== */
-mostrarHome();
 
 window.addEventListener("load", () => {
   const splash = document.getElementById("splash");

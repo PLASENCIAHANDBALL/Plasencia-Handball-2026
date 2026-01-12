@@ -1380,11 +1380,4 @@ window.addEventListener("load", () => {
   }
 });
 
-window.mostrarHome = mostrarHome;
-window.mostrarPartidos = mostrarPartidos;
-window.mostrarCategorias = mostrarCategorias;
-window.mostrarEquipos = mostrarEquipos;
-window.mostrarClasificacion = mostrarClasificacion;
-window.mostrarPabellones = mostrarPabellones;
-window.toggleAdmin = toggleAdmin;
 

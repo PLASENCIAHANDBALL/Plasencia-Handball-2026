@@ -1,5 +1,7 @@
 import { supabase } from "./supabase.js";
 
+document.body.classList.add("splash-activo");
+
 const { data, error } = await supabase
   .from("clubes")
   .select("*");

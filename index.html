@@ -10,48 +10,44 @@
   <meta name="theme-color" content="#c4161c">
 </head>
 
-<body>
-
  <body class="splash-activo">
-   
+
   <div id="splash">
-  <img src="img/logo-torneo.png" alt="">
-</div>
+    <img src="img/logo-torneo.png" alt="">
+  </div>
 
   <header class="app-header">
-  <img src="img/logo-torneo.png" alt="">
-</header>
+    <img src="img/logo-torneo.png" alt="">
+  </header>
 
   <main>
-    <!-- MENÚ -->
     <nav class="bottom-nav">
-  <button onclick="mostrarHome()">🤾🏻‍♂️<span>Inicio</span></button>
-  <button onclick="mostrarPartidos()">🥅<span>Partidos</span></button>
-  <button onclick="mostrarCategorias()">📋<span>Categorías</span></button>
-  <button onclick="mostrarEquipos()">🤝🏼<span>Equipos</span></button>
-  <button onclick="mostrarClasificacion()">🏆<span>Tabla</span></button>
-  <button onclick="mostrarPabellones()">🏘️<span>Pabellones</span></button>
-</nav>
+      <button onclick="mostrarHome()">🤾🏻‍♂️<span>Inicio</span></button>
+      <button onclick="mostrarPartidos()">🥅<span>Partidos</span></button>
+      <button onclick="mostrarCategorias()">📋<span>Categorías</span></button>
+      <button onclick="mostrarEquipos()">🤝🏼<span>Equipos</span></button>
+      <button onclick="mostrarClasificacion()">🏆<span>Tabla</span></button>
+      <button onclick="mostrarPabellones()">🏘️<span>Pabellones</span></button>
+    </nav>
 
-    <!-- CONTENIDO -->
     <section id="contenido"></section>
   </main>
 
   <!-- SCRIPTS -->
-<script src="js/data/clubes.js"></script>
-<script src="js/data/partidos.js"></script>
-<script src="js/data/grupos.js"></script>
-<script src="js/data/equipos.js"></script>
-<script src="js/data/clasificacion.js"></script>
+  <script src="js/data/clubes.js"></script>
+  <script src="js/data/partidos.js"></script>
+  <script src="js/data/grupos.js"></script>
+  <script src="js/data/equipos.js"></script>
+  <script src="js/data/clasificacion.js"></script>
 
-<script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
 
-  <!-- SERVICE WORKER -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
     }
   </script>
-<button id="admin-fab" onclick="toggleAdmin()">🔒</button>
+
+  <button id="admin-fab" onclick="toggleAdmin()">🔒</button>
 </body>
 </html>

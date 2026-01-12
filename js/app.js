@@ -1424,16 +1424,15 @@ window.guardarEdicionGrupo = guardarEdicionGrupo;
 window.abrirWeb = abrirWeb;
 
 /* ================== ARRANQUE ================== */
-
-setTimeout(() => {
+window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
-  if (splash) splash.remove();
-  document.body.classList.remove("splash-activo");
-}, 800);
+
+  setTimeout(() => {
+    if (splash) splash.remove();
+  }, 700);
 
   if (adminActivo) {
     document.getElementById("admin-fab")?.classList.add("admin-activo");
   }
 });
-
 

@@ -1425,13 +1425,11 @@ window.abrirWeb = abrirWeb;
 
 /* ================== ARRANQUE ================== */
 
-window.addEventListener("load", () => {
+setTimeout(() => {
   const splash = document.getElementById("splash");
-
-  setTimeout(() => {
-    if (splash) splash.style.display = "none";
-    document.body.classList.remove("splash-activo");
-  }, 1100);
+  if (splash) splash.remove();
+  document.body.classList.remove("splash-activo");
+}, 800);
 
   if (adminActivo) {
     document.getElementById("admin-fab")?.classList.add("admin-activo");

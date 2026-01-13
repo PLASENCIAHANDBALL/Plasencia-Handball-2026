@@ -1087,7 +1087,13 @@ function actualizarClasificacion() {
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
 
-  const clasificacion = calcularClasificacion(categoria, genero, grupo);
+  const clasificacion = calcularClasificacion(
+  categoria,
+  genero,
+  grupo,
+  equipos,
+  partidos
+);
 
   let html = `
     <table class="tabla clasificacion-pro">
@@ -1435,7 +1441,7 @@ window.addEventListener("load", () => {
 
     // 🔥 PINTAMOS LA PRIMERA VISTA
     mostrarHome();
-  }, 700);
+  }, 1100);
 
   if (adminActivo) {
     document.getElementById("admin-fab")?.classList.add("admin-activo");

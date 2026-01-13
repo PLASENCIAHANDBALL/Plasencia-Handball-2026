@@ -26,7 +26,9 @@ let clubes = [];
 
 async function cargarClubes() {
   clubes = await obtenerClubesSupabase();
-  mostrarHome(); // o mostrarEquipos() si prefieres
+
+  // 👇 PINTAR LA APP
+  mostrarHome(); 
 }
 
 cargarClubes();

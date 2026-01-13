@@ -917,7 +917,7 @@ function filtrarCategorias() {
 
   html += `
     <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
-      <img src="${club?.escudo}" class="escudo-equipo-mini">
+      <img src="${club?.escudo || 'img/club-default.png'}" class="escudo-equipo-mini">
       <div class="equipo-info">
         <strong>${e.nombre}</strong>
         <div class="equipo-grupo">${e.grupo}</div>
@@ -967,7 +967,7 @@ function verPartidosEquipo(idEquipo) {
   });
 
   html += `
-    <button class="volver" onclick="volverCategoriasAnimado()">⬅ Volver a categorías</button>
+    <button class="volver" onclick="mostrarCategorias()">⬅ Volver a categorías</button>
   `;
 
   cambiarVistaConAnimacion(html, "slide");

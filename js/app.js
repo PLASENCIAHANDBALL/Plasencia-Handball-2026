@@ -725,6 +725,30 @@ async function borrarEquipoSupabase(id) {
   }
 }
 
+/* ================== PARTIDOS (SUPABASE) ================== */
+async function obtenerPartidosSupabase() {
+  const { data, error } = await supabase
+    .from("partidos")
+    .select("*")
+    .order("fecha", { ascending: true });
+
+  if (error) {
+    console.error("Error cargando partidos:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function cargarDatos() {
+  clubes = await obtenerClubesSupabase();
+  equipos = await obtenerEquiposSupabase();
+  partidos = await obtenerPartidosSupabase();
+  mostrarHome();
+}
+
+cargarDatos();
+
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
   let html = `<h2>Grupos</h2>`;

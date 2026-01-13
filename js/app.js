@@ -913,11 +913,15 @@ function filtrarCategorias() {
   }
 
   equiposFiltrados.forEach(e => {
-  const club = clubes.find(c => c.id === e.clubId);
+  const club = clubes.find(c => c.id === e.club_id);
 
   html += `
-    <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
-      <img src="${club?.escudo || 'img/club-default.png'}" class="escudo-equipo-mini">
+    <div class="card equipo-card">
+      <img 
+        src="${club?.escudo || 'img/club-placeholder.png'}"
+        class="escudo-equipo-mini"
+        alt="Escudo ${e.nombre}"
+      >
       <div class="equipo-info">
         <strong>${e.nombre}</strong>
         <div class="equipo-grupo">${e.grupo}</div>

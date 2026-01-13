@@ -19,6 +19,7 @@ let clubes = [];
 
 async function cargarClubes() {
   clubes = await obtenerClubesSupabase();
+  equipos = await obtenerEquiposSupabase();
 
   // 👇 PINTAR LA APP
   mostrarHome();
@@ -49,9 +50,7 @@ let grupos = typeof obtenerGrupos === "function"
 
 let grupoActual = null;
 
-let equipos = typeof obtenerEquipos === "function"
-  ? obtenerEquipos()
-  : [];
+let equipos = [];
 
 let equipoActual = null;
 
@@ -660,7 +659,7 @@ function salirAdmin() {
 /* ================== INICIO ================== */
 
 
-/* ================== CLUBES ================== */
+/* ================== CLUBES SUPABASE ================== */
 async function obtenerClubesSupabase() {
   const { data, error } = await supabase
     .from("clubes")
@@ -675,6 +674,56 @@ async function obtenerClubesSupabase() {
   return data;
 }
 
+/* ================== EQUIPOS (SUPABASE) ================== */
+
+async function obtenerEquiposSupabase() {
+  const { data, error } = await supabase
+    .from("equipos")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error cargando equipos:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function crearEquipoSupabase(equipo) {
+  const { error } = await supabase
+    .from("equipos")
+    .insert([equipo]);
+
+  if (error) {
+    alert("Error creando equipo");
+    console.error(error);
+  }
+}
+
+async function editarEquipoSupabase(id, cambios) {
+  const { error } = await supabase
+    .from("equipos")
+    .update(cambios)
+    .eq("id", id);
+
+  if (error) {
+    alert("Error editando equipo");
+    console.error(error);
+  }
+}
+
+async function borrarEquipoSupabase(id) {
+  const { error } = await supabase
+    .from("equipos")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Error borrando equipo");
+    console.error(error);
+  }
+}
 
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {
@@ -969,24 +1018,17 @@ function formNuevoEquipo() {
   `;
 }
 
-function guardarNuevoEquipo() {
-  const clubId = Number(document.getElementById("club").value);
-  const nombreInput = document.getElementById("nombre").value;
-
-  const club = clubes.find(c => c.id === clubId);
-
-  const nuevo = {
-    id: Date.now(),
-    clubId,
-    clubNombre: club.nombre, // útil para mostrar rápido
-    nombre: nombreInput || club.nombre,
+async function guardarNuevoEquipo() {
+  const equipo = {
+    nombre: document.getElementById("nombre").value,
     categoria: document.getElementById("categoria").value,
     genero: document.getElementById("genero").value,
-    grupo: document.getElementById("grupo").value
+    grupo: document.getElementById("grupo").value,
+    club_id: Number(document.getElementById("club").value)
   };
 
-  equipos.push(nuevo);
-  guardarEquipos(equipos);
+  await crearEquipoSupabase(equipo);
+  equipos = await obtenerEquiposSupabase();
   mostrarEquipos();
 }
 
@@ -1023,24 +1065,23 @@ function editarEquipo(id) {
   `;
 }
 
-function guardarEdicionEquipo() {
-  equipoActual.nombre = document.getElementById("nombre").value;
-  equipoActual.categoria = document.getElementById("categoria").value;
-  equipoActual.genero = document.getElementById("genero").value;
-  equipoActual.grupo = document.getElementById("grupo").value;
+async function guardarEdicionEquipo() {
+  await editarEquipoSupabase(equipoActual.id, {
+    nombre: document.getElementById("nombre").value,
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value
+  });
 
-  equipos = equipos.map(e =>
-    e.id === equipoActual.id ? equipoActual : e
-  );
-
-  guardarEquipos(equipos);
+  equipos = await obtenerEquiposSupabase();
   mostrarCategorias();
 }
 
-function borrarEquipo(id) {
+async function borrarEquipo(id) {
   if (!confirm("¿Eliminar este equipo?")) return;
-  equipos = equipos.filter(e => e.id !== id);
-  guardarEquipos(equipos);
+
+  await borrarEquipoSupabase(id);
+  equipos = await obtenerEquiposSupabase();
   mostrarCategorias();
 }
 

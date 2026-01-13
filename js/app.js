@@ -1235,7 +1235,7 @@ function formNuevoClub() {
   `;
 }
 
-function guardarNuevoClub() {
+async function guardarNuevoClub() {
   const nombre = document.getElementById("nombre").value;
   const file = document.getElementById("escudo").files[0];
 
@@ -1245,16 +1245,21 @@ function guardarNuevoClub() {
   }
 
   const reader = new FileReader();
+  reader.onload = async () => {
+    const { error } = await supabase
+      .from("clubes")
+      .insert({
+        nombre,
+        escudo: reader.result
+      });
 
-  reader.onload = function () {
-    const nuevo = {
-      id: Date.now(),
-      nombre,
-      escudo: reader.result
-    };
+    if (error) {
+      alert("Error guardando club");
+      console.error(error);
+      return;
+    }
 
-    clubes.push(nuevo);
-    guardarClubes(clubes);
+    await cargarClubes(); // 🔥 recarga desde Supabase
     mostrarEquipos();
   };
 
@@ -1279,45 +1284,76 @@ function editarClub(id) {
   `;
 }
 
-function guardarEdicionClub(id) {
+async function guardarEdicionClub(id) {
   const club = clubes.find(c => c.id === id);
   if (!club) return;
 
   const nuevoNombre = document.getElementById("nombre").value;
   const file = document.getElementById("escudo").files[0];
 
-  club.nombre = nuevoNombre;
+  let escudoFinal = club.escudo;
 
   if (file) {
     const reader = new FileReader();
-    reader.onload = () => {
-      club.escudo = reader.result;
-      guardarClubes(clubes);
+    reader.onload = async () => {
+      escudoFinal = reader.result;
+
+      const { error } = await supabase
+        .from("clubes")
+        .update({
+          nombre: nuevoNombre,
+          escudo: escudoFinal
+        })
+        .eq("id", id);
+
+      if (error) {
+        alert("Error al editar club");
+        console.error(error);
+        return;
+      }
+
+      await cargarClubes();
       mostrarEquipos();
     };
+
     reader.readAsDataURL(file);
   } else {
-    guardarClubes(clubes);
+    const { error } = await supabase
+      .from("clubes")
+      .update({
+        nombre: nuevoNombre
+      })
+      .eq("id", id);
+
+    if (error) {
+      alert("Error al editar club");
+      console.error(error);
+      return;
+    }
+
+    await cargarClubes();
     mostrarEquipos();
   }
 }
 
-function borrarClub(id) {
+async function borrarClub(id) {
   const club = clubes.find(c => c.id === id);
   if (!club) return;
 
-  if (!confirm(`¿Eliminar el club "${club.nombre}" y TODOS sus equipos?`)) {
+  if (!confirm(`¿Eliminar el club "${club.nombre}"?`)) return;
+
+  const { error } = await supabase
+    .from("clubes")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Error al borrar club");
+    console.error(error);
     return;
   }
 
-  // 1️⃣ borrar equipos del club
-  equipos = equipos.filter(e => e.clubId !== id);
-  guardarEquipos(equipos);
-
-  // 2️⃣ borrar club
-  clubes = clubes.filter(c => c.id !== id);
-  guardarClubes(clubes);
-
+  await cargarClubes();
   mostrarEquipos();
 }
 

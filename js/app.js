@@ -1430,8 +1430,13 @@ window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
 
   setTimeout(() => {
-    document.body.classList.remove("splash-activo"); // 🔑 CLAVE
     if (splash) splash.remove();
+
+    // 🔥 ESTA LÍNEA ES LA CLAVE
+    document.body.classList.remove("splash-activo");
+
+    // 🔥 PINTAMOS LA PRIMERA VISTA
+    mostrarHome();
   }, 700);
 
   if (adminActivo) {

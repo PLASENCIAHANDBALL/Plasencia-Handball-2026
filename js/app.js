@@ -725,6 +725,21 @@ async function borrarEquipoSupabase(id) {
   }
 }
 
+async function obtenerEquiposPorClub(clubId) {
+  const { data, error } = await supabase
+    .from("equipos")
+    .select("*")
+    .eq("club_id", clubId)
+    .order("categoria");
+
+  if (error) {
+    console.error("Error cargando equipos del club:", error);
+    return [];
+  }
+
+  return data;
+}
+
 /* ================== PARTIDOS (SUPABASE) ================== */
 async function obtenerPartidosSupabase() {
   const { data, error } = await supabase
@@ -1252,13 +1267,13 @@ function mostrarEquipos() {
   contenido.innerHTML = html;
 }
 
-function verClub(id) {
+async function verClub(id) {
   const club = clubes.find(c => c.id === id);
-  const equiposClub = equipos.filter(e => e.clubId === id);
+
+  const equiposClub = await obtenerEquiposPorClub(id);
 
   let html = `
     <h2>${club.nombre}</h2>
-
     <h3>Equipos</h3>
   `;
 

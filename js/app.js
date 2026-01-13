@@ -1147,7 +1147,7 @@ function actualizarClasificacion() {
 }
 /* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
-  let html = `<h2>Equipos participantes</h2>`;
+  let html = `<h2>Clubs Participantes</h2>`;
 
   if (adminActivo) {
     html += `

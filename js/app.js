@@ -2,10 +2,6 @@ import { supabase } from "./supabase.js";
 
 document.body.classList.add("splash-activo");
 
-const { data, error } = await supabase
-  .from("clubes")
-  .select("*");
-
 console.log("CLUBES DESDE SUPABASE:", data);
 console.log("ERROR:", error);
 
@@ -28,7 +24,12 @@ async function cargarClubes() {
   clubes = await obtenerClubesSupabase();
 
   // 👇 PINTAR LA APP
-  mostrarHome(); 
+  mostrarHome();
+
+  document.body.classList.remove("splash-activo");
+
+const splash = document.getElementById("splash");
+if (splash) splash.remove();
 }
 
 cargarClubes();

@@ -26,9 +26,10 @@ let clubes = [];
 
 async function cargarClubes() {
   clubes = await obtenerClubesSupabase();
+  mostrarHome(); // o mostrarEquipos() si prefieres
 }
 
-await cargarClubes();
+cargarClubes();
 
 let clasificacionFiltro = {
   categoria: "Alevín",
@@ -1427,13 +1428,15 @@ window.addEventListener("load", () => {
   const splash = document.getElementById("splash");
 
   setTimeout(() => {
-    document.body.classList.remove("splash-activo"); // 👈 ESTA LÍNEA ES CLAVE
+    document.body.classList.remove("splash-activo"); // 👈 CLAVE
     if (splash) splash.remove();
   }, 700);
 
   if (adminActivo) {
     document.getElementById("admin-fab")?.classList.add("admin-activo");
   }
-
+  
   mostrarHome(); // 👈 ARRANQUE REAL DE LA APP
+
 });
+

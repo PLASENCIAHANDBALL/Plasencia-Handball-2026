@@ -2,9 +2,6 @@ import { supabase } from "./supabase.js";
 
 document.body.classList.add("splash-activo");
 
-console.log("CLUBES DESDE SUPABASE:", data);
-console.log("ERROR:", error);
-
 console.log("✅ app.js cargado");
 
 const contenido = document.getElementById("contenido");

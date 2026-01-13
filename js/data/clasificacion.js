@@ -11,7 +11,7 @@ function crearEquipo(nombre) {
   };
 }
 
-function calcularClasificacion(categoria, genero, grupo) {
+function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
   const tabla = {};
 
   // 1️⃣ Inicializar equipos del grupo (tabla vacía)

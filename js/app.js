@@ -214,11 +214,13 @@ function mostrarPartidos() {
   partidos.forEach(p => {
     const estadoCalculado = calcularEstadoPartido(p);
 
-    <span>${equipoLocal?.nombre || "-"}</span>
-    <span>${equipoVisitante?.nombre || "-"}</span>
+    // 🔹 Buscar equipos por ID
+    const equipoLocal = equipos.find(e => e.id === p.local_id);
+    const equipoVisitante = equipos.find(e => e.id === p.visitante_id);
 
-    const clubLocal = clubes.find(c => c.id === equipoLocal?.clubId);
-    const clubVisitante = clubes.find(c => c.id === equipoVisitante?.clubId);
+    // 🔹 Buscar clubes de esos equipos
+    const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
+    const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
 
     html += `
       <div class="card">
@@ -226,14 +228,14 @@ function mostrarPartidos() {
         <div class="partido-equipos">
           <div class="equipo-partido">
             ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-partido">` : ""}
-            <span>${p.local}</span>
+            <span>${equipoLocal?.nombre || "-"}</span>
           </div>
 
           <span class="vs">vs</span>
 
           <div class="equipo-partido">
             ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
-            <span>${p.visitante}</span>
+            <span>${equipoVisitante?.nombre || "-"}</span>
           </div>
         </div>
 

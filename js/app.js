@@ -277,10 +277,10 @@ function formNuevoPartido() {
     <h2>Nuevo partido</h2>
 
     <label>Equipo local</label>
-    <select id="local"></select>
+    <select id="equipolocal"></select>
 
     <label>Equipo visitante</label>
-    <select id="visitante"></select>
+    <select id="equipoVisitante"></select>
 
     <label>Categoría</label>
     <select id="categoria">
@@ -313,6 +313,19 @@ function formNuevoPartido() {
 
     <label>Lugar</label>
     <input id="lugar" placeholder="Pabellón / pista">
+    
+    document.getElementById("categoria")
+    .addEventListener("change", cargarEquiposParaPartido);
+
+  document.getElementById("genero")
+    .addEventListener("change", cargarEquiposParaPartido);
+
+  document.getElementById("grupo")
+    .addEventListener("change", cargarEquiposParaPartido);
+
+  // Primera carga
+  cargarEquiposParaPartido();
+}
 
     <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
@@ -688,6 +701,47 @@ async function obtenerEquiposSupabase() {
   }
 
   return data;
+}
+
+async function obtenerEquiposPorFiltro(categoria, genero, grupo) {
+  const { data, error } = await supabase
+    .from("equipos")
+    .select("*")
+    .eq("categoria", categoria)
+    .eq("genero", genero)
+    .eq("grupo", grupo);
+
+  if (error) {
+    console.error("Error cargando equipos:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function cargarEquiposParaPartido() {
+  const categoria = document.getElementById("categoria").value;
+  const genero = document.getElementById("genero").value;
+  const grupo = document.getElementById("grupo").value;
+
+  const equipos = await obtenerEquiposPorFiltro(categoria, genero, grupo);
+
+  const local = document.getElementById("equipoLocal");
+  const visitante = document.getElementById("equipoVisitante");
+
+  local.innerHTML = "";
+  visitante.innerHTML = "";
+
+  equipos.forEach(equipo => {
+    const opt1 = document.createElement("option");
+    opt1.value = equipo.id;
+    opt1.textContent = equipo.nombre;
+
+    const opt2 = opt1.cloneNode(true);
+
+    local.appendChild(opt1);
+    visitante.appendChild(opt2);
+  });
 }
 
 async function crearEquipoSupabase(equipo) {

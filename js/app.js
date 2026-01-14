@@ -277,7 +277,7 @@ function formNuevoPartido() {
     <h2>Nuevo partido</h2>
 
     <label>Equipo local</label>
-    <select id="equipolocal"></select>
+    <select id="equipoLocal"></select>
 
     <label>Equipo visitante</label>
     <select id="equipoVisitante"></select>
@@ -307,58 +307,24 @@ function formNuevoPartido() {
 
     <label>Fecha</label>
     <input type="date" id="fecha">
-    
+
     <label>Hora</label>
     <input type="time" id="hora">
 
     <label>Lugar</label>
     <input id="lugar" placeholder="Pabellón / pista">
-    
-    document.getElementById("categoria")
-    .addEventListener("change", cargarEquiposParaPartido);
-
-  document.getElementById("genero")
-    .addEventListener("change", cargarEquiposParaPartido);
-
-  document.getElementById("grupo")
-    .addEventListener("change", cargarEquiposParaPartido);
-
-  // Primera carga
-  cargarEquiposParaPartido();
-}
 
     <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
-  // cargar equipos según categoría / género / grupo
-const categoria = document.getElementById("categoria");
-const genero = document.getElementById("genero");
-const grupo = document.getElementById("grupo");
 
-function cargarEquiposPartido() {
-  const lista = equipos.filter(e =>
-    e.categoria === categoria.value &&
-    e.genero === genero.value &&
-    e.grupo === grupo.value
-  );
+  // 🔥 LISTENERS (FUERA del HTML)
+  document.getElementById("categoria").addEventListener("change", cargarEquiposParaPartido);
+  document.getElementById("genero").addEventListener("change", cargarEquiposParaPartido);
+  document.getElementById("grupo").addEventListener("change", cargarEquiposParaPartido);
 
-  const localSel = document.getElementById("local");
-  const visitanteSel = document.getElementById("visitante");
-
-  localSel.innerHTML = "";
-  visitanteSel.innerHTML = "";
-
-  lista.forEach(e => {
-    localSel.innerHTML += `<option>${e.nombre}</option>`;
-    visitanteSel.innerHTML += `<option>${e.nombre}</option>`;
-  });
-}
-
-categoria.onchange = cargarEquiposPartido;
-genero.onchange = cargarEquiposPartido;
-grupo.onchange = cargarEquiposPartido;
-
-cargarEquiposPartido();
+  // 🔥 Primera carga
+  cargarEquiposParaPartido();
 }
 
 function editarPartido(id) {

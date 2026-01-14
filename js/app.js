@@ -392,40 +392,6 @@ function guardarEdicionPartido() {
   mostrarPartidos();
 }
 
-function guardarNuevoPartido() {
-  const selectLocal = document.getElementById("equipoLocal");
-  const selectVisitante = document.getElementById("equipoVisitante");
-
-  if (!selectLocal.value || !selectVisitante.value) {
-    alert("Selecciona equipo local y visitante");
-    return;
-  }
-
-  const nuevoPartido = {
-    id: Date.now(),
-
-    // 👉 guardamos el NOMBRE del equipo (como usas en el resto de la app)
-    local: selectLocal.selectedOptions[0].textContent,
-    visitante: selectVisitante.selectedOptions[0].textContent,
-
-    categoria: document.getElementById("categoria").value,
-    genero: document.getElementById("genero").value,
-    grupo: document.getElementById("grupo").value,
-    fecha: document.getElementById("fecha").value,
-    hora: document.getElementById("hora").value,
-    lugar: document.getElementById("lugar").value,
-
-    golesLocal: 0,
-    golesVisitante: 0,
-    estado: "pendiente"
-  };
-
-  partidos.push(nuevoPartido);
-  guardarPartidos(partidos);
-
-  mostrarPartidos();
-}
-
 function abrirPartido(id) {
   partidoActual = partidos.find(p => p.id === id);
 

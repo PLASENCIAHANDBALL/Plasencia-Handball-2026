@@ -214,8 +214,8 @@ function mostrarPartidos() {
   partidos.forEach(p => {
     const estadoCalculado = calcularEstadoPartido(p);
 
-    const equipoLocal = equipos.find(e => e.nombre === p.local);
-    const equipoVisitante = equipos.find(e => e.nombre === p.visitante);
+    <span>${equipoLocal?.nombre || "-"}</span>
+    <span>${equipoVisitante?.nombre || "-"}</span>
 
     const clubLocal = clubes.find(c => c.id === equipoLocal?.clubId);
     const clubVisitante = clubes.find(c => c.id === equipoVisitante?.clubId);
@@ -796,6 +796,76 @@ async function cargarDatos() {
 }
 
 cargarDatos();
+
+async function obtenerPartidosSupabase() {
+  const { data, error } = await supabase
+    .from("partidos")
+    .select("*")
+    .order("fecha", { ascending: true });
+
+  if (error) {
+    console.error("Error cargando partidos:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function crearPartidoSupabase(partido) {
+  const { error } = await supabase
+    .from("partidos")
+    .insert([partido]);
+
+  if (error) {
+    alert("Error creando partido");
+    console.error(error);
+  }
+}
+
+async function editarPartidoSupabase(id, cambios) {
+  const { error } = await supabase
+    .from("partidos")
+    .update(cambios)
+    .eq("id", id);
+
+  if (error) {
+    alert("Error editando partido");
+    console.error(error);
+  }
+}
+
+async function borrarPartidoSupabase(id) {
+  const { error } = await supabase
+    .from("partidos")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Error borrando partido");
+    console.error(error);
+  }
+}
+
+async function guardarNuevoPartido() {
+  const nuevoPartido = {
+    local_id: Number(document.getElementById("equipoLocal").value),
+    visitante_id: Number(document.getElementById("equipoVisitante").value),
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value,
+    fecha: document.getElementById("fecha").value,
+    hora: document.getElementById("hora").value,
+    lugar: document.getElementById("lugar").value,
+    goles_local: 0,
+    goles_visitante: 0,
+    estado: "pendiente"
+  };
+
+  await crearPartidoSupabase(nuevoPartido);
+
+  partidos = await obtenerPartidosSupabase();
+  mostrarPartidos();
+}
 
 /* ================== GRUPOS ================== */
 function mostrarGrupos() {

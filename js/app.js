@@ -1546,6 +1546,15 @@ window.guardarNuevoGrupo = guardarNuevoGrupo;
 window.editarGrupo = editarGrupo;
 window.guardarEdicionGrupo = guardarEdicionGrupo;
 
+// patrocinadores
+window.formNuevoPatrocinador = formNuevoPatrocinador;
+
+// equipos
+window.guardarEdicionEquipo = guardarEdicionEquipo;
+
+// clasificación
+window.actualizarClasificacion = actualizarClasificacion;
+
 // utilidades usadas en HTML
 window.abrirWeb = abrirWeb;
 

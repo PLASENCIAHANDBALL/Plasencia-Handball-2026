@@ -1277,10 +1277,6 @@ async function verClub(id) {
     <h3>Equipos</h3>
   `;
 
-  if (adminActivo) {
-    html += `<button onclick="formNuevoEquipoClub(${club.id})">➕ Añadir equipo</button>`;
-  }
-
   if (equiposClub.length === 0) {
     html += `<p>No hay equipos en este club</p>`;
   }

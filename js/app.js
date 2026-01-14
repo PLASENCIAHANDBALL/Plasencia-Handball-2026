@@ -801,17 +801,9 @@ async function borrarPartidoSupabase(id) {
 }
 
 async function guardarNuevoPartido() {
-  const localSelect = document.getElementById("equipoLocal");
-  const visitanteSelect = document.getElementById("equipoVisitante");
-
-  if (!localSelect.value || !visitanteSelect.value) {
-    alert("Selecciona equipo local y visitante");
-    return;
-  }
-
   const nuevoPartido = {
-    local: localSelect.options[localSelect.selectedIndex].text,
-    visitante: visitanteSelect.options[visitanteSelect.selectedIndex].text,
+    local_id: Number(document.getElementById("equipoLocal").value),
+    visitante_id: Number(document.getElementById("equipoVisitante").value),
     categoria: document.getElementById("categoria").value,
     genero: document.getElementById("genero").value,
     grupo: document.getElementById("grupo").value,
@@ -828,8 +820,8 @@ async function guardarNuevoPartido() {
     .insert([nuevoPartido]);
 
   if (error) {
-    console.error("Error guardando partido:", error);
-    alert("Error al guardar el partido");
+    console.error(error);
+    alert("Error guardando partido");
     return;
   }
 

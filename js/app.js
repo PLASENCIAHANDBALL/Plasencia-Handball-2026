@@ -799,20 +799,6 @@ async function cargarDatos() {
 
 cargarDatos();
 
-async function obtenerPartidosSupabase() {
-  const { data, error } = await supabase
-    .from("partidos")
-    .select("*")
-    .order("fecha", { ascending: true });
-
-  if (error) {
-    console.error("Error cargando partidos:", error);
-    return [];
-  }
-
-  return data;
-}
-
 async function crearPartidoSupabase(partido) {
   const { error } = await supabase
     .from("partidos")

@@ -1104,7 +1104,7 @@ function editarEquipo(id) {
     </select>
 
     <button onclick="guardarEdicionEquipo()">💾 Guardar cambios</button>
-    <button class="volver" onclick="mostrarCategorias()">⬅ Volver</button>
+    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
   `;
 }
 

@@ -393,7 +393,11 @@ function guardarEdicionPartido() {
 }
 
 function abrirPartido(id) {
-  partidoActual = partidos.find(p => p.id === id);
+  const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
+const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
+
+const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
+const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
 
   let adminBloque = adminActivo ? `
     <label>Hora</label>

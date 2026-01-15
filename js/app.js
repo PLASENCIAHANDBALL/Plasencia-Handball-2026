@@ -527,8 +527,8 @@ function animarMarcador(id) {
   if (!el) return;
 
   el.textContent = id === "golesLocal"
-    ? partidoActual.golesLocal
-    : partidoActual.golesVisitante;
+    ? partidoActual.goles_local
+    : partidoActual.goles_visitante;
 
   el.classList.add("animar");
 
@@ -543,34 +543,6 @@ function refrescarVistaPartido() {
     partidoActual = partidos[index];
   }
   abrirPartido(partidoActual.id);
-}
-
-function sumarLocal() {
-  partidoActual.golesLocal++;
-  guardarPartidos(partidos);
-  abrirPartido(partidoActual.id);
-}
-
-function restarLocal() {
-  if (partidoActual.golesLocal > 0) {
-    partidoActual.golesLocal--;
-    guardarPartidos(partidos);
-    abrirPartido(partidoActual.id);
-  }
-}
-
-function sumarVisitante() {
-  partidoActual.golesVisitante++;
-  guardarPartidos(partidos);
-  abrirPartido(partidoActual.id);
-}
-
-function restarVisitante() {
-  if (partidoActual.golesVisitante > 0) {
-    partidoActual.golesVisitante--;
-    guardarPartidos(partidos);
-    abrirPartido(partidoActual.id);
-  }
 }
 
 function guardarDatosPartido() {
@@ -592,14 +564,6 @@ function borrarPartido(id) {
   partidos = partidos.filter(p => p.id !== id);
   guardarPartidos(partidos);
   mostrarPartidos();
-}
-
-function guardarMarcadorMesa() {
-  partidos = partidos.map(p =>
-    p.id === partidoActual.id ? partidoActual : p
-  );
-  guardarPartidos(partidos);
-  alert("Marcador guardado");
 }
 
 function calcularEstadoPartido(partido) {
@@ -625,8 +589,16 @@ function calcularEstadoPartido(partido) {
 }
 
 async function guardarResultado() {
-  const golesLocal = Number(document.getElementById("inputLocal").value);
-  const golesVisitante = Number(document.getElementById("inputVisitante").value);
+  const inputLocal = document.getElementById("inputLocal");
+  const inputVisitante = document.getElementById("inputVisitante");
+
+  if (!inputLocal || !inputVisitante) {
+    alert("No hay inputs de resultado disponibles");
+    return;
+  }
+
+  const golesLocal = Number(inputLocal.value);
+  const golesVisitante = Number(inputVisitante.value);
 
   if (golesLocal < 0 || golesVisitante < 0) {
     alert("Los goles no pueden ser negativos");
@@ -1664,6 +1636,7 @@ window.guardarEdicionPartido = guardarEdicionPartido;
 window.finalizarPartido = finalizarPartido;
 window.cambiarGol = cambiarGol;
 window.guardarMarcadorMesa = guardarMarcadorMesa;
+window.guardarResultado = guardarResultado;
 
 // categorías / equipos
 window.seleccionarCategoria = seleccionarCategoria;

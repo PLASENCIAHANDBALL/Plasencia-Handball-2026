@@ -443,13 +443,35 @@ function abrirPartido(id) {
   ${adminBloque}
 
   ${(adminActivo || mesaActiva) ? `
-  <div class="marcador-botones">
-    <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
-    <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
-    <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
-    <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
-    <button onclick="guardarMarcadorMesa()">💾 Guardar marcador</button>
+  <div class="marcador-edicion">
+
+    <div class="resultado-directo">
+      <label>Resultado</label>
+      <input 
+        type="number" 
+        min="0"
+        id="inputLocal"
+        value="${partidoActual.goles_local}"
+      >
+      <span> - </span>
+      <input 
+        type="number" 
+        min="0"
+        id="inputVisitante"
+        value="${partidoActual.goles_visitante}"
+      >
+    </div>
+
+    <div class="marcador-botones">
+      <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
+      <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
+      <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
+      <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
+    </div>
+
+    <button onclick="guardarResultado()">💾 Guardar resultado</button>
     <button class="btn-finalizar" onclick="finalizarPartido()">🏁 Finalizar partido</button>
+
   </div>
 ` : ""}
 

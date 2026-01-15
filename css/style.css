@@ -76,19 +76,6 @@ button:active {
   text-align: right;
 }
 
-/* MARCADOR */
-.marcador {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 52px;
-  margin: 25px 0;
-}
-
-.marcador span {
-  margin: 0 20px;
-}
-
 /* BOTONES MARCADOR */
 .boton-local {
   background: #ffe5e5;
@@ -391,35 +378,74 @@ main {
   background: #2ecc71;
 }
 
-/* =========================
-   MARCADOR ANIMADO PRO
-========================= */
+/* ===== MARCADOR PRO DEFINITIVO ===== */
 
-.marcador {
+.marcador-pro {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 22px;
-  font-size: 56px;
-  font-weight: 800;
-  margin: 25px 0;
+  gap: 26px;
+  margin: 30px 0;
 }
 
-.marcador span {
-  min-width: 70px;
+/* Bloque equipo */
+.equipo-marcador {
+  width: 140px;
+  padding: 16px 10px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+/* Local / Visitante */
+.equipo-marcador.local {
+  background: linear-gradient(135deg, #ffb26b, #ff8c3a);
+}
+
+.equipo-marcador.visitante {
+  background: linear-gradient(135deg, #6bbcff, #3a7dff);
+}
+
+/* Escudo grande */
+.escudo-marcador {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+}
+
+/* Nombre equipo */
+.nombre-equipo {
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
+  line-height: 1.2;
+  opacity: 0.95;
+}
+
+/* GOLES (protagonistas) */
+.goles {
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 1;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.marcador span.animar {
+/* Animación al cambiar */
+.goles.animar {
   transform: scale(1.25);
-  color: var(--principal);
+  color: #fffbe6;
 }
 
 /* Separador */
-.marcador .guion {
-  font-size: 40px;
-  font-weight: 400;
+.separador {
+  font-size: 42px;
+  font-weight: 800;
+  color: #555;
 }
 
 /* =========================

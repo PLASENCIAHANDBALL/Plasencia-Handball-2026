@@ -1471,6 +1471,7 @@ async function actualizarClasificacion() {
     ${html}
   </div>
 `;
+}
 
 async function guardarClasificacionSupabase(categoria, genero, grupo) {
   const clasificacion = calcularClasificacion(

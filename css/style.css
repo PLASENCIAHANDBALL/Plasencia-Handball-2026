@@ -1037,3 +1037,12 @@ main {
   height: 22px;
   flex-shrink: 0; /* 🔑 evita que el escudo se aplaste */
 }
+
+.partido-categoria {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #f2f2f2;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}

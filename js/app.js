@@ -1649,8 +1649,8 @@ window.guardarNuevoPartido = guardarNuevoPartido;
 window.guardarEdicionPartido = guardarEdicionPartido;
 window.finalizarPartido = finalizarPartido;
 window.cambiarGol = cambiarGol;
-window.guardarMarcadorMesa = guardarMarcadorMesa;
 window.guardarResultado = guardarResultado;
+window.guardarDatosPartido = guardarDatosPartido;
 
 // categorías / equipos
 window.seleccionarCategoria = seleccionarCategoria;

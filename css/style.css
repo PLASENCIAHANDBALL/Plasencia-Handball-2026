@@ -429,10 +429,10 @@ main {
 
 /* GOLES (protagonistas) */
 .goles {
-  font-size: 54px;
+  font-size: 46px;
   font-weight: 900;
-  line-height: 1;
-  transition: transform 0.2s ease, color 0.2s ease;
+  color: #1f2933; /* oscuro */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
 }
 
 /* Animación al cambiar */

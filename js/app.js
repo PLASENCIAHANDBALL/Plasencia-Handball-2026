@@ -425,17 +425,17 @@ function abrirPartido(id) {
   <div class="marcador-pro">
 
   <div class="equipo-marcador local">
-    ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-marcador">` : ""}
-    <div class="nombre-equipo">${equipoLocal?.nombre || "-"}</div>
-    <span id="golesLocal">${partidoActual.goles_local}</span>
+    <img src="ESCUDO" class="escudo-marcador">
+    <div class="nombre-equipo">Equipo Local</div>
+    <div class="goles" id="golesLocal">0</div>
   </div>
 
-  <div class="separador">-</div>
+  <div class="separador">–</div>
 
   <div class="equipo-marcador visitante">
-    ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-marcador">` : ""}
-    <div class="nombre-equipo">${equipoVisitante?.nombre || "-"}</div>
-    <span id="golesVisitante">${partidoActual.goles_visitante}</span>
+    <img src="ESCUDO" class="escudo-marcador">
+    <div class="nombre-equipo">Equipo Visitante</div>
+    <div class="goles" id="golesVisitante">0</div>
   </div>
 
 </div>
@@ -526,15 +526,9 @@ function animarMarcador(id) {
   const el = document.getElementById(id);
   if (!el) return;
 
-  el.textContent = id === "golesLocal"
-    ? partidoActual.goles_local
-    : partidoActual.goles_visitante;
-
+  el.classList.remove("animar"); // reset
+  void el.offsetWidth;           // fuerza reflow
   el.classList.add("animar");
-
-  setTimeout(() => {
-    el.classList.remove("animar");
-  }, 200);
 }
 
 function refrescarVistaPartido() {

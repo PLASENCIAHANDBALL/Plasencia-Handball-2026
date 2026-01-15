@@ -1408,35 +1408,7 @@ document.addEventListener("partido-finalizado", () => {
   actualizarClasificacion();
 });
 
-async function actualizarClasificacion() {
-  const catEl = document.getElementById("clas-cat");
-  const genEl = document.getElementById("clas-gen");
-  const grpEl = document.getElementById("clas-grp");
-
-  // ⛔ si no estamos en la vista clasificación, no hacer nada
-  if (!catEl || !genEl || !grpEl) return;
-
-  const categoria = catEl.value;
-  const genero = genEl.value;
-  const grupo = grpEl.value;
-
-  let query = supabase
-    .from("clasificacion")
-    .select("*")
-    .eq("categoria", categoria)
-    .eq("genero", genero);
-
-  if (grupo) {
-    query = query.eq("grupo", grupo);
-  }
-
-  const { data, error } = await query.order("puntos", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
+function renderTablaClasificacion(data) {
   let html = `
     <table class="tabla clasificacion-pro">
       <tr>
@@ -1453,43 +1425,94 @@ async function actualizarClasificacion() {
   `;
 
   data.forEach((fila, index) => {
-  const equipo = equipos.find(e => e.id === fila.equipo_id);
-  const club = clubes.find(c => c.id === equipo?.club_id);
+    const equipo = equipos.find(e => e.id === fila.equipo_id);
+    const club = clubes.find(c => c.id === equipo?.club_id);
 
-  let posicion = index + 1;
-  if (index === 0) posicion = "🥇";
-  if (index === 1) posicion = "🥈";
-  if (index === 2) posicion = "🥉";
+    let posicion = index + 1;
+    if (index === 0) posicion = "🥇";
+    if (index === 1) posicion = "🥈";
+    if (index === 2) posicion = "🥉";
 
-  html += `
-  <tr>
-    <td class="posicion">${posicion}</td>
+    html += `
+      <tr>
+        <td class="posicion">${posicion}</td>
 
-    <td>
-      <div class="equipo-tabla">
-        ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
-        <span class="nombre-equipo-tabla">${equipo?.nombre || "-"}</span>
-      </div>
-    </td>
+        <td>
+          <div class="equipo-tabla">
+            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
+            <span class="nombre-equipo-tabla">${equipo?.nombre || "-"}</span>
+          </div>
+        </td>
 
-    <td class="col-mini">${fila.pj}</td>
-    <td class="col-mini">${fila.pg}</td>
-    <td class="col-mini">${fila.pe}</td>
-    <td class="col-mini">${fila.pp}</td>
-    <td class="col-mini">${fila.gf}</td>
-    <td class="col-mini">${fila.gc}</td>
-
-    <td class="col-puntos"><strong>${fila.puntos}</strong></td>
-  </tr>
-`;
+        <td class="col-mini">${fila.pj}</td>
+        <td class="col-mini">${fila.pg}</td>
+        <td class="col-mini">${fila.pe}</td>
+        <td class="col-mini">${fila.pp}</td>
+        <td class="col-mini">${fila.gf}</td>
+        <td class="col-mini">${fila.gc}</td>
+        <td class="col-puntos"><strong>${fila.puntos}</strong></td>
+      </tr>
+    `;
   });
 
   html += `</table>`;
+  return html;
+}
+
+async function actualizarClasificacion() {
+  const catEl = document.getElementById("clas-cat");
+  const genEl = document.getElementById("clas-gen");
+  const grpEl = document.getElementById("clas-grp");
+
+  if (!catEl || !genEl || !grpEl) return;
+
+  const categoria = catEl.value;
+  const genero = genEl.value;
+  const grupoSeleccionado = grpEl.value;
+
+  let query = supabase
+    .from("clasificacion")
+    .select("*")
+    .eq("categoria", categoria)
+    .eq("genero", genero)
+    .order("puntos", { ascending: false });
+
+  if (grupoSeleccionado) {
+    query = query.eq("grupo", grupoSeleccionado);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  let htmlFinal = "";
+
+  // 🔥 CASO: TODOS LOS GRUPOS
+  if (!grupoSeleccionado) {
+    const grupos = [...new Set(data.map(d => d.grupo))].sort();
+
+    grupos.forEach(nombreGrupo => {
+      const datosGrupo = data.filter(d => d.grupo === nombreGrupo);
+
+      htmlFinal += `
+        <h3 class="titulo-grupo">🏷️ ${nombreGrupo}</h3>
+        ${renderTablaClasificacion(datosGrupo)}
+      `;
+    });
+  }
+  // 🔵 CASO: UN SOLO GRUPO
+  else {
+    htmlFinal = renderTablaClasificacion(data);
+  }
+
   document.getElementById("tablaClasificacion").innerHTML = `
-  <div class="tabla-wrapper">
-    ${html}
-  </div>
-`;
+    <div class="tabla-wrapper">
+      ${htmlFinal}
+    </div>
+  `;
 }
 
 async function guardarClasificacionSupabase(categoria, genero, grupo) {

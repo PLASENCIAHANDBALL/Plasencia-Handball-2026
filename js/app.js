@@ -534,8 +534,6 @@ async function finalizarPartido() {
       goles_visitante: partidoActual.goles_visitante
     })
     .eq("id", partidoActual.id);
-    
-  await actualizarClasificacionSupabase(partidoActual);
 
   if (error) {
     console.error(error);
@@ -1396,9 +1394,16 @@ document.addEventListener("partido-finalizado", () => {
 });
 
 async function actualizarClasificacion() {
-  const categoria = document.getElementById("clas-cat").value;
-  const genero = document.getElementById("clas-gen").value;
-  const grupo = document.getElementById("clas-grp").value;
+  const catEl = document.getElementById("clas-cat");
+  const genEl = document.getElementById("clas-gen");
+  const grpEl = document.getElementById("clas-grp");
+
+  // ⛔ si no estamos en la vista clasificación, no hacer nada
+  if (!catEl || !genEl || !grpEl) return;
+
+  const categoria = catEl.value;
+  const genero = genEl.value;
+  const grupo = grpEl.value;
 
   let query = supabase
     .from("clasificacion")
@@ -1441,7 +1446,7 @@ async function actualizarClasificacion() {
         <td>${index + 1}</td>
         <td>
           <div class="equipo-tabla">
-            ${club?.escudo ? `<img src="${clubUI.club.escudo}" class="escudo-tabla">` : ""}
+            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
             ${equipo?.nombre}
           </div>
         </td>
@@ -1502,6 +1507,48 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
   if (error) {
     console.error("Error guardando clasificación:", error);
   }
+}
+
+function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
+  const equiposGrupo = equipos.filter(e =>
+    e.categoria === categoria &&
+    e.genero === genero &&
+    e.grupo === grupo
+  );
+
+  return equiposGrupo.map(eq => {
+    const partidosEq = partidos.filter(p =>
+      p.estado === "finalizado" &&
+      p.categoria === categoria &&
+      p.genero === genero &&
+      p.grupo === grupo &&
+      (p.local_id === eq.id || p.visitante_id === eq.id)
+    );
+
+    let pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, puntos = 0;
+
+    partidosEq.forEach(p => {
+      pj++;
+      const esLocal = p.local_id === eq.id;
+      const golesF = esLocal ? p.goles_local : p.goles_visitante;
+      const golesC = esLocal ? p.goles_visitante : p.goles_local;
+
+      gf += golesF;
+      gc += golesC;
+
+      if (golesF > golesC) {
+        pg++; puntos += 2;
+      } else if (golesF === golesC) {
+        pe++; puntos += 1;
+      } else {
+        pp++;
+      }
+    });
+
+    return { nombre: eq.nombre, pj, pg, pe, pp, gf, gc, puntos };
+  }).sort((a, b) =>
+    b.puntos - a.puntos || (b.gf - b.gc) - (a.gf - a.gc)
+  );
 }
 
 /* ================== EQUIPOS GRUPO ================== */

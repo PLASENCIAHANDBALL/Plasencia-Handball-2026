@@ -1075,7 +1075,7 @@ function filtrarCategorias() {
   const club = clubes.find(c => c.id === e.club_id);
 
   html += `
-    <div class="card equipo-card" onclick="togglePartidosEquipo(${e.id})">
+  <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
       <img 
         src="${club?.escudo || 'img/club-placeholder.png'}"
         class="escudo-equipo-mini"
@@ -1107,8 +1107,8 @@ function togglePartidosEquipo(idEquipo) {
   }
 
   const partidosEquipo = partidos.filter(p =>
-    p.local_id === idEquipo || p.visitante_id === idEquipo
-  );
+  p.local_id === equipo.id || p.visitante_id === equipo.id
+);
 
   if (partidosEquipo.length === 0) {
     contenedor.innerHTML = `<p style="margin:8px 0;">No tiene partidos</p>`;
@@ -1151,14 +1151,17 @@ function verPartidosEquipo(idEquipo) {
   }
 
   partidosEquipo.forEach(p => {
+    const local = equipos.find(e => e.id === p.local_id);
+const visitante = equipos.find(e => e.id === p.visitante_id);
+    
     html += `
-      <div class="card">
-        <strong>${p.local} vs ${p.visitante}</strong>
-        <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
-        <div>${p.golesLocal} - ${p.golesVisitante}</div>
-        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-      </div>
-    `;
+  <div class="card">
+    <strong>${local?.nombre || "-"} vs ${visitante?.nombre || "-"}</strong>
+    <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
+    <div>${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}</div>
+    <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+  </div>
+`;
   });
 
   html += `

@@ -279,6 +279,16 @@ function renderPartidoCard(p) {
         </div>
       </div>
 
+      <div class="badge-estado ${p.estado}">
+  ${
+    p.estado === "finalizado"
+      ? "🏁 Finalizado"
+      : calcularEstadoPartido(p) === "en_juego"
+      ? "🟢 En juego"
+      : "🔴 Pendiente"
+  }
+</div>
+      
       <div class="partido-info">
         🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
       </div>

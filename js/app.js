@@ -1659,12 +1659,6 @@ async function borrarClub(id) {
     .delete()
     .eq("id", id);
 
-  if (error) {
-    alert("Error al borrar club");
-    console.error(error);
-    return;
-  }
-
   await cargarClubes();
   mostrarEquipos();
 }

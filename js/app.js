@@ -68,9 +68,7 @@ let equipos = [];
 
 let equipoActual = null;
 
-let patrocinadores = typeof obtenerPatrocinadores === "function"
-  ? obtenerPatrocinadores()
-  : [];
+let patrocinadores = [];
 
 function refrescarVistaActual() {
   // Detecta qué vista estás usando y la vuelve a pintar
@@ -170,46 +168,62 @@ function formNuevoPatrocinador() {
   `;
 }
 
-function guardarNuevoPatrocinador() {
-  const nombre = document.getElementById("nombre").value;
-  const web = document.getElementById("web").value;
-  const file = document.getElementById("imagen").files[0];
-
-  if (!file) {
-    alert("Selecciona una imagen");
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = function () {
-    const nuevo = {
-      id: Date.now(),
-      nombre,
-      web,
-      imagen: reader.result // base64
-    };
-
-    patrocinadores.push(nuevo);
-    guardarPatrocinadores(patrocinadores);
-    mostrarHome();
-  };
-
-  reader.readAsDataURL(file);
-}
-
 function abrirWeb(url) {
   if (!url) return;
   window.open(url, "_blank");
 }
 
-function borrarPatrocinador(id) {
-  if (!confirm("¿Eliminar este patrocinador?")) return;
+async function iniciarApp() {
+  try {
+    clubes = await obtenerClubesSupabase();
+    equipos = await obtenerEquiposSupabase();
+    partidos = await obtenerPartidosSupabase();
+    patrocinadores = await obtenerPatrocinadoresSupabase();
 
-  patrocinadores = patrocinadores.filter(p => p.id !== id);
+    mostrarHome();
+  } catch (e) {
+    console.error("Error iniciando app:", e);
+    alert("Error cargando datos");
+  }
+}
 
-  guardarPatrocinadores(patrocinadores);
-  mostrarHome();
+/* ================== PATROCINADORES (SUPABASE) ================== */
+
+async function obtenerPatrocinadoresSupabase() {
+  const { data, error } = await supabase
+    .from("patrocinadores")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error cargando patrocinadores:", error);
+    return [];
+  }
+
+  return data;
+}
+
+async function crearPatrocinadorSupabase(patrocinador) {
+  const { error } = await supabase
+    .from("patrocinadores")
+    .insert([patrocinador]);
+
+  if (error) {
+    alert("Error guardando patrocinador");
+    console.error(error);
+  }
+}
+
+async function borrarPatrocinadorSupabase(id) {
+  const { error } = await supabase
+    .from("patrocinadores")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Error borrando patrocinador");
+    console.error(error);
+  }
 }
 
 /* ================== PARTIDOS ================== */
@@ -750,6 +764,41 @@ function salirAdmin() {
 }
 
 /* ================== INICIO ================== */
+async function guardarNuevoPatrocinador() {
+  const nombre = document.getElementById("nombre").value;
+  const web = document.getElementById("web").value;
+  const file = document.getElementById("imagen").files[0];
+
+  if (!file) {
+    alert("Selecciona una imagen");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async () => {
+    const nuevo = {
+      nombre,
+      web,
+      imagen: reader.result
+    };
+
+    await crearPatrocinadorSupabase(nuevo);
+
+    patrocinadores = await obtenerPatrocinadoresSupabase();
+    mostrarHome();
+  };
+
+  reader.readAsDataURL(file);
+}
+
+async function borrarPatrocinador(id) {
+  if (!confirm("¿Eliminar este patrocinador?")) return;
+
+  await borrarPatrocinadorSupabase(id);
+  patrocinadores = await obtenerPatrocinadoresSupabase();
+  mostrarHome();
+}
 
 /* ================== CLASIFICACION SUPABASE ================== */
 async function actualizarClasificacionSupabase(partido) {

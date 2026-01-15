@@ -546,6 +546,13 @@ async function finalizarPartido() {
   document.dispatchEvent(new Event("partido-finalizado"));
 
   alert("Partido finalizado");
+  
+  await guardarClasificacionSupabase(
+  partidoActual.categoria,
+  partidoActual.genero,
+  partidoActual.grupo
+);
+
   mostrarPartidos();
 }
 
@@ -1393,13 +1400,15 @@ async function actualizarClasificacion() {
   const genero = document.getElementById("clas-gen").value;
   const grupo = document.getElementById("clas-grp").value;
 
-  const query = supabase
+  let query = supabase
     .from("clasificacion")
     .select("*")
     .eq("categoria", categoria)
     .eq("genero", genero);
 
-  if (grupo) query.eq("grupo", grupo);
+  if (grupo) {
+    query = query.eq("grupo", grupo);
+  }
 
   const { data, error } = await query.order("puntos", { ascending: false });
 
@@ -1408,10 +1417,6 @@ async function actualizarClasificacion() {
     return;
   }
 
-  pintarTablaClasificacion(data);
-}
-
-  function pintarTablaClasificacion(clasificacion) {
   let html = `
     <table class="tabla clasificacion-pro">
       <tr>
@@ -1427,40 +1432,76 @@ async function actualizarClasificacion() {
       </tr>
   `;
 
-  clasificacion.forEach((e, index) => {
-    const equipo = equipos.find(eq => eq.id === e.equipo_id);
+  data.forEach((fila, index) => {
+    const equipo = equipos.find(e => e.id === fila.equipo_id);
     const club = clubes.find(c => c.id === equipo?.club_id);
-
-    const puesto = index + 1;
-    const icono =
-      puesto === 1 ? "🥇" :
-      puesto === 2 ? "🥈" :
-      puesto === 3 ? "🥉" :
-      puesto;
 
     html += `
       <tr>
-        <td>${icono}</td>
+        <td>${index + 1}</td>
         <td>
           <div class="equipo-tabla">
-            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
-            <span>${equipo?.nombre || "-"}</span>
+            ${club?.escudo ? `<img src="${clubUI.club.escudo}" class="escudo-tabla">` : ""}
+            ${equipo?.nombre}
           </div>
         </td>
-        <td>${e.pj}</td>
-        <td>${e.pg}</td>
-        <td>${e.pe}</td>
-        <td>${e.pp}</td>
-        <td>${e.gf}</td>
-        <td>${e.gc}</td>
-        <td>${e.puntos}</td>
+        <td>${fila.pj}</td>
+        <td>${fila.pg}</td>
+        <td>${fila.pe}</td>
+        <td>${fila.pp}</td>
+        <td>${fila.gf}</td>
+        <td>${fila.gc}</td>
+        <td>${fila.puntos}</td>
       </tr>
     `;
   });
 
   html += `</table>`;
-
   document.getElementById("tablaClasificacion").innerHTML = html;
+}
+
+async function guardarClasificacionSupabase(categoria, genero, grupo) {
+  const clasificacion = calcularClasificacion(
+    categoria,
+    genero,
+    grupo,
+    equipos,
+    partidos
+  );
+
+  // 1️⃣ borrar clasificación anterior de ese grupo
+  await supabase
+    .from("clasificacion")
+    .delete()
+    .eq("categoria", categoria)
+    .eq("genero", genero)
+    .eq("grupo", grupo);
+
+  // 2️⃣ insertar nueva
+  const filas = clasificacion.map(e => {
+    const equipo = equipos.find(eq => eq.nombre === e.nombre);
+    return {
+      categoria,
+      genero,
+      grupo,
+      equipo_id: equipo.id,
+      pj: e.pj,
+      pg: e.pg,
+      pe: e.pe,
+      pp: e.pp,
+      gf: e.gf,
+      gc: e.gc,
+      puntos: e.puntos
+    };
+  });
+
+  const { error } = await supabase
+    .from("clasificacion")
+    .insert(filas);
+
+  if (error) {
+    console.error("Error guardando clasificación:", error);
+  }
 }
 
 /* ================== EQUIPOS GRUPO ================== */

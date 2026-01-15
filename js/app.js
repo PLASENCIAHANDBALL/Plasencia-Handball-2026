@@ -769,21 +769,27 @@ async function guardarNuevoPatrocinador() {
   const web = document.getElementById("web").value;
   const file = document.getElementById("imagen").files[0];
 
-  if (!file) {
-    alert("Selecciona una imagen");
+  if (!nombre || !file) {
+    alert("Nombre y logo son obligatorios");
     return;
   }
 
   const reader = new FileReader();
 
   reader.onload = async () => {
-    const nuevo = {
-      nombre,
-      web,
-      imagen: reader.result
-    };
+    const { error } = await supabase
+      .from("patrocinadores")
+      .insert({
+        nombre,
+        web,
+        imagen: reader.result
+      });
 
-    await crearPatrocinadorSupabase(nuevo);
+    if (error) {
+      console.error(error);
+      alert("Error guardando patrocinador");
+      return;
+    }
 
     patrocinadores = await obtenerPatrocinadoresSupabase();
     mostrarHome();
@@ -795,7 +801,17 @@ async function guardarNuevoPatrocinador() {
 async function borrarPatrocinador(id) {
   if (!confirm("¿Eliminar este patrocinador?")) return;
 
-  await borrarPatrocinadorSupabase(id);
+  const { error } = await supabase
+    .from("patrocinadores")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    alert("Error borrando patrocinador");
+    return;
+  }
+
   patrocinadores = await obtenerPatrocinadoresSupabase();
   mostrarHome();
 }
@@ -982,6 +998,7 @@ async function cargarDatos() {
   clubes = await obtenerClubesSupabase();
   equipos = await obtenerEquiposSupabase();
   partidos = await obtenerPartidosSupabase();
+  patrocinadores = await obtenerPatrocinadoresSupabase();
   mostrarHome();
 }
 

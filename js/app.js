@@ -1975,6 +1975,10 @@ window.editarGrupo = editarGrupo;
 window.guardarEdicionGrupo = guardarEdicionGrupo;
 
 // patrocinadores
+window.guardarNuevoPatrocinador = guardarNuevoPatrocinador;
+window.borrarPatrocinador = borrarPatrocinador;
+
+// patrocinadores
 window.formNuevoPatrocinador = formNuevoPatrocinador;
 
 // equipos

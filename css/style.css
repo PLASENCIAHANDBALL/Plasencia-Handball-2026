@@ -429,10 +429,19 @@ main {
 
 /* GOLES (protagonistas) */
 .goles {
-  font-size: 46px;
-  font-weight: 900;
-  color: #1f2933; /* oscuro */
-  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  font-size: 48px;
+  font-weight: 800;
+  color: #9ca3af;        /* gris claro */
+  line-height: 1;
+}
+
+/* si quieres distinguir un poco local y visitante */
+.equipo-marcador.local .goles {
+  color: #94a3b8;
+}
+
+.equipo-marcador.visitante .goles {
+  color: #9ca3af;
 }
 
 /* Animación al cambiar */

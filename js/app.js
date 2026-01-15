@@ -1466,8 +1466,11 @@ async function actualizarClasificacion() {
   });
 
   html += `</table>`;
-  document.getElementById("tablaClasificacion").innerHTML = html;
-}
+  document.getElementById("tablaClasificacion").innerHTML = `
+  <div class="tabla-wrapper">
+    ${html}
+  </div>
+`;
 
 async function guardarClasificacionSupabase(categoria, genero, grupo) {
   const clasificacion = calcularClasificacion(

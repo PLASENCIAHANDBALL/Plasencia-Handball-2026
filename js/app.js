@@ -393,11 +393,14 @@ function guardarEdicionPartido() {
 }
 
 function abrirPartido(id) {
-  const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
-const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
+  partidoActual = partidos.find(p => p.id === id);
+  if (!partidoActual) return;
 
-const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
-const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
+  const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
+  const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
+
+  const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
+  const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
 
   let adminBloque = adminActivo ? `
     <label>Hora</label>
@@ -413,18 +416,28 @@ const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
   `;
 
   contenido.innerHTML = `
-  <h2>${partidoActual.local} vs ${partidoActual.visitante}</h2>
+  <h2>
+  ${equipoLocal?.nombre || "Equipo local"}
+  vs
+  ${equipoVisitante?.nombre || "Equipo visitante"}
+</h2>
 
   <div class="marcador-pro">
+
   <div class="equipo-marcador local">
-    <span id="golesLocal">${partidoActual.golesLocal}</span>
+    ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-marcador">` : ""}
+    <div class="nombre-equipo">${equipoLocal?.nombre || "-"}</div>
+    <span id="golesLocal">${partidoActual.goles_local}</span>
   </div>
 
   <div class="separador">-</div>
 
   <div class="equipo-marcador visitante">
-    <span id="golesVisitante">${partidoActual.golesVisitante}</span>
+    ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-marcador">` : ""}
+    <div class="nombre-equipo">${equipoVisitante?.nombre || "-"}</div>
+    <span id="golesVisitante">${partidoActual.goles_visitante}</span>
   </div>
+
 </div>
 
   ${adminBloque}

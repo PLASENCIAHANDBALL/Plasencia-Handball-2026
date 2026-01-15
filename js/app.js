@@ -534,6 +534,8 @@ async function finalizarPartido() {
       goles_visitante: partidoActual.goles_visitante
     })
     .eq("id", partidoActual.id);
+    
+  await actualizarClasificacionSupabase(partidoActual);
 
   if (error) {
     console.error(error);
@@ -1386,24 +1388,28 @@ document.addEventListener("partido-finalizado", () => {
   actualizarClasificacion();
 });
 
-function actualizarClasificacion() {
-  const cat = document.getElementById("clas-cat");
-  const gen = document.getElementById("clas-gen");
-  const grp = document.getElementById("clas-grp");
+async function actualizarClasificacion() {
+  const categoria = document.getElementById("clas-cat").value;
+  const genero = document.getElementById("clas-gen").value;
+  const grupo = document.getElementById("clas-grp").value;
 
-  if (!cat || !gen || !grp) return; // 🔒 protección
+  const query = supabase
+    .from("clasificacion")
+    .select("*")
+    .eq("categoria", categoria)
+    .eq("genero", genero);
 
-  const categoria = cat.value;
-  const genero = gen.value;
-  const grupo = grp.value;  
-  
-  const clasificacion = calcularClasificacion(
-  categoria,
-  genero,
-  grupo,
-  equipos,
-  partidos
-);
+  if (grupo) query.eq("grupo", grupo);
+
+  const { data, error } = await query.order("puntos", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  pintarTablaClasificacion(data);
+}
 
   let html = `
     <table class="tabla clasificacion-pro">

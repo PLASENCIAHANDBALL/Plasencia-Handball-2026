@@ -427,7 +427,7 @@ function abrirPartido(id) {
   <div class="equipo-marcador local">
     <img src="ESCUDO" class="escudo-marcador">
     <div class="nombre-equipo">Equipo Local</div>
-    <div class="goles" id="golesLocal">0</div>
+    <div class="goles" id="golesLocal">${partidoActual.goles_local ?? 0}</div>
   </div>
 
   <div class="separador">–</div>
@@ -435,7 +435,7 @@ function abrirPartido(id) {
   <div class="equipo-marcador visitante">
     <img src="ESCUDO" class="escudo-marcador">
     <div class="nombre-equipo">Equipo Visitante</div>
-    <div class="goles" id="golesVisitante">0</div>
+    <div class="goles" id="golesVisitante">${partidoActual.goles_visitante ?? 0}</div>
   </div>
 
 </div>
@@ -526,8 +526,14 @@ function animarMarcador(id) {
   const el = document.getElementById(id);
   if (!el) return;
 
-  el.classList.remove("animar"); // reset
-  void el.offsetWidth;           // fuerza reflow
+  if (id === "golesLocal") {
+    el.textContent = partidoActual.goles_local;
+  } else {
+    el.textContent = partidoActual.goles_visitante;
+  }
+
+  el.classList.remove("animar");
+  void el.offsetWidth; // fuerza reflow
   el.classList.add("animar");
 }
 
@@ -1308,7 +1314,7 @@ function actualizarClasificacion() {
 
   clasificacion.forEach((e, index) => {
     const equipo = equipos.find(eq => eq.nombre === e.nombre);
-    const club = clubes.find(c => c.id === equipo?.clubId);
+    const club = clubes.find(c => c.id === equipo?.club_id);
 
     let puesto = index + 1;
     let icono =

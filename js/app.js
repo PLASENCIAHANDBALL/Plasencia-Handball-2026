@@ -484,7 +484,31 @@ function abrirPartido(id) {
     <p>📍 ${partidoActual.lugar || "-"}</p>
   `;
 
+const fechaBonita = partidoActual.fecha
+  ? new Date(partidoActual.fecha).toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    })
+  : "-";
+  
   contenido.innerHTML = `
+  <div class="info-partido-detalle">
+
+  <div class="detalle-fecha-hora">
+    📅 <strong>${fechaBonita}</strong> · 🕒 ${formatearHora(partidoActual.hora)}
+  </div>
+
+  <div class="detalle-categoria">
+    ${partidoActual.categoria} · ${partidoActual.genero}
+  </div>
+
+  <div class="detalle-lugar">
+    📍 ${partidoActual.lugar || "-"}
+  </div>
+
+</div>
+
   <div class="marcador-pro">
 
   <div class="equipo-marcador local">

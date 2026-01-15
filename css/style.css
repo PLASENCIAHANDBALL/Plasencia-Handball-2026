@@ -879,7 +879,7 @@ main {
   color: #555;
 }
 
-/* ===== TABLA CLASIFICACIÓN ===== */
+/* ================== TABLA CLASIFICACIÓN ================== */
 
 .tabla {
   width: 100%;
@@ -889,45 +889,68 @@ main {
 
 .tabla th,
 .tabla td {
-  padding: 6px 4px;
+  padding: 6px 6px;
   text-align: center;
+  border-bottom: 1px solid #ddd;
   white-space: nowrap;
 }
 
-.col-equipo {
-  text-align: left;
+/* Cabecera */
+.tabla th {
+  background: #f6a21a;
+  color: #fff;
+  font-weight: 600;
 }
 
+/* Columna equipo */
 .equipo-tabla {
   display: flex;
   align-items: center;
   gap: 6px;
+  text-align: left;
 }
 
+/* Escudos */
 .escudo-tabla {
   width: 22px;
   height: 22px;
   object-fit: contain;
 }
 
-.col-mini {
-  width: 32px;
+/* PUNTOS en negrita */
+.col-puntos,
+.tabla td:last-child {
+  font-weight: 700;
 }
 
-.col-puntos {
-  width: 38px;
-  font-weight: bold;
-  color: #f59e0b;
-}
-
+/* POSICIÓN */
 .posicion {
-  font-weight: bold;
+  font-weight: normal; /* ⛔ sin negrita por defecto */
 }
 
-/* 📱 MOBILE */
+/* Medallas */
+.posicion.medalla-oro {
+  font-weight: 700;
+}
+
+.posicion.medalla-plata {
+  font-weight: 700;
+}
+
+.posicion.medalla-bronce {
+  font-weight: 700;
+}
+
+/* ================== AJUSTE MÓVIL ================== */
 @media (max-width: 480px) {
+
   .tabla {
     font-size: 12px;
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: 5px 4px;
   }
 
   .escudo-tabla {
@@ -935,11 +958,7 @@ main {
     height: 18px;
   }
 
-  /* ocultamos PE y PP en móvil */
-  .tabla th:nth-child(5),
-  .tabla td:nth-child(5),
-  .tabla th:nth-child(6),
-  .tabla td:nth-child(6) {
-    display: none;
+  .equipo-tabla {
+    gap: 4px;
   }
 }

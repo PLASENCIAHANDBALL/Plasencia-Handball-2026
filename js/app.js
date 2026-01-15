@@ -33,7 +33,7 @@ if (splash) splash.remove();
 cargarClubes();
 
 let clasificacionFiltro = {
-  categoria: "Alevín",
+  categoria: "Infantil",
   genero: "Masculino",
   grupo: ""
 };
@@ -384,7 +384,6 @@ function editarPartido(id) {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option ${partidoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
       <option ${partidoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
       <option ${partidoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
       <option ${partidoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
@@ -1006,7 +1005,6 @@ function editarGrupo(id) {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option ${grupoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
       <option ${grupoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
       <option ${grupoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
       <option ${grupoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
@@ -1155,15 +1153,19 @@ function togglePartidosEquipo(idEquipo) {
     html += `<p class="partido-vacio">No hay próximos partidos</p>`;
   } else {
     html += proximos.map(p => {
-      const local = equipos.find(e => e.id === p.local_id);
-      const visitante = equipos.find(e => e.id === p.visitante_id);
-      return `
-        <div class="partido-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-          ${local?.nombre || "-"} vs ${visitante?.nombre || "-"}<br>
-          🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
-        </div>
-      `;
-    }).join("");
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+
+  return `
+    <div class="card partido-card-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
+      <strong>${new Date(p.fecha).toLocaleDateString("es-ES")}</strong>
+      <div>${local?.nombre} vs ${visitante?.nombre}</div>
+      <div class="mini-info">
+        🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+      </div>
+    </div>
+  `;
+}).join("");
   }
 
   // 🔹 Finalizados
@@ -1172,14 +1174,18 @@ function togglePartidosEquipo(idEquipo) {
     html += `<p class="partido-vacio">No hay partidos finalizados</p>`;
   } else {
     html += finalizados.map(p => {
-      const local = equipos.find(e => e.id === p.local_id);
-      const visitante = equipos.find(e => e.id === p.visitante_id);
-      return `
-        <div class="partido-mini finalizado" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-          ${local?.nombre || "-"} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre || "-"}
-        </div>
-      `;
-    }).join("");
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+
+  return `
+    <div class="card partido-card-mini finalizado" onclick="event.stopPropagation(); abrirPartido(${p.id})">
+      <strong>${new Date(p.fecha).toLocaleDateString("es-ES")}</strong>
+      <div>
+        ${local?.nombre} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre}
+      </div>
+    </div>
+  `;
+}).join("");
   }
 
   contenedor.innerHTML = html;
@@ -1260,7 +1266,6 @@ function editarEquipo(id) {
     <input id="nombre" value="${equipoActual.nombre}">
 
     <select id="categoria">
-      <option ${equipoActual.categoria==="Alevín"?"selected":""}>Alevín</option>
       <option ${equipoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
       <option ${equipoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
       <option ${equipoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>

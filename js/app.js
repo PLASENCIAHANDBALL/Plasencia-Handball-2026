@@ -479,18 +479,26 @@ function abrirPartido(id) {
 `;
 }
 
-function finalizarPartido() {
+async function finalizarPartido() {
   if (!confirm("¿Finalizar este partido?")) return;
 
   partidoActual.estado = "finalizado";
 
-  partidos = partidos.map(p =>
-    p.id === partidoActual.id ? partidoActual : p
-  );
+  const { error } = await supabase
+    .from("partidos")
+    .update({
+      estado: "finalizado",
+      goles_local: partidoActual.goles_local,
+      goles_visitante: partidoActual.goles_visitante
+    })
+    .eq("id", partidoActual.id);
 
-  guardarPartidos(partidos);
+  if (error) {
+    console.error(error);
+    alert("Error finalizando partido");
+    return;
+  }
 
-  // 🔔 avisar a la app
   document.dispatchEvent(new Event("partido-finalizado"));
 
   alert("Partido finalizado");
@@ -499,14 +507,19 @@ function finalizarPartido() {
 
 function cambiarGol(equipo, cambio) {
   if (equipo === "local") {
-    partidoActual.golesLocal = Math.max(0, partidoActual.golesLocal + cambio);
-    animarMarcador("golesLocal");
+    partidoActual.goles_local = Math.max(0, partidoActual.goles_local + cambio);
   } else {
-    partidoActual.golesVisitante = Math.max(0, partidoActual.golesVisitante + cambio);
-    animarMarcador("golesVisitante");
+    partidoActual.goles_visitante = Math.max(0, partidoActual.goles_visitante + cambio);
   }
 
-  guardarPartidos(partidos);
+  // sincronizar inputs
+  const inputLocal = document.getElementById("inputLocal");
+  const inputVisitante = document.getElementById("inputVisitante");
+
+  if (inputLocal) inputLocal.value = partidoActual.goles_local;
+  if (inputVisitante) inputVisitante.value = partidoActual.goles_visitante;
+
+  animarMarcador(equipo === "local" ? "golesLocal" : "golesVisitante");
 }
 
 function animarMarcador(id) {
@@ -609,6 +622,35 @@ function calcularEstadoPartido(partido) {
   }
 
   return "pendiente";
+}
+
+async function guardarResultado() {
+  const golesLocal = Number(document.getElementById("inputLocal").value);
+  const golesVisitante = Number(document.getElementById("inputVisitante").value);
+
+  if (golesLocal < 0 || golesVisitante < 0) {
+    alert("Los goles no pueden ser negativos");
+    return;
+  }
+
+  partidoActual.goles_local = golesLocal;
+  partidoActual.goles_visitante = golesVisitante;
+
+  const { error } = await supabase
+    .from("partidos")
+    .update({
+      goles_local: golesLocal,
+      goles_visitante: golesVisitante
+    })
+    .eq("id", partidoActual.id);
+
+  if (error) {
+    console.error(error);
+    alert("Error guardando resultado");
+    return;
+  }
+
+  abrirPartido(partidoActual.id);
 }
 
 /* ================== ADMIN ================== */

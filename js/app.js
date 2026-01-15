@@ -286,7 +286,14 @@ function renderPartidoCard(p) {
     <div class="card partido-card">
 
       <!-- 📅 FECHA ARRIBA -->
-      <div class="partido-fecha"><strong>${fechaBonita}</strong></div>
+<div class="partido-fecha">
+  <strong>${fechaBonita}</strong>
+</div>
+
+<!-- 🏷️ CATEGORÍA -->
+<div class="partido-categoria">
+  ${p.categoria} · ${p.genero}
+</div>
 
       <div class="partido-equipos">
         <div class="equipo-partido">

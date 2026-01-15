@@ -713,6 +713,46 @@ function salirAdmin() {
 
 /* ================== INICIO ================== */
 
+/* ================== CLASIFICACION SUPABASE ================== */
+async function actualizarClasificacionSupabase(partido) {
+  const equiposPartido = [
+    { id: partido.local_id, goles: partido.goles_local, rival: partido.goles_visitante },
+    { id: partido.visitante_id, goles: partido.goles_visitante, rival: partido.goles_local }
+  ];
+
+  for (const e of equiposPartido) {
+    const esLocal = e.id === partido.local_id;
+
+    let pg = 0, pe = 0, pp = 0, puntos = 0;
+
+    if (e.goles > e.rival) {
+      pg = 1;
+      puntos = 2;
+    } else if (e.goles === e.rival) {
+      pe = 1;
+      puntos = 1;
+    } else {
+      pp = 1;
+    }
+
+    const { error } = await supabase.rpc("actualizar_clasificacion", {
+      p_equipo_id: e.id,
+      p_categoria: partido.categoria,
+      p_genero: partido.genero,
+      p_grupo: partido.grupo,
+      p_pg: pg,
+      p_pe: pe,
+      p_pp: pp,
+      p_gf: e.goles,
+      p_gc: e.rival,
+      p_puntos: puntos
+    });
+
+    if (error) {
+      console.error("Error actualizando clasificación:", error);
+    }
+  }
+}
 
 /* ================== CLUBES SUPABASE ================== */
 async function obtenerClubesSupabase() {

@@ -1080,19 +1080,14 @@ function filtrarCategorias() {
 
   html += `
   <div class="card equipo-card" onclick="togglePartidosEquipo(${e.id})">
-      <img 
-        src="${club?.escudo || 'img/club-placeholder.png'}"
-        class="escudo-equipo-mini"
-        alt="Escudo ${e.nombre}"
-      >
-      <div class="equipo-info">
-        <strong>${e.nombre}</strong>
-        <div class="equipo-grupo">${e.grupo}</div>
-      </div>
+  <img src="${club?.escudo || 'img/club-placeholder.png'}" class="escudo-equipo-mini">
+  <div class="equipo-info">
+    <strong>${e.nombre}</strong>
+    <div class="equipo-grupo">${e.grupo}</div>
+  </div>
 
-      <!-- 👇 AQUÍ SE DESPLEGARÁN LOS PARTIDOS -->
-      <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
-    </div>
+  <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
+</div>
   `;
 });
 
@@ -1114,22 +1109,45 @@ function togglePartidosEquipo(idEquipo) {
     p.local_id === idEquipo || p.visitante_id === idEquipo
   );
 
-  if (partidosEquipo.length === 0) {
-    contenedor.innerHTML = `<p style="margin:8px 0;">No tiene partidos</p>`;
+  const proximos = partidosEquipo.filter(p => p.estado !== "finalizado");
+  const finalizados = partidosEquipo.filter(p => p.estado === "finalizado");
+
+  let html = "";
+
+  // 🔹 Próximos
+  html += `<div class="bloque-partidos"><strong>⏳ Próximos partidos</strong></div>`;
+  if (proximos.length === 0) {
+    html += `<p class="partido-vacio">No hay próximos partidos</p>`;
   } else {
-    contenedor.innerHTML = partidosEquipo.map(p => {
+    html += proximos.map(p => {
       const local = equipos.find(e => e.id === p.local_id);
       const visitante = equipos.find(e => e.id === p.visitante_id);
-
       return `
         <div class="partido-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-          <strong>${local?.nombre || "-"} vs ${visitante?.nombre || "-"}</strong><br>
-          🕒 ${formatearHora(p.hora)} · ${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}
+          ${local?.nombre || "-"} vs ${visitante?.nombre || "-"}<br>
+          🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
         </div>
       `;
     }).join("");
   }
 
+  // 🔹 Finalizados
+  html += `<div class="bloque-partidos"><strong>🏁 Partidos finalizados</strong></div>`;
+  if (finalizados.length === 0) {
+    html += `<p class="partido-vacio">No hay partidos finalizados</p>`;
+  } else {
+    html += finalizados.map(p => {
+      const local = equipos.find(e => e.id === p.local_id);
+      const visitante = equipos.find(e => e.id === p.visitante_id);
+      return `
+        <div class="partido-mini finalizado" onclick="event.stopPropagation(); abrirPartido(${p.id})">
+          ${local?.nombre || "-"} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre || "-"}
+        </div>
+      `;
+    }).join("");
+  }
+
+  contenedor.innerHTML = html;
   contenedor.classList.remove("oculto");
 }
 

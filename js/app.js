@@ -1,3 +1,7 @@
+window.onerror = function (msg, url, line, col, error) {
+  alert("Error en la app:\n" + msg);
+};
+
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
     registrations.forEach(reg => reg.unregister());

@@ -33,10 +33,6 @@ let mesaActiva = rolUsuario === "mesa";
 
 let clubes = [];
 
-async function cargarClubes() {
-  clubes = await obtenerClubesSupabase();
-  equipos = await obtenerEquiposSupabase();
-
   // 👇 PINTAR LA APP
   mostrarHome();
 
@@ -175,15 +171,22 @@ function abrirWeb(url) {
 
 async function iniciarApp() {
   try {
+    document.body.classList.add("splash-activo");
+
     clubes = await obtenerClubesSupabase();
     equipos = await obtenerEquiposSupabase();
     partidos = await obtenerPartidosSupabase();
     patrocinadores = await obtenerPatrocinadoresSupabase();
 
     mostrarHome();
+
   } catch (e) {
     console.error("Error iniciando app:", e);
     alert("Error cargando datos");
+  } finally {
+    document.body.classList.remove("splash-activo");
+    const splash = document.getElementById("splash");
+    if (splash) splash.remove();
   }
 }
 
@@ -1001,8 +1004,6 @@ async function cargarDatos() {
   patrocinadores = await obtenerPatrocinadoresSupabase();
   mostrarHome();
 }
-
-cargarDatos();
 
 async function crearPartidoSupabase(partido) {
   const { error } = await supabase
@@ -2009,6 +2010,7 @@ window.abrirWeb = abrirWeb;
 
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {
+  iniciarApp();
   const splash = document.getElementById("splash");
 
   setTimeout(() => {
@@ -2018,7 +2020,6 @@ window.addEventListener("load", () => {
     document.body.classList.remove("splash-activo");
 
     // 🔥 PINTAMOS LA PRIMERA VISTA
-    mostrarHome();
   }, 1100);
 
   if (adminActivo) {

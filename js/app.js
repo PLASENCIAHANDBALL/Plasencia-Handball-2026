@@ -245,6 +245,7 @@ function mostrarPartidos() {
 }
 
 function renderPartidoCard(p) {
+  const estadoReal = calcularEstadoPartido(p);
   const equipoLocal = equipos.find(e => e.id === p.local_id);
   const equipoVisitante = equipos.find(e => e.id === p.visitante_id);
 
@@ -279,11 +280,11 @@ function renderPartidoCard(p) {
         </div>
       </div>
 
-      <div class="badge-estado ${p.estado}">
+      <div class="badge-estado ${estadoReal}">
   ${
-    p.estado === "finalizado"
+    estadoReal === "finalizado"
       ? "🏁 Finalizado"
-      : calcularEstadoPartido(p) === "en_juego"
+      : estadoReal === "en_juego"
       ? "🟢 En juego"
       : "🔴 Pendiente"
   }

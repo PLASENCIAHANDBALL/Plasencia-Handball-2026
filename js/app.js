@@ -480,8 +480,6 @@ function abrirPartido(id) {
 
     <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
   ` : `
-    <p>🕒 ${formatearHora(partidoActual.hora)}</p>
-    <p>📍 ${partidoActual.lugar || "-"}</p>
   `;
 
 const fechaBonita = partidoActual.fecha

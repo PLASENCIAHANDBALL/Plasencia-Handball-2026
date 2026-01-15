@@ -608,10 +608,12 @@ function actualizarPartido() {
   abrirPartido(partidoActual.id);
 }
 
-function borrarPartido(id) {
-  if (!confirm("¿Eliminar este partido?")) return;
-  partidos = partidos.filter(p => p.id !== id);
-  guardarPartidos(partidos);
+async function borrarPartido(id) {
+  if (!confirm("¿Eliminar este partido definitivamente?")) return;
+
+  await borrarPartidoSupabase(id);   // 🔥 BORRA EN SUPABASE
+
+  partidos = await obtenerPartidosSupabase(); // 🔄 recarga desde BD
   mostrarPartidos();
 }
 

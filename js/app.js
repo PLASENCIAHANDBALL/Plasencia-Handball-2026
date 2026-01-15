@@ -1,3 +1,15 @@
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => reg.unregister());
+  });
+}
+
+if ("caches" in window) {
+  caches.keys().then(keys => {
+    keys.forEach(key => caches.delete(key));
+  });
+}
+
 import { supabase } from "./supabase.js";
 
 document.body.classList.add("splash-activo");

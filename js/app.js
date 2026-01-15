@@ -38,9 +38,7 @@ let clasificacionFiltro = {
   grupo: ""
 };
 
-let partidos = typeof obtenerPartidos === "function"
-  ? obtenerPartidos()
-  : [];
+let partidos = [];
 
 let partidoActual = null;
 
@@ -206,10 +204,19 @@ function refrescarPartidos() {
 
 function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
+  
+  const proximos = partidos.filter(p => p.estado !== "finalizado");
+const finalizados = partidos.filter(p => p.estado === "finalizado");
 
   if (adminActivo) {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
+
+html += `<h3>⏳ Próximos partidos</h3>`;
+
+if (proximos.length === 0) {
+  html += `<p>No hay próximos partidos</p>`;
+}
 
   partidos.forEach(p => {
     const estadoCalculado = calcularEstadoPartido(p);
@@ -286,7 +293,6 @@ function formNuevoPartido() {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option>Alevín</option>
       <option>Infantil</option>
       <option>Cadete</option>
       <option>Juvenil</option>
@@ -914,7 +920,6 @@ function formNuevoGrupo() {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option>Alevín</option>
       <option>Infantil</option>
       <option>Cadete</option>
       <option>Juvenil</option>
@@ -1009,8 +1014,7 @@ function mostrarCategorias() {
 
     <!-- TABS DE CATEGORÍA -->
     <div class="tabs">
-      <button class="tab active" onclick="seleccionarCategoria('Alevín', this)">Alevín</button>
-      <button class="tab" onclick="seleccionarCategoria('Infantil', this)">Infantil</button>
+      <button class="tab active" onclick="seleccionarCategoria('Infantil', this)">Infantil</button>
       <button class="tab" onclick="seleccionarCategoria('Cadete', this)">Cadete</button>
       <button class="tab" onclick="seleccionarCategoria('Juvenil', this)">Juvenil</button>
     </div>
@@ -1036,7 +1040,7 @@ function mostrarCategorias() {
   `;
 
   // categoría por defecto
-  window.categoriaSeleccionada = "Alevín";
+  window.categoriaSeleccionada = "Infantil";
   filtrarCategorias();
 }
 
@@ -1075,7 +1079,7 @@ function filtrarCategorias() {
   const club = clubes.find(c => c.id === e.club_id);
 
   html += `
-  <div class="card equipo-card" onclick="verPartidosEquipo(${e.id})">
+  <div class="card equipo-card" onclick="togglePartidosEquipo(${e.id})">
       <img 
         src="${club?.escudo || 'img/club-placeholder.png'}"
         class="escudo-equipo-mini"
@@ -1099,7 +1103,7 @@ function togglePartidosEquipo(idEquipo) {
   const contenedor = document.getElementById(`partidos-equipo-${idEquipo}`);
   if (!contenedor) return;
 
-  // 🔁 Si está abierto → cerrar
+  // cerrar si ya está abierto
   if (!contenedor.classList.contains("oculto")) {
     contenedor.classList.add("oculto");
     contenedor.innerHTML = "";
@@ -1107,18 +1111,23 @@ function togglePartidosEquipo(idEquipo) {
   }
 
   const partidosEquipo = partidos.filter(p =>
-  p.local_id === equipo.id || p.visitante_id === equipo.id
-);
+    p.local_id === idEquipo || p.visitante_id === idEquipo
+  );
 
   if (partidosEquipo.length === 0) {
     contenedor.innerHTML = `<p style="margin:8px 0;">No tiene partidos</p>`;
   } else {
-    contenedor.innerHTML = partidosEquipo.map(p => `
-      <div class="partido-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-        🕒 ${formatearHora(p.hora)} · 
-        ${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}
-      </div>
-    `).join("");
+    contenedor.innerHTML = partidosEquipo.map(p => {
+      const local = equipos.find(e => e.id === p.local_id);
+      const visitante = equipos.find(e => e.id === p.visitante_id);
+
+      return `
+        <div class="partido-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
+          <strong>${local?.nombre || "-"} vs ${visitante?.nombre || "-"}</strong><br>
+          🕒 ${formatearHora(p.hora)} · ${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}
+        </div>
+      `;
+    }).join("");
   }
 
   contenedor.classList.remove("oculto");
@@ -1129,46 +1138,6 @@ function volverCategoriasAnimado() {
   contenido.classList.remove("fade-enter", "slide-enter");
   void contenido.offsetWidth;
   contenido.classList.add("fade-enter");
-}
-
-function verPartidosEquipo(idEquipo) {
-  const equipo = equipos.find(e => e.id === idEquipo);
-  if (!equipo) return;
-
-  const partidosEquipo = partidos.filter(p =>
-    p.local === equipo.nombre || p.visitante === equipo.nombre
-  );
-
-  let html = `
-    <h2>${equipo.nombre}</h2>
-    <p>${equipo.categoria} · ${equipo.genero} · ${equipo.grupo}</p>
-
-    <h3>Partidos</h3>
-  `;
-
-  if (partidosEquipo.length === 0) {
-    html += `<p>No hay partidos para este equipo</p>`;
-  }
-
-  partidosEquipo.forEach(p => {
-    const local = equipos.find(e => e.id === p.local_id);
-const visitante = equipos.find(e => e.id === p.visitante_id);
-    
-    html += `
-  <div class="card">
-    <strong>${local?.nombre || "-"} vs ${visitante?.nombre || "-"}</strong>
-    <div>🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}</div>
-    <div>${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}</div>
-    <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-  </div>
-`;
-  });
-
-  html += `
-    <button class="volver" onclick="mostrarCategorias()">⬅ Volver a categorías</button>
-  `;
-
-  cambiarVistaConAnimacion(html, "slide");
 }
 
 function formNuevoEquipo() {
@@ -1190,7 +1159,6 @@ function formNuevoEquipo() {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option>Alevín</option>
       <option>Infantil</option>
       <option>Cadete</option>
       <option>Juvenil</option>
@@ -1290,7 +1258,6 @@ function mostrarClasificacion() {
 
     <div class="subfiltros">
       <select id="clas-cat" onchange="actualizarClasificacion()">
-        <option>Alevín</option>
         <option>Infantil</option>
         <option>Cadete</option>
         <option>Juvenil</option>
@@ -1607,7 +1574,6 @@ function formNuevoEquipoClub(clubId) {
 
     <label>Categoría</label>
     <select id="categoria">
-      <option>Alevín</option>
       <option>Infantil</option>
       <option>Cadete</option>
       <option>Juvenil</option>

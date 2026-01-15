@@ -425,18 +425,26 @@ function abrirPartido(id) {
   <div class="marcador-pro">
 
   <div class="equipo-marcador local">
-    <img src="ESCUDO" class="escudo-marcador">
-    <div class="nombre-equipo">Equipo Local</div>
-    <div class="goles" id="golesLocal">${partidoActual.goles_local ?? 0}</div>
-  </div>
+  <img 
+    src="${clubLocal?.escudo || 'img/club-placeholder.png'}"
+    class="escudo-marcador"
+    alt="${equipoLocal?.nombre}"
+  >
+  <div class="nombre-equipo">${equipoLocal?.nombre || "Equipo local"}</div>
+  <div class="goles" id="golesLocal">${partidoActual.goles_local ?? 0}</div>
+</div>
 
   <div class="separador">–</div>
 
   <div class="equipo-marcador visitante">
-    <img src="ESCUDO" class="escudo-marcador">
-    <div class="nombre-equipo">Equipo Visitante</div>
-    <div class="goles" id="golesVisitante">${partidoActual.goles_visitante ?? 0}</div>
-  </div>
+  <img 
+    src="${clubVisitante?.escudo || 'img/club-placeholder.png'}"
+    class="escudo-marcador"
+    alt="${equipoVisitante?.nombre}"
+  >
+  <div class="nombre-equipo">${equipoVisitante?.nombre || "Equipo visitante"}</div>
+  <div class="goles" id="golesVisitante">${partidoActual.goles_visitante ?? 0}</div>
+</div>
 
 </div>
 
@@ -1285,10 +1293,16 @@ document.addEventListener("partido-finalizado", () => {
 });
 
 function actualizarClasificacion() {
-  const categoria = document.getElementById("clas-cat").value;
-  const genero = document.getElementById("clas-gen").value;
-  const grupo = document.getElementById("clas-grp").value;
+  const cat = document.getElementById("clas-cat");
+  const gen = document.getElementById("clas-gen");
+  const grp = document.getElementById("clas-grp");
 
+  if (!cat || !gen || !grp) return; // 🔒 protección
+
+  const categoria = cat.value;
+  const genero = gen.value;
+  const grupo = grp.value;  
+  
   const clasificacion = calcularClasificacion(
   categoria,
   genero,

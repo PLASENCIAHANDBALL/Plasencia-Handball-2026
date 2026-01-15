@@ -1411,6 +1411,7 @@ async function actualizarClasificacion() {
   pintarTablaClasificacion(data);
 }
 
+  function pintarTablaClasificacion(clasificacion) {
   let html = `
     <table class="tabla clasificacion-pro">
       <tr>
@@ -1427,11 +1428,11 @@ async function actualizarClasificacion() {
   `;
 
   clasificacion.forEach((e, index) => {
-    const equipo = equipos.find(eq => eq.nombre === e.nombre);
+    const equipo = equipos.find(eq => eq.id === e.equipo_id);
     const club = clubes.find(c => c.id === equipo?.club_id);
 
-    let puesto = index + 1;
-    let icono =
+    const puesto = index + 1;
+    const icono =
       puesto === 1 ? "🥇" :
       puesto === 2 ? "🥈" :
       puesto === 3 ? "🥉" :
@@ -1443,7 +1444,7 @@ async function actualizarClasificacion() {
         <td>
           <div class="equipo-tabla">
             ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
-            <span>${e.nombre}</span>
+            <span>${equipo?.nombre || "-"}</span>
           </div>
         </td>
         <td>${e.pj}</td>
@@ -1461,6 +1462,7 @@ async function actualizarClasificacion() {
 
   document.getElementById("tablaClasificacion").innerHTML = html;
 }
+
 /* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
   let html = `<h2>Clubs Participantes</h2>`;

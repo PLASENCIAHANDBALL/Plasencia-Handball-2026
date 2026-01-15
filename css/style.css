@@ -881,15 +881,25 @@ main {
 
 /* ================== TABLA CLASIFICACIÓN ================== */
 
+/* ================== CONTENEDOR ================== */
+.tabla-wrapper {
+  width: 100%;
+  overflow-x: auto;          /* 🔥 evita que la app se ensanche */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================== TABLA ================== */
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  table-layout: fixed;       /* 🔥 clave para que NO rompa el layout */
+  font-size: 13px;
 }
 
+/* Celdas */
 .tabla th,
 .tabla td {
-  padding: 6px 6px;
+  padding: 6px 4px;
   text-align: center;
   border-bottom: 1px solid #ddd;
   white-space: nowrap;
@@ -902,7 +912,7 @@ main {
   font-weight: 600;
 }
 
-/* Columna equipo */
+/* ================== EQUIPO ================== */
 .equipo-tabla {
   display: flex;
   align-items: center;
@@ -910,38 +920,30 @@ main {
   text-align: left;
 }
 
-/* Escudos */
 .escudo-tabla {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
-/* PUNTOS en negrita */
-.col-puntos,
-.tabla td:last-child {
-  font-weight: 700;
-}
-
-/* POSICIÓN */
+/* ================== POSICIÓN ================== */
 .posicion {
-  font-weight: normal; /* ⛔ sin negrita por defecto */
+  font-weight: normal; /* ⛔ nada en negrita */
 }
 
 /* Medallas */
-.posicion.medalla-oro {
+.medalla-oro,
+.medalla-plata,
+.medalla-bronce {
   font-weight: 700;
 }
 
-.posicion.medalla-plata {
-  font-weight: 700;
+/* ================== PUNTOS ================== */
+.col-puntos {
+  font-weight: 700;    /* ✅ SOLO puntos en negrita */
 }
 
-.posicion.medalla-bronce {
-  font-weight: 700;
-}
-
-/* ================== AJUSTE MÓVIL ================== */
+/* ================== MÓVIL ================== */
 @media (max-width: 480px) {
 
   .tabla {
@@ -950,15 +952,6 @@ main {
 
   .tabla th,
   .tabla td {
-    padding: 5px 4px;
-  }
-
-  .escudo-tabla {
-    width: 18px;
-    height: 18px;
-  }
-
-  .equipo-tabla {
-    gap: 4px;
+    padding: 5px 3px;
   }
 }

@@ -611,10 +611,23 @@ function actualizarPartido() {
 async function borrarPartido(id) {
   if (!confirm("¿Eliminar este partido definitivamente?")) return;
 
-  await borrarPartidoSupabase(id);   // 🔥 BORRA EN SUPABASE
+  const partido = partidos.find(p => p.id === id);
 
-  partidos = await obtenerPartidosSupabase(); // 🔄 recarga desde BD
+  await borrarPartidoSupabase(id);
+
+  partidos = await obtenerPartidosSupabase();
+
+  // 🔥 recalcular clasificación SI estaba finalizado
+  if (partido?.estado === "finalizado") {
+    await guardarClasificacionSupabase(
+      partido.categoria,
+      partido.genero,
+      partido.grupo
+    );
+  }
+
   mostrarPartidos();
+  actualizarClasificacion();
 }
 
 function calcularEstadoPartido(partido) {
@@ -1449,22 +1462,26 @@ async function actualizarClasificacion() {
   if (index === 2) posicion = "🥉";
 
   html += `
-    <tr>
-      <td class="posicion">${posicion}</td>
-        <td>
-          <div class="equipo-tabla">
-            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
-            ${equipo?.nombre}
-          </div>
-        </td>
-        <td class="col-mini">${fila.pj}</td>
-<td class="col-mini">${fila.pg}</td>
-<td class="col-mini">${fila.pe}</td>
-<td class="col-mini">${fila.pp}</td>
-<td class="col-mini">${fila.gf}</td>
-<td class="col-mini">${fila.gc}</td>
-      </tr>
-    `;
+  <tr>
+    <td class="posicion">${posicion}</td>
+
+    <td>
+      <div class="equipo-tabla">
+        ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
+        <span class="nombre-equipo-tabla">${equipo?.nombre || "-"}</span>
+      </div>
+    </td>
+
+    <td class="col-mini">${fila.pj}</td>
+    <td class="col-mini">${fila.pg}</td>
+    <td class="col-mini">${fila.pe}</td>
+    <td class="col-mini">${fila.pp}</td>
+    <td class="col-mini">${fila.gf}</td>
+    <td class="col-mini">${fila.gc}</td>
+
+    <td class="col-puntos"><strong>${fila.puntos}</strong></td>
+  </tr>
+`;
   });
 
   html += `</table>`;

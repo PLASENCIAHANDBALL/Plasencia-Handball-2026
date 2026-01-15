@@ -204,81 +204,105 @@ function refrescarPartidos() {
 
 function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
-  
-  const proximos = partidos.filter(p => p.estado !== "finalizado");
-const finalizados = partidos.filter(p => p.estado === "finalizado");
 
   if (adminActivo) {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
 
-html += `<h3>⏳ Próximos partidos</h3>`;
+  // 🔹 ordenar por fecha + hora
+  const ordenados = [...partidos].sort((a, b) => {
+    const fa = new Date(`${a.fecha}T${a.hora || "00:00"}`);
+    const fb = new Date(`${b.fecha}T${b.hora || "00:00"}`);
+    return fa - fb;
+  });
 
-if (proximos.length === 0) {
-  html += `<p>No hay próximos partidos</p>`;
-}
+  const proximos = ordenados.filter(p => p.estado !== "finalizado");
+  const finalizados = ordenados.filter(p => p.estado === "finalizado").reverse();
 
-  partidos.forEach(p => {
-    const estadoCalculado = calcularEstadoPartido(p);
+  /* ===== PRÓXIMOS ===== */
+  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
 
-    // 🔹 Buscar equipos por ID
-    const equipoLocal = equipos.find(e => e.id === p.local_id);
-    const equipoVisitante = equipos.find(e => e.id === p.visitante_id);
+  if (proximos.length === 0) {
+    html += `<p>No hay próximos partidos</p>`;
+  }
 
-    // 🔹 Buscar clubes de esos equipos
-    const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
-    const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
+  proximos.forEach(p => {
+    html += renderPartidoCard(p);
+  });
 
-    html += `
-      <div class="card">
+  /* ===== FINALIZADOS ===== */
+  html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
 
-        <div class="partido-equipos">
-          <div class="equipo-partido">
-            ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-partido">` : ""}
-            <span>${equipoLocal?.nombre || "-"}</span>
-          </div>
+  if (finalizados.length === 0) {
+    html += `<p>No hay partidos finalizados</p>`;
+  }
 
-          <span class="vs">vs</span>
-
-          <div class="equipo-partido">
-            ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
-            <span>${equipoVisitante?.nombre || "-"}</span>
-          </div>
-        </div>
-
-        <div class="partido-estado estado-${estadoCalculado}">
-          ${
-            estadoCalculado === "en_juego"
-              ? "🟢 En juego"
-              : estadoCalculado === "finalizado"
-              ? "🏁 Finalizado"
-              : "⏳ Pendiente"
-          }
-        </div>
-
-        <div class="partido-info">
-          🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
-        </div>
-
-        <div class="partido-grupo">
-          🏷️ ${p.grupo}
-        </div>
-
-        <button onclick="abrirPartido(${p.id})">Abrir partido</button>
-
-        ${
-          adminActivo
-            ? `
-              <button onclick="editarPartido(${p.id})">✏️ Editar</button>
-              <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
-            `
-            : ""
-        }
-      </div>
-    `;
+  finalizados.forEach(p => {
+    html += renderPartidoCard(p);
   });
 
   contenido.innerHTML = html;
+}
+
+function renderPartidoCard(p) {
+  const equipoLocal = equipos.find(e => e.id === p.local_id);
+  const equipoVisitante = equipos.find(e => e.id === p.visitante_id);
+
+  const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
+  const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
+
+  const fechaBonita = p.fecha
+    ? new Date(p.fecha).toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long"
+      })
+    : "";
+
+  return `
+    <div class="card partido-card">
+
+      <!-- 📅 FECHA ARRIBA -->
+      <div class="partido-fecha"><strong>${fechaBonita}</strong></div>
+
+      <div class="partido-equipos">
+        <div class="equipo-partido">
+          ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-partido">` : ""}
+          <span>${equipoLocal?.nombre || "-"}</span>
+        </div>
+
+        <span class="vs">vs</span>
+
+        <div class="equipo-partido">
+          ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
+          <span>${equipoVisitante?.nombre || "-"}</span>
+        </div>
+      </div>
+
+      <div class="partido-info">
+        🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+      </div>
+
+      <div class="partido-grupo">🏷️ ${p.grupo}</div>
+
+      ${
+        p.estado === "finalizado"
+          ? `<div class="resultado-final"><strong>${p.goles_local} - ${p.goles_visitante}</strong></div>`
+          : ""
+      }
+
+      <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+
+      ${
+        adminActivo
+          ? `
+            <button onclick="editarPartido(${p.id})">✏️ Editar</button>
+            <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
+          `
+          : ""
+      }
+    </div>
+  `;
 }
 
 function formNuevoPartido() {

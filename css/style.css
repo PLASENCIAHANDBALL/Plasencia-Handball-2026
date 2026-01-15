@@ -955,3 +955,38 @@ main {
     padding: 5px 3px;
   }
 }
+
+/* === TABLA CLASIFICACIÓN === */
+
+.tabla-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla.clasificacion-pro {
+  width: 100%;
+  min-width: 720px; /* NO agranda la app */
+  border-collapse: collapse;
+}
+
+/* celda equipo */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.nombre-equipo-tabla {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* escudos */
+.escudo-tabla {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}

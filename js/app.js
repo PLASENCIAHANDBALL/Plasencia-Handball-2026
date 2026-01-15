@@ -1425,38 +1425,42 @@ async function actualizarClasificacion() {
   let html = `
     <table class="tabla clasificacion-pro">
       <tr>
-        <th>#</th>
-        <th>Equipo</th>
-        <th>PJ</th>
-        <th>PG</th>
-        <th>PE</th>
-        <th>PP</th>
-        <th>GF</th>
-        <th>GC</th>
-        <th>Pts</th>
+        <th class="col-pos">#</th>
+        <th class="col-equipo">Equipo</th>
+        <th class="col-mini">PJ</th>
+        <th class="col-mini">PG</th>
+        <th class="col-mini">PE</th>
+        <th class="col-mini">PP</th>
+        <th class="col-mini">GF</th>
+        <th class="col-mini">GC</th>
+        <th class="col-puntos">Pts</th>
       </tr>
   `;
 
   data.forEach((fila, index) => {
-    const equipo = equipos.find(e => e.id === fila.equipo_id);
-    const club = clubes.find(c => c.id === equipo?.club_id);
+  const equipo = equipos.find(e => e.id === fila.equipo_id);
+  const club = clubes.find(c => c.id === equipo?.club_id);
 
-    html += `
-      <tr>
-        <td>${index + 1}</td>
+  let posicion = index + 1;
+  if (index === 0) posicion = "🥇";
+  if (index === 1) posicion = "🥈";
+  if (index === 2) posicion = "🥉";
+
+  html += `
+    <tr>
+      <td class="posicion">${posicion}</td>
         <td>
           <div class="equipo-tabla">
             ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
             ${equipo?.nombre}
           </div>
         </td>
-        <td>${fila.pj}</td>
-        <td>${fila.pg}</td>
-        <td>${fila.pe}</td>
-        <td>${fila.pp}</td>
-        <td>${fila.gf}</td>
-        <td>${fila.gc}</td>
-        <td>${fila.puntos}</td>
+        <td class="col-mini">${fila.pj}</td>
+<td class="col-mini">${fila.pg}</td>
+<td class="col-mini">${fila.pe}</td>
+<td class="col-mini">${fila.pp}</td>
+<td class="col-mini">${fila.gf}</td>
+<td class="col-mini">${fila.gc}</td>
       </tr>
     `;
   });

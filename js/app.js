@@ -416,12 +416,6 @@ function abrirPartido(id) {
   `;
 
   contenido.innerHTML = `
-  <h2>
-  ${equipoLocal?.nombre || "Equipo local"}
-  vs
-  ${equipoVisitante?.nombre || "Equipo visitante"}
-</h2>
-
   <div class="marcador-pro">
 
   <div class="equipo-marcador local">

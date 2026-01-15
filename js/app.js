@@ -1075,7 +1075,7 @@ function filtrarCategorias() {
   const club = clubes.find(c => c.id === e.club_id);
 
   html += `
-    <div class="card equipo-card">
+    <div class="card equipo-card" onclick="togglePartidosEquipo(${e.id})">
       <img 
         src="${club?.escudo || 'img/club-placeholder.png'}"
         class="escudo-equipo-mini"
@@ -1085,11 +1085,43 @@ function filtrarCategorias() {
         <strong>${e.nombre}</strong>
         <div class="equipo-grupo">${e.grupo}</div>
       </div>
+
+      <!-- 👇 AQUÍ SE DESPLEGARÁN LOS PARTIDOS -->
+      <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
     </div>
   `;
 });
 
   document.getElementById("listaCategorias").innerHTML = html;
+}
+
+function togglePartidosEquipo(idEquipo) {
+  const contenedor = document.getElementById(`partidos-equipo-${idEquipo}`);
+  if (!contenedor) return;
+
+  // 🔁 Si está abierto → cerrar
+  if (!contenedor.classList.contains("oculto")) {
+    contenedor.classList.add("oculto");
+    contenedor.innerHTML = "";
+    return;
+  }
+
+  const partidosEquipo = partidos.filter(p =>
+    p.local_id === idEquipo || p.visitante_id === idEquipo
+  );
+
+  if (partidosEquipo.length === 0) {
+    contenedor.innerHTML = `<p style="margin:8px 0;">No tiene partidos</p>`;
+  } else {
+    contenedor.innerHTML = partidosEquipo.map(p => `
+      <div class="partido-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
+        🕒 ${formatearHora(p.hora)} · 
+        ${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}
+      </div>
+    `).join("");
+  }
+
+  contenedor.classList.remove("oculto");
 }
 
 function volverCategoriasAnimado() {
@@ -1649,6 +1681,7 @@ window.guardarDatosPartido = guardarDatosPartido;
 // categorías / equipos
 window.seleccionarCategoria = seleccionarCategoria;
 window.filtrarCategorias = filtrarCategorias;
+window.togglePartidosEquipo = togglePartidosEquipo;
 window.verPartidosEquipo = verPartidosEquipo;
 window.formNuevoEquipo = formNuevoEquipo;
 window.guardarNuevoEquipo = guardarNuevoEquipo;

@@ -990,3 +990,50 @@ main {
   height: 22px;
   object-fit: contain;
 }
+
+/* ===== TABLA CLASIFICACIÓN (FIX NOMBRES) ===== */
+
+.tabla.clasificacion-pro {
+  table-layout: fixed;   /* 🔑 CLAVE */
+  width: 100%;
+  min-width: 720px;
+}
+
+/* columna posición */
+.tabla.clasificacion-pro th.col-pos,
+.tabla.clasificacion-pro td.posicion {
+  width: 42px;
+  text-align: center;
+}
+
+/* columna equipo */
+.tabla.clasificacion-pro th.col-equipo,
+.tabla.clasificacion-pro td:nth-child(2) {
+  width: 200px;          /* 🔑 ancho fijo */
+  max-width: 200px;
+}
+
+/* contenido equipo */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* nombre del equipo */
+.nombre-equipo-tabla {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* escudo */
+.escudo-tabla {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0; /* 🔑 evita que el escudo se aplaste */
+}

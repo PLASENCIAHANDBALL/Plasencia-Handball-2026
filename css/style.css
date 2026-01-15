@@ -878,3 +878,68 @@ main {
   background: #f2f2f2;
   color: #555;
 }
+
+/* ===== TABLA CLASIFICACIÓN ===== */
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla th,
+.tabla td {
+  padding: 6px 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.col-equipo {
+  text-align: left;
+}
+
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.escudo-tabla {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.col-mini {
+  width: 32px;
+}
+
+.col-puntos {
+  width: 38px;
+  font-weight: bold;
+  color: #f59e0b;
+}
+
+.posicion {
+  font-weight: bold;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 480px) {
+  .tabla {
+    font-size: 12px;
+  }
+
+  .escudo-tabla {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* ocultamos PE y PP en móvil */
+  .tabla th:nth-child(5),
+  .tabla td:nth-child(5),
+  .tabla th:nth-child(6),
+  .tabla td:nth-child(6) {
+    display: none;
+  }
+}

@@ -33,17 +33,6 @@ let mesaActiva = rolUsuario === "mesa";
 
 let clubes = [];
 
-  // 👇 PINTAR LA APP
-  mostrarHome();
-
-  document.body.classList.remove("splash-activo");
-
-const splash = document.getElementById("splash");
-if (splash) splash.remove();
-}
-
-cargarClubes();
-
 let clasificacionFiltro = {
   categoria: "Infantil",
   genero: "Masculino",

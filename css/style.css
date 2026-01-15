@@ -65,6 +65,23 @@ button:active {
   margin-bottom: 12px;
 }
 
+.bloque-titulo {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.partido-fecha {
+  margin-bottom: 6px;
+  font-size: 15px;
+  text-transform: capitalize;
+  opacity: 0.85;
+}
+
+.resultado-final {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
 /* PARTIDOS */
 .partido-nombre {
   font-weight: bold;

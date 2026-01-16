@@ -24,20 +24,20 @@ body {
 
 .app-header {
   position: relative;
-  height: 140px; /* 🔑 mucho más compacto */
-  padding-top: env(safe-area-inset-top); /* notch iPhone */
+  height: 180px;                /* altura real del header */
   
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-
+  background-size: cover;       /* 🔑 rellena de arriba a abajo */
+  background-position: center bottom; /* 🔑 baja la imagen */
+  
   background-color: #f4a261;
 }
 
 @media (max-width: 768px) {
   .app-header {
-    height: 120px;
+    height: 160px;
+    background-position: center bottom;
   }
 }
 

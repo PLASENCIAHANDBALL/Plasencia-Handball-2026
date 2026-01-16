@@ -184,7 +184,9 @@ body.splash-activo .bottom-nav {
 }
 
 .bottom-nav button span {
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .bottom-nav button:active {
@@ -219,40 +221,44 @@ button:active {
 
 /* contenedor del menú */
 .bottom-nav {
-  position: relative;
-  margin: -35px auto 20px; /* sube el menú sobre el header */
-  width: calc(100% - 32px);
-  max-width: 900px;
+  position: absolute;
+  left: 50%;
+  top: 140px;                 /* debajo del logo */
+  transform: translateX(-50%);
 
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(6px);
+  width: calc(100% - 32px);   /* 🔑 nunca se sale */
+  max-width: 420px;
 
-  border-radius: 28px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+  height: 78px;
+  background: #ffffff;
+  border-radius: 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between; /* 🔑 reparto exacto */
   align-items: center;
+  padding: 0 14px;
 
-  padding: 14px 10px;
-  z-index: 50;
+  z-index: 1200;
 }
 
 /* botones */
 .bottom-nav button {
+  flex: 1;                     /* 🔑 todos iguales */
   background: none;
   border: none;
-  padding: 0;
-  width: auto;
+  box-shadow: none;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
 
-  font-size: 20px;
-  color: #444;
-  cursor: pointer;
+  padding: 0;
+  margin: 0;
+
+  color: #666;
+  font-size: 12px;
 }
 
 /* texto */

@@ -420,6 +420,7 @@ button:active {
 .equipo-marcador {
   width: min(42vw, 140px);  /* 🔥 se adapta al móvil */
   max-width: 140px;
+  flex-shrink: 0;
   padding: 16px 10px;
   border-radius: 22px;
   display: flex;
@@ -1229,4 +1230,12 @@ main,
 
 body {
   overflow-x: hidden;
+}
+
+.bottom-nav {
+  overflow: hidden;
+}
+
+.bottom-nav button {
+  max-width: 100%;
 }

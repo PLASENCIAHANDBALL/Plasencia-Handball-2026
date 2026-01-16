@@ -1,3 +1,5 @@
+import { supabase } from "./supabase.js";
+
 window.onerror = function (msg, url, line, col, error) {
   alert("Error en la app:\n" + msg);
 };
@@ -13,8 +15,6 @@ if ("caches" in window) {
     keys.forEach(key => caches.delete(key));
   });
 }
-
-import { supabase } from "./supabase.js";
 
 document.body.classList.add("splash-activo");
 

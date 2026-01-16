@@ -187,10 +187,8 @@ body.splash-activo .bottom-nav {
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 20px);
-  max-width: 600px;
+  left: 0;
+  right: 0;
   height: 65px;
   background: #ffffff;
   border-top: 1px solid #ddd;
@@ -898,6 +896,11 @@ main {
 /* ================== TABLA CLASIFICACIÓN ================== */
 
 /* ================== CONTENEDOR ================== */
+.tabla-wrapper {
+  width: 100%;
+  overflow-x: auto;          /* 🔥 evita que la app se ensanche */
+  -webkit-overflow-scrolling: touch;
+}
 
 /* ================== TABLA ================== */
 .tabla {
@@ -969,16 +972,15 @@ main {
 
 /* === TABLA CLASIFICACIÓN === */
 
-.tabla-wrapper,
-.patrocinadores-scroll {
-  max-width: 100%;
+.tabla-wrapper {
+  width: 100%;
   overflow-x: auto;
 }
 
-@media (max-width: 768px) {
-  .tabla.clasificacion-pro {
-    min-width: 100%;
-  }
+.tabla.clasificacion-pro {
+  width: 100%;
+  min-width: 720px; /* NO agranda la app */
+  border-collapse: collapse;
 }
 
 /* celda equipo */
@@ -1119,10 +1121,3 @@ body.splash-activo #splash {
 }
 
 #splash.splash-hide img {
-
-html,
-body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}

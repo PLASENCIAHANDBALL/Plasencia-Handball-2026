@@ -2029,16 +2029,6 @@ window.abrirWeb = abrirWeb;
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {
   iniciarApp();
-  const splash = document.getElementById("splash");
-
-  setTimeout(() => {
-    if (splash) splash.remove();
-
-    // 🔥 ESTA LÍNEA ES LA CLAVE
-    document.body.classList.remove("splash-activo");
-
-    // 🔥 PINTAMOS LA PRIMERA VISTA
-  }, 1100);
 
   if (adminActivo) {
     document.getElementById("admin-fab")?.classList.add("admin-activo");

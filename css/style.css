@@ -1,31 +1,11 @@
-/* ======================================================
-   VARIABLES GLOBALES
-====================================================== */
-
 :root {
-  --primary: #f4a261;
-  --primary-dark: #e76f51;
-  --secondary: #264653;
-
-  --bg-app: #f5f5f5;
-  --bg-card: #ffffff;
-
-  --text-main: #1f2933;
-  --text-soft: #6b7280;
-
-  --glass-bg: rgba(255,255,255,0.18);
-  --glass-border: rgba(255,255,255,0.35);
-
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 26px;
-
-  --shadow-soft: 0 6px 18px rgba(0,0,0,0.12);
+  --principal: #f4a261;       /* naranja claro */
+  --principal-suave: #fde8d7; /* fondo suave */
+  --oscuro: #1f2933;          /* texto */
+  --gris: #f6f6f6;
+  --blanco: #ffffff;
+  --sombra: 0 4px 12px rgba(0,0,0,0.12);
 }
-
-/* ======================================================
-   RESET + BASE
-====================================================== */
 
 * {
   box-sizing: border-box;
@@ -34,145 +14,170 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  background: var(--bg-app);
-  color: var(--text-main);
+  background: var(--gris);
+  color: var(--oscuro);
 }
 
-main {
-  min-height: 100vh;
-  padding: 15px;
-  padding-bottom: 110px;
-}
-
-/* ======================================================
-   CABECERA
-====================================================== */
-
+/* CABECERA APP */
 .app-header {
-  position: relative;
-  height: 200px;
-  background-image: url("../img/header.png");
-  background-size: cover;
-  background-position: center;
+  background: var(--principal);
+  height: 180px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
-.app-header::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.35),
-    rgba(0,0,0,0.6)
-  );
-}
-
+/* LOGO */
 .app-header img {
-  position: relative;
-  z-index: 1;
-  max-height: 140px;
+  max-height: 200px;
+  width: auto;
+  display: block;
 }
 
-@media (max-width: 768px) {
-  .app-header {
-    height: 160px;
-  }
-  .app-header img {
-    max-height: 110px;
-  }
+/* CONTENIDO */
+main {
+  padding: 15px;
 }
 
-/* ======================================================
-   BOTONES
-====================================================== */
-
+/* BOTONES GENERALES */
 button {
   width: 100%;
   padding: 14px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: var(--bg-card);
   font-size: 16px;
-  font-weight: 600;
-  box-shadow: var(--shadow-soft);
+  border: none;
+  border-radius: 10px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
 }
 
 button:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-button.primario {
-  background: var(--primary);
+/* TARJETAS */
+.card {
+  background: var(--blanco);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+  margin-bottom: 12px;
+}
+
+.bloque-titulo {
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.partido-fecha {
+  margin-bottom: 6px;
+  font-size: 15px;
+  text-transform: capitalize;
+  opacity: 0.85;
+}
+
+.resultado-final {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+/* PARTIDOS */
+.partido-nombre {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.partido-marcador {
+  font-size: 18px;
+  text-align: right;
+}
+
+/* BOTONES MARCADOR */
+.boton-local {
+  background: #ffe5e5;
+}
+
+.boton-visitante {
+  background: #e5f0ff;
+}
+
+.volver {
+  background: var(--principal);
   color: white;
 }
 
-button.secundario {
-  background: transparent;
-  border: 2px solid var(--primary);
-  color: var(--primary);
+/* CLASIFICACION */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
 }
 
-/* ======================================================
-   TARJETAS
-====================================================== */
-
-.card {
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 14px;
+.tabla th, .tabla td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
 }
 
-/* ======================================================
-   SPLASH SCREEN
-====================================================== */
+.tabla th {
+  background: var(--principal);
+  color: white;
+}
+
+/* =========================
+   SPLASH SCREEN (CORRECTO)
+========================= */
 
 #splash {
   position: fixed;
   inset: 0;
-  background: var(--primary);
-  z-index: 9999;
+  background: white;
   display: flex;
-  align-items: center;
   justify-content: center;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  align-items: center;
+  z-index: 9999;
 }
 
+/* Logo */
 #splash img {
-  width: 300px;
+  width: 400px;
   max-width: 70%;
+  height: auto;
+  animation: splashZoom 0.8s ease-out;
 }
 
-#splash.splash-hide {
-  opacity: 0;
-  transform: scale(1.05);
-  pointer-events: none;
+@keyframes splashZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-body.splash-activo main,
-body.splash-activo header,
-body.splash-activo .bottom-nav,
-body.splash-activo #admin-fab {
+/* Ocultar contenido mientras está el splash */
+body.splash-activo main {
   display: none;
 }
 
-/* ======================================================
-   MENÚ INFERIOR (APP)
-====================================================== */
+body.splash-activo header,
+body.splash-activo #admin-fab,
+body.splash-activo .bottom-nav {
+  display: none !important;
+}
 
+/* MENÚ INFERIOR */
 .bottom-nav {
   position: fixed;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  height: 75px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
   background: #ffffff;
-  border-radius: 22px;
-  box-shadow: var(--shadow-soft);
+  border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -181,53 +186,129 @@ body.splash-activo #admin-fab {
 
 .bottom-nav button {
   background: none;
-  box-shadow: none;
-  width: auto;
-  padding: 0;
+  border: none;
+  font-size: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: #555;
 }
 
+.bottom-nav button span {
+  font-size: 12px;
+}
+
+.bottom-nav button:active {
+  color: #c4161c;
+}
+
+/* Para que el contenido no quede tapado */
+main {
+  padding-bottom: 80px;
+}
+
+/* =========================
+   BOTONES GENERALES (MEJORADOS)
+========================= */
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 14px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   MENÚ INFERIOR TIPO APP
+========================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  height: 75px;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Cada botón del menú */
+.bottom-nav button {
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+}
+
+/* Icono circular */
 .nav-icon {
   width: 46px;
   height: 46px;
   background: #f0f0f0;
   border-radius: 50%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   font-size: 22px;
   margin-bottom: 4px;
 }
 
+/* Texto debajo */
 .bottom-nav span {
   font-size: 11px;
 }
 
-/* ======================================================
-   PARTIDOS
-====================================================== */
+/* Botón activo (cuando pulses) */
+.bottom-nav button:active .nav-icon {
+  background: var(--rojo);
+  color: white;
+}
 
+/* Evitar que el contenido quede tapado */
+main {
+  padding-bottom: 110px;
+}
+
+/* =========================
+   PARTIDOS – VISTA PRO
+========================= */
 .partido-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
   padding: 16px;
   margin-bottom: 14px;
 }
 
+/* Equipos + marcador */
 .partido-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .equipo {
   width: 35%;
-  text-align: center;
   font-weight: 600;
+  font-size: 15px;
+  text-align: center;
 }
 
 .marcador {
@@ -236,14 +317,110 @@ body.splash-activo #admin-fab {
   color: white;
   font-size: 20px;
   font-weight: bold;
-  border-radius: 12px;
   padding: 8px 0;
+  border-radius: 12px;
   text-align: center;
 }
 
-/* ======================================================
-   MARCADOR PRO
-====================================================== */
+/* Botón abrir */
+.abrir-btn {
+  background: var(--principal);
+  color: white;
+  font-weight: 600;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(244,162,97,0.5);
+}
+
+.abrir-btn:active {
+  transform: scale(0.96);
+}
+
+/* =========================
+   TABS DE CATEGORÍAS
+========================= */
+.tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 15px;
+}
+
+.tab {
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #eaeaea;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background: var(--principal);
+  color: white;
+}
+
+/* SUBFILTROS */
+.subfiltros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.subfiltros select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: var(--sombra);
+}
+
+/* BOTÓN ADMIN FLOTANTE */
+#admin-fab {
+  position: fixed;
+  bottom: 85px; /* por encima de la barra inferior */
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--principal);
+  color: white;
+  font-size: 22px;
+  box-shadow: var(--sombra);
+  z-index: 1200;
+}
+
+#admin-fab.admin-activo {
+  background: #2ecc71;
+}
+
+/* ===== MARCADOR PRO DEFINITIVO ===== */
+.marcador-pro {
+  overflow: visible;
+  padding-top: 20px;
+}
+
+.equipo-marcador {
+  overflow: visible;
+}
+
+.escudo-marcador {
+  max-width: 70px;
+  max-height: 70px;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .marcador-pro {
+    padding-top: 32px;
+  }
+
+  .escudo-marcador {
+    max-width: 60px;
+    max-height: 60px;
+  }
+}
 
 .marcador-pro {
   display: flex;
@@ -253,6 +430,7 @@ body.splash-activo #admin-fab {
   margin: 30px 0;
 }
 
+/* Bloque equipo */
 .equipo-marcador {
   width: 140px;
   padding: 16px 10px;
@@ -265,6 +443,7 @@ body.splash-activo #admin-fab {
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 }
 
+/* Local / Visitante */
 .equipo-marcador.local {
   background: linear-gradient(135deg, #ffb26b, #ff8c3a);
 }
@@ -273,156 +452,167 @@ body.splash-activo #admin-fab {
   background: linear-gradient(135deg, #6bbcff, #3a7dff);
 }
 
+/* Escudo grande */
 .escudo-marcador {
   width: 64px;
   height: 64px;
   object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
 }
 
+/* Nombre equipo */
 .nombre-equipo {
   font-size: 14px;
   font-weight: 600;
   text-align: center;
+  line-height: 1.2;
+  opacity: 0.95;
 }
 
+/* GOLES (protagonistas) */
 .goles {
   font-size: 48px;
   font-weight: 800;
-  color: #e5e7eb;
+  color: #9ca3af;        /* gris claro */
+  line-height: 1;
 }
 
+/* si quieres distinguir un poco local y visitante */
+.equipo-marcador.local .goles {
+  color: #94a3b8;
+}
+
+.equipo-marcador.visitante .goles {
+  color: #9ca3af;
+}
+
+/* Animación al cambiar */
+.goles.animar {
+  transform: scale(1.25);
+  color: #fffbe6;
+}
+
+/* Separador */
 .separador {
   font-size: 42px;
   font-weight: 800;
   color: #555;
 }
 
-/* ======================================================
-   BOTONES MARCADOR
-====================================================== */
+/* =========================
+   BOTONES + / -
+========================= */
 
 .marcador-botones {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  margin-top: 20px;
 }
 
 .btn-local {
   background: #fff3e0;
   color: #e65100;
+  font-weight: 700;
 }
 
 .btn-visitante {
   background: #e3f2fd;
   color: #0d47a1;
+  font-weight: 700;
 }
 
-/* ======================================================
-   TABS CATEGORÍAS
-====================================================== */
+.btn-local:active,
+.btn-visitante:active {
+  transform: scale(0.96);
+}
 
-.tabs {
+.marcador-pro {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  margin-bottom: 15px;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  margin: 25px 0;
 }
 
-.tab {
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: #eaeaea;
-  font-weight: 600;
-}
-
-.tab.active {
-  background: var(--primary);
+.equipo-marcador {
+  width: 90px;
+  height: 90px;
+  background: #111;
   color: white;
-}
-
-/* ======================================================
-   CLASIFICACIÓN
-====================================================== */
-
-.tabla-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.tabla {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.tabla th {
-  background: var(--primary);
-  color: white;
-  padding: 8px 4px;
-}
-
-.tabla td {
-  padding: 6px 4px;
-  border-bottom: 1px solid #ddd;
-  text-align: center;
-}
-
-.equipo-tabla {
+  font-size: 42px;
+  font-weight: bold;
+  border-radius: 18px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.escudo-tabla {
-  width: 22px;
-  height: 22px;
-}
-
-/* ======================================================
-   CLUBES
-====================================================== */
-
-.club-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f4f4f4;
-  padding: 14px;
-  border-radius: var(--radius-md);
-  margin-bottom: 12px;
-}
-
-.club-info {
-  display: flex;
-  gap: 12px;
+  justify-content: center;
   align-items: center;
 }
 
-.club-escudo {
-  width: 46px;
-  height: 46px;
-  object-fit: contain;
+.equipo-marcador.local {
+  background: linear-gradient(135deg, #ffb26b, #ff8c3a);
 }
 
-/* ======================================================
-   PATROCINADORES
-====================================================== */
+.equipo-marcador.visitante {
+  background: linear-gradient(135deg, #6bbcff, #3a7dff);
+}
 
+.separador {
+  font-size: 42px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* =========================
+   ANIMACIONES DE TRANSICIÓN
+========================= */
+
+.fade-enter {
+  animation: fadeEnter 0.25s ease-out;
+}
+
+.slide-enter {
+  animation: slideEnter 0.3s ease-out;
+}
+
+@keyframes fadeEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideEnter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* PATROCINADORES */
 .patrocinadores-scroll {
   display: flex;
   gap: 16px;
   overflow-x: auto;
-  padding-bottom: 20px;
+  padding: 10px 4px 20px;
+  scroll-snap-type: x mandatory;
 }
 
 .patrocinador-card {
   min-width: 220px;
+  max-width: 220px;
   background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   padding: 14px;
   text-align: center;
+  position: relative;
+  scroll-snap-align: start;
 }
 
 .patrocinador-card img {
@@ -431,110 +621,491 @@ body.splash-activo #admin-fab {
   object-fit: contain;
   border-radius: 12px;
 }
-/* ======================================================
-   OTROS
-====================================================== */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-  overscroll-behavior: none;
+
+.patrocinador-nombre {
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 15px;
 }
 
-button,
-.nav-btn,
-.bottom-nav button {
-  min-height: 44px;   /* estándar móvil */
-  touch-action: manipulation;
+.patrocinador-card button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff5c5c;
+  color: white;
+  font-size: 14px;
+  padding: 0;
 }
 
-body {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
+.patrocinador-card img {
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-input, textarea {
-  user-select: text;
+.patrocinador-card img:active {
+  transform: scale(0.95);
 }
 
-.tabs,
-.patrocinadores-scroll,
+.btn-borrar-patrocinador {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* =========================
+   CLASIFICACIÓN PRO
+========================= */
+
+.clasificacion-pro {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.clasificacion-pro th {
+  background: #f59e0b; /* naranja */
+  color: white;
+  font-size: 13px;
+  padding: 10px 6px;
+}
+
+.clasificacion-pro td {
+  padding: 8px 6px;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.clasificacion-pro .equipo {
+  text-align: left;
+  font-weight: 600;
+}
+
+.clasificacion-pro .puesto {
+  font-weight: bold;
+  width: 40px;
+}
+
+.clasificacion-pro .puntos {
+  font-weight: bold;
+  color: #d97706;
+}
+
+/* Líder */
+.clasificacion-pro tr.lider {
+  background: #fff7ed;
+}
+
+/* Hover */
+.clasificacion-pro tr:hover {
+  background: #fef3c7;
+}
+
+.club-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.club-escudo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.club-escudo-grande {
+  width: 120px;
+  display: block;
+  margin: 15px auto;
+}
+
+.club-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #f4f4f4;
+  cursor: pointer;
+}
+
+.club-card:hover {
+  background: #ececec;
+}
+
+.club-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.club-escudo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.club-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.club-acciones button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.club-acciones button:hover {
+  background: #eaeaea;
+}
+
+.partido-equipos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.equipo-partido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.escudo-partido {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+}
+
+.tabla-escudo {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* ===== EQUIPOS EN CATEGORÍAS ===== */
+.equipo-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.escudo-equipo-mini {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.equipo-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.equipo-grupo {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+/* ===== CLASIFICACIÓN ===== */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.escudo-tabla {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+main {
+  min-height: 100vh;
+  padding-bottom: 80px; /* espacio para el bottom nav */
+}
+
+#contenido {
+  display: block;
+}
+
+.badge-estado {
+  display: inline-block;
+  margin: 6px 0 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+/* 🔴 Pendiente */
+.badge-estado.pendiente {
+  background: #ffe5e5;
+  color: #c62828;
+}
+
+/* 🟢 En juego */
+.badge-estado.en_juego {
+  background: #e6f4ea;
+  color: #1b7f3a;
+}
+
+/* 🏁 Finalizado */
+.badge-estado.finalizado {
+  background: #f2f2f2;
+  color: #555;
+}
+
+/* ================== TABLA CLASIFICACIÓN ================== */
+
+/* ================== CONTENEDOR ================== */
 .tabla-wrapper {
-  scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: auto;          /* 🔥 evita que la app se ensanche */
   -webkit-overflow-scrolling: touch;
 }
 
-body {
-  padding-bottom: env(safe-area-inset-bottom);
+/* ================== TABLA ================== */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;       /* 🔥 clave para que NO rompa el layout */
+  font-size: 13px;
 }
 
-.bottom-nav {
-  bottom: calc(10px + env(safe-area-inset-bottom));
+/* Celdas */
+.tabla th,
+.tabla td {
+  padding: 6px 4px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
 }
 
-* {
-  will-change: transform;
-}
-button:active,
-.tab:active,
-.partido-card:active {
-  transform: scale(0.97);
+/* Cabecera */
+.tabla th {
+  background: #f6a21a;
+  color: #fff;
+  font-weight: 600;
 }
 
-.page {
-  animation: pageEnter 0.25s ease-out;
+/* ================== EQUIPO ================== */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
 }
 
-@keyframes pageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+.escudo-tabla {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* ================== POSICIÓN ================== */
+.posicion {
+  font-weight: normal; /* ⛔ nada en negrita */
+}
+
+/* Medallas */
+.medalla-oro,
+.medalla-plata,
+.medalla-bronce {
+  font-weight: 700;
+}
+
+/* ================== PUNTOS ================== */
+.col-puntos {
+  font-weight: 700;    /* ✅ SOLO puntos en negrita */
+}
+
+/* ================== MÓVIL ================== */
+@media (max-width: 480px) {
+
+  .tabla {
+    font-size: 12px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .tabla th,
+  .tabla td {
+    padding: 5px 3px;
   }
 }
 
-img {
-  image-rendering: -webkit-optimize-contrast;
+/* === TABLA CLASIFICACIÓN === */
+
+.tabla-wrapper {
+  width: 100%;
+  overflow-x: auto;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
+.tabla.clasificacion-pro {
+  width: 100%;
+  min-width: 720px; /* NO agranda la app */
+  border-collapse: collapse;
 }
 
-input,
-select {
-  font-size: 16px; /* evita zoom en iOS */
+/* celda equipo */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.nombre-equipo-tabla {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* escudos */
+.escudo-tabla {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* ===== TABLA CLASIFICACIÓN (FIX NOMBRES) ===== */
+
+.tabla.clasificacion-pro {
+  table-layout: fixed;   /* 🔑 CLAVE */
+  width: 100%;
+  min-width: 720px;
+}
+
+/* columna posición */
+.tabla.clasificacion-pro th.col-pos,
+.tabla.clasificacion-pro td.posicion {
+  width: 42px;
+  text-align: center;
+}
+
+/* columna equipo */
+.tabla.clasificacion-pro th.col-equipo,
+.tabla.clasificacion-pro td:nth-child(2) {
+  width: 200px;          /* 🔑 ancho fijo */
+  max-width: 200px;
+}
+
+/* contenido equipo */
+.equipo-tabla {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* nombre del equipo */
+.nombre-equipo-tabla {
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* escudo */
+.escudo-tabla {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0; /* 🔑 evita que el escudo se aplaste */
+}
+
+.partido-categoria {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #f2f2f2;
+  padding: 2px 8px;
   border-radius: 12px;
+  margin-bottom: 6px;
 }
 
-@media (display-mode: standalone) {
-  body {
-    background: #f5f5f5;
-  }
-
-  .app-header {
-    margin-top: env(safe-area-inset-top);
-  }
+.info-partido-detalle {
+  text-align: center;
+  margin: 10px 0 20px;
 }
-/* ======================================================
-   BOTÓN ADMIN
-====================================================== */
 
-#admin-fab {
-  position: fixed;
-  bottom: 95px;
-  right: 18px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--primary);
+.detalle-fecha-hora {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 4px;
+}
+
+.detalle-categoria {
+  display: inline-block;
+  font-size: 0.8rem;
+  background: #f4a261;
   color: white;
-  font-size: 22px;
-  border: none;
-  box-shadow: var(--shadow-soft);
-  z-index: 1200;
+  padding: 4px 10px;
+  border-radius: 14px;
+  margin-bottom: 6px;
+}
+
+.detalle-lugar {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Estado inicial del splash */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #f5a25d; /* tu color */
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+/* Estado mientras carga */
+body.splash-activo #splash {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Estado al desaparecer */
+#splash.splash-hide {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+#splash img {
+  transition: transform 0.6s ease;
+}
+
+#splash.splash-hide img {
+  transform: scale(0.9);
 }

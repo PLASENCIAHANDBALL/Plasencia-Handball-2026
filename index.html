@@ -24,7 +24,6 @@
   </nav>
 </header>
   
-
   <main>
     <nav class="bottom-nav">
       <button onclick="mostrarHome()">🤾🏻‍♂️<span>Inicio</span></button>
@@ -86,6 +85,12 @@
   function toggleSocial() {
     document.querySelector('.social-fab')?.classList.toggle('open');
   }
+</script>
+
+<script>
+  document.querySelector('.social-main-btn').addEventListener('click', () => {
+    document.querySelector('.social-container').classList.toggle('active');
+  });
 </script>
 
 </body>

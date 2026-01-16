@@ -1,14 +1,22 @@
 :root {
-  --principal: #f4a261;       /* naranja claro */
-  --principal-suave: #fde8d7; /* fondo suave */
-  --oscuro: #1f2933;          /* texto */
-  --gris: #f6f6f6;
-  --blanco: #ffffff;
-  --sombra: 0 4px 12px rgba(0,0,0,0.12);
-}
+  --primary: #f4a261;
+  --primary-dark: #e76f51;
+  --secondary: #264653;
 
-* {
-  box-sizing: border-box;
+  --bg-app: #f5f5f5;
+  --bg-card: #ffffff;
+
+  --text-main: #1f2933;
+  --text-soft: #6b7280;
+
+  --glass-bg: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.35);
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+
+  --shadow-soft: 0 6px 18px rgba(0,0,0,0.12);
 }
 
 body {
@@ -24,34 +32,84 @@ body {
 ========================= */
 
 .app-header {
-  background: var(--principal);
-  height: 180px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  height: 220px; /* ajusta si quieres */
+  position: relative;
+  height: 210px;
   background-image: url("../img/header.png");
-  background-size: cover;        /* ocupa todo */
-  background-position: center;   /* centrada */
-  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Overlay oscuro elegante */
+.app-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35),
+    rgba(0,0,0,0.6)
+  );
 }
 
 /* LOGO */
 .app-header img {
-  max-height: 200px;
-  width: auto;
-  display: block;
+  position: relative;
+  z-index: 1;
+  max-height: 150px;
+}
+
 @media (max-width: 768px) {
   .app-header {
     height: 160px;
-    background-size: cover;
+  }
+
+  .app-header img {
+    max-height: 120px;
   }
 }
 
 /* CONTENIDO */
 main {
   padding: 15px;
+}
+
+.page-inicio .card {
+  border-left: 5px solid var(--primary);
+}
+
+.page-partidos .partido-card {
+  border-left: 5px solid #3b82f6;
+}
+
+.page-clasificacion .card {
+  border-left: 5px solid #22c55e;
+}
+
+.page-pabellones .card {
+  border-left: 5px solid #a855f7;
+}
+
+button {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: none;
+  font-weight: 600;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-soft);
+}
+
+button.primario {
+  background: var(--primary);
+  color: white;
+}
+
+button.secundario {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
 }
 
 /* BOTONES GENERALES */
@@ -1121,3 +1179,31 @@ body.splash-activo #splash {
 }
 
 #splash.splash-hide img {
+}
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  overflow-x: auto;
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.25);
+}
+
+.nav-btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nav-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+}

@@ -152,6 +152,11 @@ function mostrarHome() {
   }
 
   contenido.innerHTML = html;
+
+  // 🔥 Cargar galería aleatoria cuando ya existe el DOM
+  setTimeout(() => {
+    cargarGaleriaAleatoria();
+  }, 100);
 }
 
 function formNuevoPatrocinador() {
@@ -203,6 +208,58 @@ async function iniciarApp() {
       }, 600);
     }
   }
+}
+
+/* ================== Galeria (SUPABASE) ================== */
+async function obtenerFotosGaleria() {
+  const { data, error } = await supabase
+    .storage
+    .from("galeria-torneo")
+    .list("edicion-anterior", {
+      limit: 100,
+      offset: 0,
+      sortBy: { column: "name", order: "asc" }
+    });
+
+  if (error) {
+    console.error("Error cargando galería:", error);
+    return [];
+  }
+
+  return data
+    .filter(f => f.name.match(/\.(jpg|jpeg|png|webp)$/i))
+    .map(f =>
+      supabase.storage
+        .from("galeria-torneo")
+        .getPublicUrl(`edicion-anterior/${f.name}`).data.publicUrl
+    );
+}
+
+async function cargarGaleriaAleatoria() {
+  const contenedor = document.getElementById("galeria-scroll");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "<div class='galeria-loading'>Cargando imágenes…</div>";
+
+  const fotos = await obtenerFotosGaleria();
+  if (fotos.length === 0) {
+    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
+    return;
+  }
+
+  // 🔀 Mezclar aleatoriamente
+  const seleccion = fotos
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 6); // número de fotos visibles
+
+  contenedor.innerHTML = "";
+
+  seleccion.forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.loading = "lazy";
+    contenedor.appendChild(img);
+  });
 }
 
 /* ================== PATROCINADORES (SUPABASE) ================== */

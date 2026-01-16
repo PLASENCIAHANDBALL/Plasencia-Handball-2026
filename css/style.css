@@ -1259,3 +1259,25 @@ body {
     font-size: 11px;
   }
 }
+
+.bottom-nav span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+@media (max-width: 420px) {
+  .bottom-nav span {
+    font-size: 10px;     /* 🔥 más pequeño */
+    margin-top: 2px;
+  }
+
+  .bottom-nav button::first-line {
+    font-size: 22px;     /* icono un poco más pequeño */
+  }
+
+  .bottom-nav button {
+    padding: 4px 6px;
+  }
+}

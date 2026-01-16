@@ -372,8 +372,8 @@ button:active {
 /* BOTÓN ADMIN FLOTANTE */
 #admin-fab {
   position: fixed;
-  bottom: 140px;   /* 🔥 MÁS ABAJO */
-  right: 18px;
+  right: 18px;        /* 👈 pegado al lateral derecho */
+  bottom: 90px;       /* 👈 un poco por encima del borde inferior */
 
   width: 56px;
   height: 56px;

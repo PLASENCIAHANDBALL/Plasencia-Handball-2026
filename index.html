@@ -53,32 +53,34 @@
     }
   </script>
   
-    <!-- BOTÓN REDES SOCIALES -->
-  <div class="social-fab">
-    <button class="social-main" onclick="toggleSocial()">
-      <img src="img/social.png" alt="Redes">
-    </button>
+    <!-- BOTÓN REDES -->
+<div class="social-container">
+  <button class="social-main-btn">
+    <img src="img/redes.png" alt="Redes">
+  </button>
 
-    <div class="social-menu">
-      <a href="https://instagram.com/plasenciahandball" target="_blank" class="social-btn">
-        <img src="img/instagram.png" alt="Instagram">
-        <span>@plasenciahandball</span>
-      </a>
+  <div class="social-menu">
+    <a href="URL_INSTAGRAM" target="_blank" class="social-btn instagram">
+      <img src="img/instagram.png">
+      @plasenciahandball
+    </a>
 
-      <a href="https://facebook.com/TU_FACEBOOK" target="_blank" class="social-btn">
-        <img src="img/facebook.png" alt="Facebook">
-        <span>Facebook</span>
-      </a>
+    <a href="URL_FACEBOOK" target="_blank" class="social-btn facebook">
+      <img src="img/facebook.png">
+      Facebook
+    </a>
 
-      <a href="https://twitch.tv/TU_TWITCH" target="_blank" class="social-btn">
-        <img src="img/twitch.png" alt="Twitch">
-        <span>Twitch</span>
-      </a>
-    </div>
+    <a href="URL_TWITCH" target="_blank" class="social-btn twitch">
+      <img src="img/twitch.png">
+      Twitch
+    </a>
   </div>
+</div>
 
-  <!-- BOTÓN ADMIN -->
-  <button id="admin-fab" onclick="toggleAdmin()">🔒</button>
+<!-- BOTÓN ADMIN -->
+<button class="admin-btn">
+  🔒
+</button>
   
   <script>
   function toggleSocial() {

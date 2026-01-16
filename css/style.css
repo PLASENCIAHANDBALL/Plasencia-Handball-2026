@@ -1181,8 +1181,8 @@ body.splash-activo .social-fab {
 
 .social-fab {
   position: fixed;
-  right: 18px;        /* misma alineación que Admin */
-  bottom: 90px;       /* justo encima del botón admin */
+  right: 18px;
+  bottom: 90px;   /* encima del admin */
   z-index: 1800;
 
   display: flex;
@@ -1215,7 +1215,7 @@ body.splash-activo .social-fab {
 /* Menú */
 .social-menu {
   position: absolute;
-  bottom: 70px; /* 👈 se abre hacia arriba */
+  bottom: 70px;
   right: 0;
 
   display: flex;
@@ -1226,23 +1226,6 @@ body.splash-activo .social-fab {
   pointer-events: none;
   transform: translateY(10px);
   transition: all 0.3s ease;
-}
-
-.social-main-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-  cursor: pointer;
-}
-
-
-.social-container.active .social-menu {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
 }
 
 .social-fab.open .social-menu {
@@ -1260,8 +1243,8 @@ body.splash-activo .social-fab {
   background: white;
   padding: 10px 14px;
   border-radius: 25px;
-
   box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+
   text-decoration: none;
   color: #333;
   font-size: 14px;
@@ -1270,7 +1253,6 @@ body.splash-activo .social-fab {
 .social-btn img {
   width: 22px;
   height: 22px;
-  object-fit: contain;
 }
 
 .social-btn span {
@@ -1302,11 +1284,4 @@ body.splash-activo .social-fab {
 
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   z-index: 1000;
-}
-
-.social-container {
-  position: fixed;
-  bottom: 90px; /* 👈 encima del botón Admin */
-  right: 20px;
-  z-index: 1001;
 }

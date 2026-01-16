@@ -18,21 +18,23 @@ body {
   color: var(--oscuro);
 }
 
-/* CABECERA APP */
+/* =========================
+   CABECERA CON IMAGEN PNG
+========================= */
+
 .app-header {
-  background: var(--principal);
-  height: 180px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
+  height: 220px; /* ajusta si quieres */
+  background-image: url("../img/header.png");
+  background-size: cover;        /* ocupa todo */
+  background-position: center;   /* centrada */
+  background-repeat: no-repeat;
 }
 
-/* LOGO */
-.app-header img {
-  max-height: 200px;
-  width: auto;
-  display: block;
+@media (max-width: 768px) {
+  .app-header {
+    height: 160px;
+    background-size: cover;
+  }
 }
 
 /* CONTENIDO */

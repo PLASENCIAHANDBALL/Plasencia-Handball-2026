@@ -1224,7 +1224,3 @@ body.splash-activo #splash {
   transform: scale(1.15);
   display: inline-block;
 
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}

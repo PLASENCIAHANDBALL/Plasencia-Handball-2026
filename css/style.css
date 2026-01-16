@@ -18,31 +18,24 @@ body {
   color: var(--oscuro);
 }
 
-/* CABECERA APP */
+/* =========================
+   CABECERA CON IMAGEN PNG
+========================= */
+
 .app-header {
-  background: var(--principal);
-  height: 180px;
+  height: 220px; /* ajusta si quieres */
   background-image: url("../img/header.png");
   background-size: cover;        /* ocupa todo */
   background-position: center;   /* centrada */
   background-repeat: no-repeat;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-}
-
-/* LOGO */
-.app-header img {
-  max-height: 200px;
-  width: auto;
-  display: block;
 }
 
 @media (max-width: 768px) {
   .app-header {
     height: 160px;
     background-size: cover;
+  }
+}
 
 /* CONTENIDO */
 main {
@@ -179,19 +172,6 @@ body.splash-activo .bottom-nav {
 }
 
 /* MENÚ INFERIOR */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65px;
-  background: #ffffff;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 1000;
-}
 
 .bottom-nav button {
   background: none;
@@ -209,11 +189,6 @@ body.splash-activo .bottom-nav {
 
 .bottom-nav button:active {
   color: #c4161c;
-}
-
-/* Para que el contenido no quede tapado */
-main {
-  padding-bottom: 80px;
 }
 
 /* =========================
@@ -235,47 +210,62 @@ button:active {
 }
 
 /* =========================
-   MENÚ INFERIOR TIPO APP
+   MENÚ PRINCIPAL BAJO HEADER
 ========================= */
+
+.app-header {
+  position: relative;
+}
+
+/* contenedor del menú */
 .bottom-nav {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  height: 75px;
-  background: #ffffff;
-  border-radius: 22px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  margin: -35px auto 20px; /* sube el menú sobre el header */
+  width: calc(100% - 32px);
+  max-width: 900px;
+
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(6px);
+
+  border-radius: 28px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1000;
+
+  padding: 14px 10px;
+  z-index: 50;
 }
 
-/* Cada botón del menú */
+/* botones */
 .bottom-nav button {
   background: none;
   border: none;
   padding: 0;
   width: auto;
-  box-shadow: none;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #555;
+  gap: 4px;
+
+  font-size: 20px;
+  color: #444;
+  cursor: pointer;
 }
 
-/* Icono circular */
-.nav-icon {
-  width: 46px;
-  height: 46px;
-  background: #f0f0f0;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
-  margin-bottom: 4px;
+/* texto */
+.bottom-nav span {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* efecto toque */
+.bottom-nav button:active {
+  transform: scale(0.92);
+  color: #f59e0b;
 }
 
 /* Texto debajo */
@@ -287,11 +277,6 @@ button:active {
 .bottom-nav button:active .nav-icon {
   background: var(--rojo);
   color: white;
-}
-
-/* Evitar que el contenido quede tapado */
-main {
-  padding-bottom: 110px;
 }
 
 /* =========================
@@ -1117,4 +1102,71 @@ body.splash-activo #splash {
 
 #splash.splash-hide img {
   transform: scale(0.9);
+}
+
+/* =========================
+   MENÚ – ICONOS + TEXTO PRO
+========================= */
+
+/* Botón base */
+.bottom-nav button {
+  gap: 8px; /* separación icono-texto */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* ICONO (emoji dentro del "cuadradito") */
+.bottom-nav button::first-line {
+  font-size: 26px; /* 🔥 icono más grande */
+}
+
+/* Texto debajo */
+.bottom-nav span {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Animación al pulsar */
+.bottom-nav button:active {
+  transform: scale(0.9);
+  color: #f59e0b;
+}
+
+/* =========================
+   ESTADO ACTIVO (SECCIÓN)
+========================= */
+
+/* Cuando el botón queda enfocado (iOS / Safari) */
+.bottom-nav button:focus-visible {
+  outline: none;
+  color: #f59e0b;
+}
+
+/* Efecto visual de activo */
+.bottom-nav button:focus-visible span {
+  font-weight: 700;
+}
+
+/* Icono activo */
+.bottom-nav button:focus-visible::first-line {
+  transform: scale(1.15);
+  display: inline-block;
+}
+
+/* =========================
+   EFECTO SUAVE DE ENTRADA
+========================= */
+
+.bottom-nav {
+  animation: menuFadeUp 0.5s ease;
+}
+
+@keyframes menuFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

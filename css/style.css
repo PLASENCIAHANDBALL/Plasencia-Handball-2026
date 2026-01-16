@@ -27,7 +27,6 @@ body {
   background-image: url("../img/header.png");
   background-size: cover;        /* ocupa todo */
   background-position: center;   /* centrada */
-  background-repeat: no-repeat;
 }
 
 @media (max-width: 768px) {
@@ -205,21 +204,15 @@ button:active {
    MENÚ PRINCIPAL BAJO HEADER
 ========================= */
 
-.app-header {
-  position: relative;
-  height: 220px;           /* el que ya tenías */
-  overflow: visible;       /* 🔑 permite que flote el menú */
-}
-
 /* contenedor del menú */
 .bottom-nav {
-  position: sticky;      /* 🔥 CLAVE */
-  top: 0;                /* se pega justo al terminar el header */
+  position: sticky;
+  top: 220px;               /* 🔥 EXACTO: debajo del header */
   z-index: 1000;
 
-  margin: -36px auto 0;  /* la sube un poco sobre la cabecera */
   width: calc(100% - 32px);
   max-width: 900px;
+  margin: 0 auto;
 
   background: rgba(255,255,255,0.97);
   backdrop-filter: blur(6px);
@@ -238,6 +231,25 @@ button:active {
 .bottom-nav button {
   flex: 1;
   min-width: 0;
+  background: none;
+  border: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 4px 6px;
+  color: #555;
+}
+
+.bottom-nav button::first-line {
+  font-size: 24px;
+}
+
+.bottom-nav span {
+  font-size: 11px;
+  white-space: nowrap;
+}
 
   background: transparent;
   border: none;

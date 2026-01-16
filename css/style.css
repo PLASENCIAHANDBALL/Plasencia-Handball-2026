@@ -215,12 +215,13 @@ button:active {
 
 .app-header {
   position: relative;
+  padding-bottom: 60px; /* 🔥 espacio para el menú */
 }
 
 /* contenedor del menú */
 .bottom-nav {
   position: relative;
-  margin: -35px auto 20px; /* sube el menú sobre el header */
+  margin: -30px auto 20px; /* sube el menú sobre el header */
   width: calc(100% - 32px);
   max-width: 900px;
 
@@ -1238,4 +1239,23 @@ body {
 
 .bottom-nav button {
   max-width: 100%;
+}
+
+.bottom-nav {
+  justify-content: space-between;
+}
+
+.bottom-nav button {
+  flex: 1;              /* 🔥 clave */
+  min-width: 0;         /* evita desbordes */
+}
+
+@media (max-width: 380px) {
+  .bottom-nav button::first-line {
+    font-size: 24px; /* icono un poco más pequeño */
+  }
+
+  .bottom-nav span {
+    font-size: 11px;
+  }
 }

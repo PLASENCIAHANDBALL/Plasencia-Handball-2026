@@ -105,54 +105,33 @@ function mostrarHome() {
     <h2>Inicio</h2>
     <p>App en Proceso</p>
 
-    <!-- HISTORIA DEL TORNEO -->
-    <section class="historia">
-      <h3>Historia del Torneo</h3>
-      <div class="historia-card">
-        <p id="texto-historia">
-          Nuestra historia comienza gracias a un grupo de amigos y grandes aficionados al balonmano que compartíamos una misma ilusión: crear algo especial para este deporte que tanto nos une.<br><br>
-
-De esa pasión nació el Torneo Internacional Plasencia Handball, cuya primera edición se celebró en el año <strong>2023</strong>. Aquella primera experiencia estuvo marcada por la ilusión, el esfuerzo y las ganas de demostrar que Plasencia podía acoger un torneo de balonmano base con identidad propia.<br><br>
-
-Desde entonces, nuestro objetivo ha sido claro: ofrecer a jugadores y jugadoras una experiencia deportiva única, combinando competición, convivencia y valores como el respeto, el compañerismo y el trabajo en equipo.<br><br>
-
-Con el paso de los años, el torneo ha ido creciendo tanto en participación como en nivel deportivo, reuniendo en Plasencia a equipos nacionales e internacionales y llenando nuestros pabellones de balonmano, ambiente y emoción durante varios días.<br><br>
-
-Cada edición es un nuevo reto y una nueva oportunidad para seguir mejorando, pero siempre manteniendo la esencia con la que empezamos: la pasión por el balonmano y las ganas de crear recuerdos inolvidables para todos los que forman parte de este torneo.
-
-Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores, familias, patrocinadores y a todas las personas que confían en nosotros y hacen posible que este proyecto siga creciendo año tras año.
-        </p>
-      </div>
-    </section>
-
     <!-- GALERÍA -->
     <section class="galeria">
-      <h3>Galería · Edición anterior</h3>
+      <h3>Fotos antiguas del torneo</h3>
       <div id="galeria-scroll" class="galeria-scroll">
         <div class="galeria-loading">Cargando imágenes…</div>
       </div>
     </section>
 
+    <!-- PATROCINADORES -->
     <h3>Patrocinadores</h3>
     <div class="patrocinadores-scroll">
   `;
 
   patrocinadores.forEach(p => {
-  html += `
-    <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
-
-      ${adminActivo ? `
-        <button class="btn-borrar-patrocinador"
-          onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
-          ✖
-        </button>
-      ` : ""}
-
-      <img src="${p.imagen}">
-      <div class="patrocinador-nombre">${p.nombre}</div>
-    </div>
-  `;
-});
+    html += `
+      <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
+        ${adminActivo ? `
+          <button class="btn-borrar-patrocinador"
+            onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
+            ✖
+          </button>
+        ` : ""}
+        <img src="${p.imagen}">
+        <div class="patrocinador-nombre">${p.nombre}</div>
+      </div>
+    `;
+  });
 
   html += `</div>`;
 
@@ -160,9 +139,31 @@ Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores
     html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
   }
 
+  // HISTORIA AL FINAL
+  html += `
+    <section class="historia">
+      <h3>Historia del Torneo</h3>
+      <div class="historia-card">
+        <p id="texto-historia">
+          Nuestra historia comienza gracias a un grupo de amigos y grandes aficionados al balonmano que compartíamos una misma ilusión: crear algo especial para este deporte que tanto nos une.
+
+De esa pasión nació el Torneo Internacional Plasencia Handball, cuya primera edición se celebró en el año 2023. Aquella primera experiencia estuvo marcada por la ilusión, el esfuerzo y las ganas de demostrar que Plasencia podía acoger un torneo de balonmano base con identidad propia.
+
+Desde entonces, nuestro objetivo ha sido claro: ofrecer a jugadores y jugadoras una experiencia deportiva única, combinando competición, convivencia y valores como el respeto, el compañerismo y el trabajo en equipo.
+
+A lo largo de los años, el torneo ha ido creciendo tanto en participación como en nivel deportivo, reuniendo en Plasencia a equipos nacionales e internacionales, y llenando nuestros pabellones de balonmano, ambiente y emoción durante varios días.
+
+Cada edición es un nuevo reto y una nueva oportunidad para seguir mejorando, pero siempre manteniendo la esencia con la que empezamos en 2023: la pasión por el balonmano y las ganas de crear recuerdos inolvidables para todos los que forman parte de este torneo.
+
+Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores, familias, patrocinadores y a todas las personas que confían en nosotros y hacen posible que este proyecto siga creciendo año tras año.
+        </p>
+      </div>
+    </section>
+  `;
+
   contenido.innerHTML = html;
 
-  // 🔥 Cargar galería aleatoria cuando ya existe el DOM
+  // cargar galería
   setTimeout(() => {
     cargarGaleriaAleatoria();
   }, 100);

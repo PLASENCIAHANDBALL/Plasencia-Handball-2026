@@ -1115,11 +1115,6 @@ body.splash-activo #splash {
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-/* ICONO (emoji dentro del "cuadradito") */
-.bottom-nav button::first-line {
-  font-size: 26px; /* 🔥 icono más grande */
-}
-
 /* Texto debajo */
 .bottom-nav span {
   font-size: 12px;

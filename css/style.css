@@ -1072,3 +1072,32 @@ main {
   font-size: 0.9rem;
   color: #666;
 }
+
+/* Estado inicial del splash */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #f5a25d; /* tu color */
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+/* Estado mientras carga */
+body.splash-activo #splash {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Estado al desaparecer */
+#splash.splash-hide {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}

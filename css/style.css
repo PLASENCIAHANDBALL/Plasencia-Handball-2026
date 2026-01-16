@@ -42,6 +42,9 @@ main {
   padding: 15px;
 }
 
+main {
+  padding-top: 60px;   /* altura aproximada del menú */
+}
 /* BOTONES GENERALES */
 button {
   width: 100%;
@@ -215,13 +218,17 @@ button:active {
 
 .app-header {
   position: relative;
-  padding-bottom: 60px; /* 🔥 espacio para el menú */
+  height: 220px;           /* el que ya tenías */
+  overflow: visible;       /* 🔑 permite que flote el menú */
 }
 
 /* contenedor del menú */
 .bottom-nav {
-  position: relative;
-  margin: -30px auto 20px; /* sube el menú sobre el header */
+  position: absolute;      /* 🔥 CLAVE */
+  left: 50%;
+  bottom: -28px;           /* cuánto “sale” del header */
+  transform: translateX(-50%);
+
   width: calc(100% - 32px);
   max-width: 900px;
 
@@ -232,11 +239,11 @@ button:active {
   box-shadow: 0 10px 25px rgba(0,0,0,0.18);
 
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
 
   padding: 14px 10px;
-  z-index: 50;
+  z-index: 100;            /* 🔑 por encima de la imagen */
 }
 
 /* botones */

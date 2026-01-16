@@ -103,11 +103,18 @@ probarSupabase();
 function mostrarHome() {
   let html = `
     <h2>Inicio</h2>
-    <p>App en Proceso</p>
 
+<!-- GALERÍA2026 -->
+    <section class="galeria2026">
+      <h3>Fotos del torneo 2026</h3>
+      <div id="galeria-scroll" class="galeria-scroll">
+        <div class="galeria-loading">Cargando imágenes…</div>
+      </div>
+    </section>
+    
     <!-- GALERÍA -->
     <section class="galeria">
-      <h3>Fotos antiguas del torneo</h3>
+      <h3>Fotos del torneo 2025</h3>
       <div id="galeria-scroll" class="galeria-scroll">
         <div class="galeria-loading">Cargando imágenes…</div>
       </div>

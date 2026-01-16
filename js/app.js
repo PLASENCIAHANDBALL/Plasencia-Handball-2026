@@ -105,6 +105,25 @@ function mostrarHome() {
     <h2>Inicio</h2>
     <p>App en Proceso</p>
 
+    <!-- HISTORIA DEL TORNEO -->
+    <section class="historia">
+      <h3>Historia del Torneo</h3>
+      <div class="historia-card">
+        <p id="texto-historia">
+          Aquí podrás pegar el texto completo de cómo nació el torneo,
+          su evolución, equipos participantes y lo que representa para la ciudad.
+        </p>
+      </div>
+    </section>
+
+    <!-- GALERÍA -->
+    <section class="galeria">
+      <h3>Galería · Edición anterior</h3>
+      <div id="galeria-scroll" class="galeria-scroll">
+        <div class="galeria-loading">Cargando imágenes…</div>
+      </div>
+    </section>
+
     <h3>Patrocinadores</h3>
     <div class="patrocinadores-scroll">
   `;

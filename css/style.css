@@ -173,15 +173,6 @@ body.splash-activo .bottom-nav {
 
 /* MENÚ INFERIOR */
 
-.bottom-nav button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #555;
-}
 
 .bottom-nav button span {
   font-size: 11px;
@@ -243,22 +234,10 @@ button:active {
 }
 
 /* botones */
-.bottom-nav button {
-  flex: 1;                     /* 🔑 todos iguales */
-  background: none;
-  border: none;
-  box-shadow: none;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-  margin: 0;
-
-  color: #666;
-  font-size: 12px;
+.bottom-nav button:active {
+  transform: scale(0.9);
+  color: #f59e0b;
 }
 
 /* texto */
@@ -1162,10 +1141,7 @@ body.splash-activo #splash {
 }
 
 /* Icono activo */
-.bottom-nav button:focus-visible::first-line {
-  transform: scale(1.15);
-  display: inline-block;
-}
+  
 
 /* =========================
    EFECTO SUAVE DE ENTRADA
@@ -1208,10 +1184,7 @@ body.splash-activo #splash {
 }
 
 /* Emoji (icono) */
-.bottom-nav button::first-line {
-  font-size: 28px;          /* 🔥 más grande */
-  line-height: 1.2;
-}
+
 
 /* Texto */
 .bottom-nav span {

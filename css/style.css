@@ -1170,3 +1170,57 @@ body.splash-activo #splash {
     transform: translateY(0);
   }
 }
+
+/* =========================
+   BOTONES DEL MENÚ SIN RECUADRO
+========================= */
+
+.bottom-nav button {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  padding: 6px 10px;
+  width: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #555;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Emoji (icono) */
+.bottom-nav button::first-line {
+  font-size: 28px;          /* 🔥 más grande */
+  line-height: 1.2;
+}
+
+/* Texto */
+.bottom-nav span {
+  font-size: 12px;
+  margin-top: 4px;          /* separación icono-texto */
+}
+
+/* Animación al pulsar */
+.bottom-nav button:active {
+  transform: scale(0.9);
+  color: #f59e0b;
+}
+
+/* Estado activo (Safari / iOS friendly) */
+.bottom-nav button:focus-visible {
+  outline: none;
+  color: #f59e0b;
+}
+
+.bottom-nav button:focus-visible span {
+  font-weight: 700;
+}
+
+.bottom-nav button:focus-visible::first-line {
+  transform: scale(1.15);
+  display: inline-block;
+}

@@ -373,27 +373,26 @@ button:active {
 /* BOTÓN ADMIN FLOTANTE */
 #admin-fab {
   position: fixed;
-  right: 18px;        /* 👈 pegado al lateral derecho */
-  bottom: 90px;       /* 👈 un poco por encima del borde inferior */
-
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  top: 40px;          /* lo subimos a la cabecera */
+  right: 16px;        /* pegado a la derecha */
+  
+  background: none;
   border: none;
+  box-shadow: none;
 
-  background: var(--principal);
-  color: white;
-  font-size: 22px;
+  font-size: 26px;    /* tamaño del emoji */
+  padding: 0;
 
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  z-index: 1200;
-
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 2000;
+  cursor: pointer;
 }
 
 #admin-fab:active {
-  transform: scale(0.9);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: scale(0.85);
+}
+
+#admin-fab {
+  max-width: 32px;
 }
 
 #admin-fab.admin-activo {

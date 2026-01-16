@@ -22,6 +22,10 @@ body {
 .app-header {
   background: var(--principal);
   height: 180px;
+  background-image: url("../img/header.png");
+  background-size: cover;        /* ocupa todo */
+  background-position: center;   /* centrada */
+  background-repeat: no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,6 +38,11 @@ body {
   width: auto;
   display: block;
 }
+
+@media (max-width: 768px) {
+  .app-header {
+    height: 160px;
+    background-size: cover;
 
 /* CONTENIDO */
 main {

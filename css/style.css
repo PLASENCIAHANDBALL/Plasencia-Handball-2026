@@ -1170,3 +1170,90 @@ body.splash-activo #splash {
     transform: translateY(0);
   }
 }
+
+/* =========================
+   BOTÓN REDES SOCIALES (PNG)
+========================= */
+
+.social-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 110px;
+  z-index: 1800;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Botón principal */
+.social-main {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  padding: 10px;
+  cursor: pointer;
+}
+
+.social-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-main:active {
+  transform: scale(0.9);
+}
+
+/* Menú */
+.social-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+.social-fab.open .social-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Botones de red */
+.social-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: white;
+  padding: 8px 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.social-btn img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.social-btn span {
+  white-space: nowrap;
+}
+
+.social-btn:active {
+  transform: scale(0.95);
+}

@@ -372,8 +372,9 @@ button:active {
 /* BOTÓN ADMIN FLOTANTE */
 #admin-fab {
   position: fixed;
-  bottom: 85px; /* por encima de la barra inferior */
+  bottom: 20px;        /* ⬅️ abajo del todo */
   right: 18px;
+
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -382,7 +383,7 @@ button:active {
   color: white;
   font-size: 22px;
   box-shadow: var(--sombra);
-  z-index: 1200;
+  z-index: 1900;
 }
 
 #admin-fab.admin-activo {
@@ -1174,11 +1175,14 @@ body.splash-activo #splash {
 /* =========================
    BOTÓN REDES SOCIALES (PNG)
 ========================= */
+body.splash-activo .social-fab {
+  display: none !important;
+}
 
 .social-fab {
   position: fixed;
-  right: 16px;
-  bottom: 110px;
+  right: 18px;        /* misma alineación que Admin */
+  bottom: 90px;       /* justo encima del botón admin */
   z-index: 1800;
 
   display: flex;

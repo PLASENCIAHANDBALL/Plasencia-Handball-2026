@@ -23,17 +23,19 @@ body {
 ========================= */
 
 .app-header {
-  height: 220px; /* ajusta si quieres */
+  height: 220px;
   background-image: url("../img/header.png");
-  background-size: cover;        /* ocupa todo */
-  background-position: center;   /* centrada */
+  background-size: contain;      /* 🔑 NO recorta */
+  background-position: center top;
   background-repeat: no-repeat;
+  background-color: #f4a261;     /* mismo tono que la imagen */
 }
 
 @media (max-width: 768px) {
   .app-header {
-    height: 160px;
-    background-size: cover;
+    height: 180px;               /* un poco más alto en móvil */
+    background-size: contain;
+    background-position: center top;
   }
 }
 

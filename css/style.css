@@ -1103,3 +1103,70 @@ body.splash-activo #splash {
 #splash.splash-hide img {
   transform: scale(0.9);
 }
+
+/* =========================
+   MENÚ – ICONOS + TEXTO PRO
+========================= */
+
+/* Botón base */
+.bottom-nav button {
+  gap: 8px; /* separación icono-texto */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* ICONO (emoji dentro del "cuadradito") */
+.bottom-nav button::first-line {
+  font-size: 26px; /* 🔥 icono más grande */
+}
+
+/* Texto debajo */
+.bottom-nav span {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Animación al pulsar */
+.bottom-nav button:active {
+  transform: scale(0.9);
+  color: #f59e0b;
+}
+
+/* =========================
+   ESTADO ACTIVO (SECCIÓN)
+========================= */
+
+/* Cuando el botón queda enfocado (iOS / Safari) */
+.bottom-nav button:focus-visible {
+  outline: none;
+  color: #f59e0b;
+}
+
+/* Efecto visual de activo */
+.bottom-nav button:focus-visible span {
+  font-weight: 700;
+}
+
+/* Icono activo */
+.bottom-nav button:focus-visible::first-line {
+  transform: scale(1.15);
+  display: inline-block;
+}
+
+/* =========================
+   EFECTO SUAVE DE ENTRADA
+========================= */
+
+.bottom-nav {
+  animation: menuFadeUp 0.5s ease;
+}
+
+@keyframes menuFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

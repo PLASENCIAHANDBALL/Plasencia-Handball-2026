@@ -224,26 +224,26 @@ button:active {
 
 /* contenedor del menú */
 .bottom-nav {
-  position: absolute;      /* 🔥 CLAVE */
+  position: absolute;
   left: 50%;
-  bottom: -28px;           /* cuánto “sale” del header */
+  bottom: -38px;              /* 🔥 AJUSTA AQUÍ */
   transform: translateX(-50%);
 
   width: calc(100% - 32px);
   max-width: 900px;
 
-  background: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.96);
   backdrop-filter: blur(6px);
 
   border-radius: 28px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
 
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   padding: 14px 10px;
-  z-index: 100;            /* 🔑 por encima de la imagen */
+  z-index: 1000;
 }
 
 /* botones */

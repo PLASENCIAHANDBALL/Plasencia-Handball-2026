@@ -107,8 +107,8 @@ function mostrarHome() {
 <!-- GALERÍA2026 -->
     <section class="galeria2026">
       <h3>Fotos del torneo 2026</h3>
-      <div id="galeria-scroll" class="galeria-scroll">
-        <div class="galeria-loading">Cargando imágenes…</div>
+      <div id="galeria2026-scroll" class="galeria2026-scroll">
+        <div class="galeria2026-loading">Cargando imágenes…</div>
       </div>
     </section>
     

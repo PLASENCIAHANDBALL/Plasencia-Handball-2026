@@ -23,7 +23,7 @@ body {
 ========================= */
 
 .app-header {
-  height: 160px; /* ajusta si quieres */
+  height: 220px; /* ajusta si quieres */
   background-image: url("../img/header.png");
   background-size: cover;        /* ocupa todo */
   background-position: center;   /* centrada */
@@ -173,11 +173,18 @@ body.splash-activo .bottom-nav {
 
 /* MENÚ INFERIOR */
 
+.bottom-nav button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+}
 
 .bottom-nav button span {
-  font-size: 11px;
-  line-height: 1;
-  white-space: nowrap;
+  font-size: 12px;
 }
 
 .bottom-nav button:active {
@@ -212,32 +219,40 @@ button:active {
 
 /* contenedor del menú */
 .bottom-nav {
-  position: absolute;
-  left: 50%;
-  top: 140px;                 /* debajo del logo */
-  transform: translateX(-50%);
+  position: relative;
+  margin: -35px auto 20px; /* sube el menú sobre el header */
+  width: calc(100% - 32px);
+  max-width: 900px;
 
-  width: calc(100% - 32px);   /* 🔑 nunca se sale */
-  max-width: 420px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(6px);
 
-  height: 78px;
-  background: #ffffff;
-  border-radius: 26px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  border-radius: 28px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
 
   display: flex;
-  justify-content: space-between; /* 🔑 reparto exacto */
+  justify-content: space-around;
   align-items: center;
-  padding: 0 14px;
 
-  z-index: 1200;
+  padding: 14px 10px;
+  z-index: 50;
 }
 
 /* botones */
+.bottom-nav button {
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
 
-.bottom-nav button:active {
-  transform: scale(0.9);
-  color: #f59e0b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  font-size: 20px;
+  color: #444;
+  cursor: pointer;
 }
 
 /* texto */
@@ -357,26 +372,17 @@ button:active {
 /* BOTÓN ADMIN FLOTANTE */
 #admin-fab {
   position: fixed;
-  top: 40px;          /* lo subimos a la cabecera */
-  right: 16px;        /* pegado a la derecha */
-  
-  background: none;
+  bottom: 85px; /* por encima de la barra inferior */
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   border: none;
-  box-shadow: none;
-
-  font-size: 26px;    /* tamaño del emoji */
-  padding: 0;
-
-  z-index: 2000;
-  cursor: pointer;
-}
-
-#admin-fab:active {
-  transform: scale(0.85);
-}
-
-#admin-fab {
-  max-width: 32px;
+  background: var(--principal);
+  color: white;
+  font-size: 22px;
+  box-shadow: var(--sombra);
+  z-index: 1200;
 }
 
 #admin-fab.admin-activo {
@@ -1141,7 +1147,10 @@ body.splash-activo #splash {
 }
 
 /* Icono activo */
-  
+.bottom-nav button:focus-visible::first-line {
+  transform: scale(1.15);
+  display: inline-block;
+}
 
 /* =========================
    EFECTO SUAVE DE ENTRADA
@@ -1184,7 +1193,10 @@ body.splash-activo #splash {
 }
 
 /* Emoji (icono) */
-
+.bottom-nav button::first-line {
+  font-size: 28px;          /* 🔥 más grande */
+  line-height: 1.2;
+}
 
 /* Texto */
 .bottom-nav span {
@@ -1211,7 +1223,6 @@ body.splash-activo #splash {
 .bottom-nav button:focus-visible::first-line {
   transform: scale(1.15);
   display: inline-block;
-}
 
 html, body {
   max-width: 100%;

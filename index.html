@@ -10,6 +10,30 @@
   <meta name="theme-color" content="#c4161c">
 </head>
 
+<!-- BOTÓN REDES SOCIALES -->
+<div class="social-fab">
+  <button class="social-main" onclick="toggleSocial()">
+    <img src="img/social.png" alt="Redes">
+  </button>
+
+  <div class="social-menu">
+    <a href="https://instagram.com/plasenciahandball" target="_blank" class="social-btn">
+      <img src="img/instagram.png" alt="Instagram">
+      <span>@plasenciahandball</span>
+    </a>
+
+    <a href="https://facebook.com/TU_FACEBOOK" target="_blank" class="social-btn">
+      <img src="img/facebook.png" alt="Facebook">
+      <span>Facebook</span>
+    </a>
+
+    <a href="https://twitch.tv/TU_TWITCH" target="_blank" class="social-btn">
+      <img src="img/twitch.png" alt="Twitch">
+      <span>Twitch</span>
+    </a>
+  </div>
+</div>
+
  <body>
 
   <div id="splash">
@@ -23,7 +47,8 @@
     <!-- botones -->
   </nav>
 </header>
-  
+
+
   <main>
     <nav class="bottom-nav">
       <button onclick="mostrarHome()">🤾🏻‍♂️<span>Inicio</span></button>
@@ -51,35 +76,8 @@
       //navigator.serviceWorker.register("service-worker.js");//
     }
   </script>
-  
-    <!-- BOTÓN REDES -->
-<div class="social-container">
-  <button class="social-main-btn">
-    <img src="img/redes.png" alt="Redes">
-  </button>
 
-  <div class="social-menu">
-    <a href="https://www.instagram.com/plasenciahandball/?igsh=ODE5OTN0a20zZDB1&utm_source=qr" target="_blank" class="social-btn instagram">
-      <img src="img/instagram.png">
-      @plasenciahandball
-    </a>
-
-    <a href="https://www.facebook.com/plasenciahandball/?locale=es_ES" target="_blank" class="social-btn facebook">
-      <img src="img/facebook.png">
-      Facebook
-    </a>
-
-    <a href="https://www.twitch.tv/swl_tv?lang=es" target="_blank" class="social-btn twitch">
-      <img src="img/twitch.png">
-      Twitch swl_tv
-    </a>
-  </div>
-</div>
-
-<!-- BOTÓN ADMIN -->
-<button class="admin-btn">
-  🔒
-</button>
+  <button id="admin-fab" onclick="toggleAdmin()">🔒</button>
   
   <script>
   function toggleSocial() {
@@ -87,11 +85,4 @@
   }
 </script>
 
-<script>
-  document.querySelector('.social-main-btn').addEventListener('click', () => {
-    document.querySelector('.social-container').classList.toggle('active');
-  });
-</script>
-
 </body>
-</html>

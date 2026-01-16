@@ -173,9 +173,16 @@ async function iniciarApp() {
     console.error("Error iniciando app:", e);
     alert("Error cargando datos");
   } finally {
-    document.body.classList.remove("splash-activo");
-    const splash = document.getElementById("splash");
-    if (splash) splash.remove();
+  document.body.classList.remove("splash-activo");
+
+  const splash = document.getElementById("splash");
+  if (splash) {
+    splash.classList.add("splash-hide");
+
+    // eliminar después de la animación
+    setTimeout(() => {
+      splash.remove();
+    }, 600); // mismo tiempo que el CSS
   }
 }
 

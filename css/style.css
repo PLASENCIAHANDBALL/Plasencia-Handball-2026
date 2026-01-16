@@ -23,11 +23,11 @@ body {
 ========================= */
 
 .app-header {
-  position: relative;
-  height: 220px;
+  height: 220px; /* ajusta si quieres */
   background-image: url("../img/header.png");
-  background-size: cover;
-  background-position: center;
+  background-size: cover;        /* ocupa todo */
+  background-position: center;   /* centrada */
+  background-repeat: no-repeat;
 }
 
 @media (max-width: 768px) {
@@ -42,9 +42,6 @@ main {
   padding: 15px;
 }
 
-main {
-  padding-top: 60px;   /* altura aproximada del menú */
-}
 /* BOTONES GENERALES */
 button {
   width: 100%;
@@ -176,12 +173,23 @@ body.splash-activo .bottom-nav {
 
 /* MENÚ INFERIOR */
 
+.bottom-nav button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+}
 
+.bottom-nav button span {
+  font-size: 12px;
+}
 
 .bottom-nav button:active {
   color: #c4161c;
 }
-
 
 /* =========================
    BOTONES GENERALES (MEJORADOS)
@@ -205,73 +213,55 @@ button:active {
    MENÚ PRINCIPAL BAJO HEADER
 ========================= */
 
+.app-header {
+  position: relative;
+}
+
 /* contenedor del menú */
 .bottom-nav {
-  position: absolute;
-  left: 50%;
-  bottom: -32px;              /* 🔥 AJUSTA 28–36px A GUSTO */
-  transform: translateX(-50%);
-
+  position: relative;
+  margin: -35px auto 20px; /* sube el menú sobre el header */
   width: calc(100% - 32px);
   max-width: 900px;
 
-  background: rgba(255,255,255,0.97);
+  background: rgba(255,255,255,0.95);
   backdrop-filter: blur(6px);
 
   border-radius: 28px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
 
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 
-  padding: 12px 8px;
-  z-index: 1000;
+  padding: 14px 10px;
+  z-index: 50;
 }
 
-/* texto */
+/* botones */
 .bottom-nav button {
-  flex: 1;
-  min-width: 0;
-
-  background: transparent;
+  background: none;
   border: none;
+  padding: 0;
+  width: auto;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
 
-  padding: 4px 6px;
-  color: #555;
+  font-size: 20px;
+  color: #444;
+  cursor: pointer;
 }
 
-.bottom-nav button::first-line {
-  font-size: 24px;
-  line-height: 1.2;
-}
-
+/* texto */
 .bottom-nav span {
   font-size: 11px;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 600;
+  opacity: 0.8;
 }
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 380px) {
-  .bottom-nav button::first-line {
-    font-size: 22px;
-  }
-
-main {
-  padding-top: 70px;
-}
 /* efecto toque */
 .bottom-nav button:active {
   transform: scale(0.92);
@@ -279,6 +269,9 @@ main {
 }
 
 /* Texto debajo */
+.bottom-nav span {
+  font-size: 11px;
+}
 
 /* Botón activo (cuando pulses) */
 .bottom-nav button:active .nav-icon {
@@ -423,11 +416,17 @@ main {
   }
 }
 
+.marcador-pro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 26px;
+  margin: 30px 0;
+}
+
 /* Bloque equipo */
 .equipo-marcador {
-  width: min(42vw, 140px);  /* 🔥 se adapta al móvil */
-  max-width: 140px;
-  flex-shrink: 0;
+  width: 140px;
   padding: 16px 10px;
   border-radius: 22px;
   display: flex;
@@ -526,10 +525,8 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;              /* menos gap */
-  margin: 20px auto;
-  max-width: 100%;
-  overflow: hidden;       /* 🔥 clave */
+  gap: 25px;
+  margin: 25px 0;
 }
 
 .equipo-marcador {
@@ -1112,6 +1109,10 @@ body.splash-activo #splash {
 ========================= */
 
 /* Botón base */
+.bottom-nav button {
+  gap: 8px; /* separación icono-texto */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
 
 /* ICONO (emoji dentro del "cuadradito") */
 .bottom-nav button::first-line {
@@ -1119,6 +1120,10 @@ body.splash-activo #splash {
 }
 
 /* Texto debajo */
+.bottom-nav span {
+  font-size: 12px;
+  margin-top: 2px;
+}
 
 /* Animación al pulsar */
 .bottom-nav button:active {
@@ -1151,9 +1156,41 @@ body.splash-activo #splash {
    EFECTO SUAVE DE ENTRADA
 ========================= */
 
+.bottom-nav {
+  animation: menuFadeUp 0.5s ease;
+}
+
+@keyframes menuFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* =========================
    BOTONES DEL MENÚ SIN RECUADRO
 ========================= */
+
+.bottom-nav button {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  padding: 6px 10px;
+  width: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #555;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
 
 /* Emoji (icono) */
 .bottom-nav button::first-line {
@@ -1162,6 +1199,10 @@ body.splash-activo #splash {
 }
 
 /* Texto */
+.bottom-nav span {
+  font-size: 12px;
+  margin-top: 4px;          /* separación icono-texto */
+}
 
 /* Animación al pulsar */
 .bottom-nav button:active {
@@ -1182,19 +1223,7 @@ body.splash-activo #splash {
 .bottom-nav button:focus-visible::first-line {
   transform: scale(1.15);
   display: inline-block;
-}
 
-main,
-.app-header,
-
-body {
-  overflow-x: hidden;
-}
-
-@media (max-width: 380px) {
-  .bottom-nav button::first-line {
-    font-size: 24px; /* icono un poco más pequeño */
-  }
 
   .bottom-nav button::first-line {
     font-size: 22px;     /* icono un poco más pequeño */

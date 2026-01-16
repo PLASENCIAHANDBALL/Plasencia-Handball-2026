@@ -431,7 +431,95 @@ body.splash-activo #admin-fab {
   object-fit: contain;
   border-radius: 12px;
 }
+/* ======================================================
+   OTROS
+====================================================== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
 
+button,
+.nav-btn,
+.bottom-nav button {
+  min-height: 44px;   /* estándar móvil */
+  touch-action: manipulation;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+  user-select: text;
+}
+
+.tabs,
+.patrocinadores-scroll,
+.tabla-wrapper {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav {
+  bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+* {
+  will-change: transform;
+}
+button:active,
+.tab:active,
+.partido-card:active {
+  transform: scale(0.97);
+}
+
+.page {
+  animation: pageEnter 0.25s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+select {
+  font-size: 16px; /* evita zoom en iOS */
+  border-radius: 12px;
+}
+
+@media (display-mode: standalone) {
+  body {
+    background: #f5f5f5;
+  }
+
+  .app-header {
+    margin-top: env(safe-area-inset-top);
+  }
+}
 /* ======================================================
    BOTÓN ADMIN
 ====================================================== */

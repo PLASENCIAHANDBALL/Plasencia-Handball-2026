@@ -23,7 +23,7 @@ body {
 ========================= */
 
 .app-header {
-  height: 220px; /* ajusta si quieres */
+  height: 100px; /* ajusta si quieres */
   background-image: url("../img/header.png");
   background-size: cover;        /* ocupa todo */
   background-position: center;   /* centrada */

@@ -2180,9 +2180,8 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
   const filtrados = partidos.filter(p => p.pabellon === pabellon);
 
   let html = `
-    <button class="volver" onclick="mostrarPabellones()">⬅ Volver a pabellones</button>
-    <h2>${pabellon}</h2>
-  `;
+  <h2>${pabellon}</h2>
+`;
 
   if (filtrados.length === 0) {
     html += `<p>No hay partidos en este pabellón.</p>`;
@@ -2205,7 +2204,11 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
           <div class="partido-categoria">
             ${p.categoria} · ${p.genero} · ${p.grupo}
           </div>
-
+          
+          <button class="volver volver-pabellones" onclick="mostrarPabellones()">.
+             ⬅ Volver a pabellones
+           </button>
+  
         </div>
       `;
     });

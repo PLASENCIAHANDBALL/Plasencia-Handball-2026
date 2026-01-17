@@ -289,7 +289,7 @@ async function cargarGaleriaAleatoria() {
     });
 }
 
-async function cargarGaleria(contenedorId, maxFotos = 6) {
+async function cargarGaleria(contenedorId, maxFotos = 10) {
   const contenedor = document.getElementById(contenedorId);
   if (!contenedor) return;
 

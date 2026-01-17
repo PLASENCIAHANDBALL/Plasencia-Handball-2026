@@ -1306,3 +1306,43 @@ body.splash-activo #splash {
   font-size: 14px;
   color: #666;
 }
+
+/* ===== GALERÍA 2026 – BADGE ENLACE ===== */
+
+.galeria2026-scroll {
+  padding: 12px 0;
+}
+
+.galeria-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: linear-gradient(135deg, #f4a261, #f59e0b);
+  color: white;
+  text-decoration: none;
+
+  padding: 16px 18px;
+  border-radius: 18px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+
+  max-width: 320px;
+}
+
+.galeria-badge:active {
+  transform: scale(0.96);
+}
+
+.badge-icon {
+  font-size: 34px;
+}
+
+.badge-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-texto span {
+  font-size: 13px;
+  opacity: 0.9;
+}

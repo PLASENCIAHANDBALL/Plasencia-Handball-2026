@@ -1337,12 +1337,13 @@ body.splash-activo #splash {
 }
 
 .pabellon-card {
-  aspect-ratio: 1 / 1; /* 🔑 cuadrado perfecto */
+  aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, #f4a261, #f59e0b);
   border-radius: 22px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.18);
 
   display: flex;
+  flex-direction: column;     /* 🔑 CLAVE */
   align-items: center;
   justify-content: center;
 
@@ -1360,8 +1361,21 @@ body.splash-activo #splash {
   box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
+.pabellon-nombre {
+  font-size: 18px;
+}
+
 .pabellon-contador {
   font-size: 13px;
-  opacity: 0.7;
+  opacity: 0.8;
   margin-top: 6px;
+}
+
+.volver-pabellones {
+  margin-top: 30px;
+  background: linear-gradient(135deg, #f4a261, #f59e0b);
+  color: white;
+  font-weight: 600;
+  border-radius: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 }

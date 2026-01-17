@@ -2080,7 +2080,7 @@ function guardarNuevoEquipoClub(clubId) {
 }
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
-  setNavActivoPorVista("pabellones");
+  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
 
   const pabellones = [
     "Municipal",
@@ -2091,12 +2091,18 @@ function mostrarPabellones() {
     "La Data"
   ];
 
-  contenido.innerHTML = `
+  const contarPartidos = pabellon =>
+    partidos.filter(p => p.pabellon === pabellon).length;
+
+  document.getElementById("contenido").innerHTML = `
     <h2>Pabellones</h2>
     <div class="pabellones-grid">
       ${pabellones.map(p => `
         <div class="pabellon-card" onclick="mostrarPartidosPorPabellon('${p}')">
           <div class="pabellon-nombre">${p}</div>
+          <div class="pabellon-contador">
+            ${contarPartidos(p)} partidos
+          </div>
         </div>
       `).join("")}
     </div>
@@ -2173,28 +2179,37 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
 
   const filtrados = partidos.filter(p => p.pabellon === pabellon);
 
-  let html = `<h2>${pabellon}</h2>`;
+  let html = `
+    <button class="volver" onclick="mostrarPabellones()">⬅ Volver a pabellones</button>
+    <h2>${pabellon}</h2>
+  `;
 
   if (filtrados.length === 0) {
     html += `<p>No hay partidos en este pabellón.</p>`;
+  } else {
+    filtrados.forEach(p => {
+      const local = equipos.find(e => e.id === p.local_id);
+      const visitante = equipos.find(e => e.id === p.visitante_id);
+
+      html += `
+        <div class="card partido-card" onclick="abrirPartido(${p.id})">
+          
+          <div class="partido-fecha">
+            📅 ${new Date(p.fecha).toLocaleDateString("es-ES")} · 🕒 ${formatearHora(p.hora)}
+          </div>
+
+          <div class="partido-nombre">
+            ${local?.nombre || "-"} vs ${visitante?.nombre || "-"}
+          </div>
+
+          <div class="partido-categoria">
+            ${p.categoria} · ${p.genero} · ${p.grupo}
+          </div>
+
+        </div>
+      `;
+    });
   }
-
-  filtrados.forEach(p => {
-    const local = equipos.find(e => e.id === p.local_id);
-    const visitante = equipos.find(e => e.id === p.visitante_id);
-
-    html += `
-      <div class="card partido-card" onclick="abrirPartido(${p.id})">
-        <div class="partido-fecha">${p.fecha} · ${formatearHora(p.hora)}</div>
-        <div class="partido-nombre">
-          ${local?.nombre} vs ${visitante?.nombre}
-        </div>
-        <div class="partido-categoria">
-          ${p.categoria} · ${p.genero}
-        </div>
-      </div>
-    `;
-  });
 
   contenido.innerHTML = html;
 };

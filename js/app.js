@@ -87,6 +87,16 @@ function formatearHora(hora24) {
 
   return `${hora12}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
+
+const LISTA_PABELLONES = [
+  "Municipal",
+  "Escuela",
+  "Universitario",
+  "Miralvalle",
+  "San Calixto",
+  "La Data"
+];
+
 /* ================== supabase ================== */
 async function probarSupabase() {
   const { data, error } = await supabase
@@ -423,7 +433,7 @@ function renderPartidoCard(p) {
 </div>
       
       <div class="partido-info">
-        🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+        🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
       </div>
 
       <div class="partido-grupo">🏷️ ${p.grupo}</div>
@@ -486,8 +496,12 @@ function formNuevoPartido() {
     <label>Hora</label>
     <input type="time" id="hora">
 
-    <label>Lugar</label>
-    <input id="lugar" placeholder="Pabellón / pista">
+    <label>Pabellón</label>
+<select id="pabellon">
+  ${LISTA_PABELLONES.map(p => `
+    <option value="${p}">${p}</option>
+  `).join("")}
+</select>
 
     <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
@@ -539,8 +553,14 @@ function editarPartido(id) {
     <label>Hora</label>
     <input type="time" id="hora" value="${partidoActual.hora || ""}">
 
-    <label>Lugar</label>
-    <input id="lugar" value="${partidoActual.lugar || ""}">
+    <label>Pabellón</label>
+<select id="pabellon">
+  ${LISTA_PABELLONES.map(p => `
+    <option value="${p}" ${p === partidoActual.pabellon ? "selected" : ""}>
+      ${p}
+    </option>
+  `).join("")}
+</select>
 
     <button onclick="guardarEdicionPartido()">💾 Guardar cambios</button>
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
@@ -554,7 +574,7 @@ function guardarEdicionPartido() {
   partidoActual.genero = document.getElementById("genero").value;
   partidoActual.grupo = document.getElementById("grupo").value;
   partidoActual.hora = document.getElementById("hora").value;
-  partidoActual.lugar = document.getElementById("lugar").value;
+  partidoActual.pabellon = document.getElementById("pabellon").value;
 
   partidos = partidos.map(p =>
     p.id === partidoActual.id ? partidoActual : p
@@ -1170,7 +1190,7 @@ async function guardarNuevoPartido() {
     grupo: document.getElementById("grupo").value,
     fecha: document.getElementById("fecha").value,
     hora: document.getElementById("hora").value,
-    lugar: document.getElementById("lugar").value,
+    pabellon: document.getElementById("pabellon").value,
     goles_local: 0,
     goles_visitante: 0,
     estado: "pendiente"
@@ -1427,7 +1447,7 @@ function togglePartidosEquipo(idEquipo) {
       <strong>${new Date(p.fecha).toLocaleDateString("es-ES")}</strong>
       <div>${local?.nombre} vs ${visitante?.nombre}</div>
       <div class="mini-info">
-        🕒 ${formatearHora(p.hora)} · 📍 ${p.lugar || "-"}
+        🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
       </div>
     </div>
   `;
@@ -2163,18 +2183,22 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
     <h2>${pabellon}</h2>
   `;
 
-  if (filtrados.length === 0) {
-    html += `<p>No hay partidos en este pabellón.</p>`;
-  } else {
-    filtrados.forEach(p => {
-      html += `
-        <div class="partido-card">
-          <div class="partido-fecha">${p.fecha} · ${p.hora}</div>
-          <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
-          <div class="partido-categoria">${p.categoria}</div>
-        </div>
-      `;
-    });
+  filtrados.forEach(p => {
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+
+  html += `
+    <div class="card partido-card" onclick="abrirPartido(${p.id})">
+      <div class="partido-fecha">${p.fecha} · ${formatearHora(p.hora)}</div>
+      <div class="partido-nombre">
+        ${local?.nombre} vs ${visitante?.nombre}
+      </div>
+      <div class="partido-categoria">
+        ${p.categoria} · ${p.genero}
+      </div>
+    </div>
+  `;
+});
   }
 
   document.getElementById("contenido").innerHTML = html;

@@ -183,8 +183,9 @@ function mostrarHome() {
 
   // cargar galería
   setTimeout(() => {
-    cargarGaleriaAleatoria();
-  }, 100);
+  cargarGaleria("galeria-scroll", 6);      // Fotos torneo 2025
+  cargarGaleria("galeria2026-scroll", 6);  // Fotos torneo 2026 (por ahora mismas)
+}, 100);
 }
 
 function formNuevoPatrocinador() {
@@ -243,11 +244,7 @@ async function obtenerFotosGaleria() {
   const { data, error } = await supabase
     .storage
     .from("galeria-torneo")
-    .list("edicion-anterior", {
-      limit: 100,
-      offset: 0,
-      sortBy: { column: "name", order: "asc" }
-    });
+    .list("edicion-anterior");
 
   if (error) {
     console.error("Error cargando galería:", error);
@@ -255,12 +252,43 @@ async function obtenerFotosGaleria() {
   }
 
   return data
-    .filter(f => f.name.match(/\.(jpg|jpeg|png|webp)$/i))
+    .filter(f =>
+      f.name &&
+      !f.name.endsWith("/") &&
+      /\.(jpg|jpeg|png|webp)$/i.test(f.name)
+    )
     .map(f =>
-      supabase.storage
+      supabase
+        .storage
         .from("galeria-torneo")
         .getPublicUrl(`edicion-anterior/${f.name}`).data.publicUrl
     );
+}
+
+async function cargarGaleria(contenedorId, maxFotos = 6) {
+  const contenedor = document.getElementById(contenedorId);
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "Cargando imágenes…";
+
+  const fotos = await obtenerFotosGaleria();
+
+  if (fotos.length === 0) {
+    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
+    return;
+  }
+
+  contenedor.innerHTML = "";
+
+  fotos
+    .sort(() => 0.5 - Math.random())
+    .slice(0, maxFotos)
+    .forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.loading = "lazy";
+      contenedor.appendChild(img);
+    });
 }
 
 async function cargarGaleriaAleatoria() {

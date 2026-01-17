@@ -24,22 +24,20 @@ body {
 
 .app-header {
   position: relative;
-  height: 220px;                /* altura real del header */
-  padding-bottom: 60px;
-  
+  height: 170px;              /* altura realista en móvil */
+  padding-bottom: 40px;       /* espacio justo para el menú */
+
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
-  background-size: cover;       /* 🔑 rellena de arriba a abajo */
-  background-position: center bottom; /* 🔑 baja la imagen */
-  
-  background-color: #f4a261;
+  background-size: contain;   /* 🔑 NO recorta */
+  background-position: center top; /* 🔑 arriba del todo */
+  background-color: var(--principal);
 }
 
 @media (max-width: 768px) {
   .app-header {
-    height: 200px;
-    padding-bottom: 60px;
-    background-position: center bottom;
+    height: 150px;
+    padding-bottom: 36px;
   }
 }
 
@@ -225,7 +223,8 @@ button:active {
 
 .bottom-nav {
   position: relative;
-  margin: -35px auto 20px;
+  margin: -28px auto 16px;   /* 🔑 menos separación */
+  padding: 12px 8px;         /* 🔑 más compacto */
   width: calc(100% - 32px);
   max-width: 900px;
 
@@ -1337,4 +1336,16 @@ body.splash-activo #splash {
 .galeria-badge:active .badge-icon img {
   transform: scale(0.9);
   transition: transform 0.15s ease;
+}
+
+@media (max-width: 480px) {
+
+  .bottom-nav button {
+    font-size: 18px;     /* icono un poco más pequeño */
+    gap: 4px;
+  }
+
+  .bottom-nav span {
+    font-size: 10px;     /* texto más compacto */
+  }
 }

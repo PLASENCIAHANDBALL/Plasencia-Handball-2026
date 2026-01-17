@@ -173,26 +173,6 @@ body.splash-activo .bottom-nav {
   display: none !important;
 }
 
-/* MENÚ INFERIOR */
-
-.bottom-nav button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #555;
-}
-
-.bottom-nav button span {
-  font-size: 12px;
-}
-
-.bottom-nav button:active {
-  color: #c4161c;
-}
-
 /* =========================
    BOTONES GENERALES (MEJORADOS)
 ========================= */
@@ -211,78 +191,70 @@ button:active {
   transform: scale(0.97);
 }
 
-/* =========================
-   MENÚ PRINCIPAL BAJO HEADER
-========================= */
+.app-header {
+  height: 190px;
+  background-image: url("../img/header.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--principal);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    height: 170px;
+  }
+}
 
 /* =========================
-   MENÚ PRINCIPAL – CONTENEDOR
+   NUEVO MENÚ PRINCIPAL
 ========================= */
 
-.bottom-nav {
-  position: absolute;
-  bottom: -30px;                 /* baja el menú */
-  left: 50%;
-  transform: translateX(-50%);
-
+.nav-principal {
+  margin: -28px auto 24px;
   width: calc(100% - 32px);
   max-width: 900px;
 
   background: linear-gradient(135deg, #f4a261, #f59e0b);
-  border-radius: 28px;
-
-  padding: 14px 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  border-radius: 26px;
+  padding: 14px 8px;
 
   display: flex;
   justify-content: space-around;
   align-items: center;
 
-  z-index: 10;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
 }
 
-/* =========================
-   MENÚ – BOTONES TRANSPARENTES
-========================= */
-
-.bottom-nav button {
-  background: transparent !important;
-  box-shadow: none !important;
+.nav-principal button {
+  background: none;
   border: none;
-
-  width: auto;
-  padding: 6px 8px;
+  padding: 0;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 
-  font-size: 22px;
+  font-size: 18px;
   color: white;
   cursor: pointer;
 }
 
-.bottom-nav button span {
+.nav-principal span {
   font-size: 11px;
   font-weight: 600;
-  opacity: 0.95;
 }
 
-.bottom-nav button:active {
-  transform: scale(0.9);
-  opacity: 0.85;
-}
+@media (max-width: 480px) {
+  .nav-principal button {
+    font-size: 16px;
+    gap: 4px;
+  }
 
-/* Texto debajo */
-.bottom-nav span {
-  font-size: 11px;
-}
-
-/* Botón activo (cuando pulses) */
-.bottom-nav button:active .nav-icon {
-  background: var(--rojo);
-  color: white;
+  .nav-principal span {
+    font-size: 10px;
+  }
 }
 
 /* =========================
@@ -1115,52 +1087,17 @@ body.splash-activo #splash {
    MENÚ – ICONOS + TEXTO PRO
 ========================= */
 
-/* Botón base */
-.bottom-nav button {
-  gap: 8px; /* separación icono-texto */
-  transition: transform 0.2s ease, color 0.2s ease;
-}
 
-/* Texto debajo */
-.bottom-nav span {
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-/* Animación al pulsar */
-.bottom-nav button:active {
-  transform: scale(0.9);
-  color: #f59e0b;
-}
 
 /* =========================
    ESTADO ACTIVO (SECCIÓN)
 ========================= */
 
-/* Cuando el botón queda enfocado (iOS / Safari) */
-.bottom-nav button:focus-visible {
-  outline: none;
-  color: #f59e0b;
-}
-
-/* Efecto visual de activo */
-.bottom-nav button:focus-visible span {
-  font-weight: 700;
-}
-
-/* Icono activo */
-.bottom-nav button:focus-visible::first-line {
-  transform: scale(1.15);
-  display: inline-block;
-}
 
 /* =========================
    EFECTO SUAVE DE ENTRADA
 ========================= */
 
-.bottom-nav {
-  animation: menuFadeUp 0.5s ease;
-}
 
 @keyframes menuFadeUp {
   from {
@@ -1332,16 +1269,4 @@ body.splash-activo #splash {
 .galeria-badge:active .badge-icon img {
   transform: scale(0.9);
   transition: transform 0.15s ease;
-}
-
-@media (max-width: 480px) {
-
-  .bottom-nav button {
-    font-size: 16px;     /* icono un poco más pequeño */
-    gap: 4px;
-  }
-
-  .bottom-nav span {
-    font-size: 10px;     /* texto más compacto */
-  }
 }

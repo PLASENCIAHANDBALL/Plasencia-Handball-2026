@@ -97,6 +97,15 @@ const LISTA_PABELLONES = [
   "La Data"
 ];
 
+const IMAGENES_PABELLONES = {
+  "Municipal": "img/pabellones/municipal.png",
+  "Escuela": "img/pabellones/escuela.png",
+  "Universitario": "img/pabellones/universitario.png",
+  "Miralvalle": "img/pabellones/miralvalle.png",
+  "San Calixto": "img/pabellones/san-calixto.png",
+  "La Data": "img/pabellones/la-data.png"
+};
+
 /* ================== supabase ================== */
 async function probarSupabase() {
   const { data, error } = await supabase
@@ -2098,12 +2107,18 @@ function mostrarPabellones() {
     <h2>Pabellones</h2>
     <div class="pabellones-grid">
       ${pabellones.map(p => `
-        <div class="pabellon-card" onclick="mostrarPartidosPorPabellon('${p}')">
-          <div class="pabellon-nombre">${p}</div>
-          <div class="pabellon-contador">
-            ${contarPartidos(p)} partidos
-          </div>
-        </div>
+        <div 
+  class="pabellon-card"
+  style="background-image: url('${IMAGENES_PABELLONES[p]}')"
+  onclick="mostrarPartidosPorPabellon('${p}')"
+>
+  <div class="pabellon-overlay">
+    <div class="pabellon-nombre">${p}</div>
+    <div class="pabellon-contador">
+      ${contarPartidos(p)} partidos
+    </div>
+  </div>
+</div>
       `).join("")}
     </div>
   `;

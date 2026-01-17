@@ -24,12 +24,15 @@ body {
 
 .app-header {
   position: relative;
-  height: 130px;
+  height: 200px;
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
   background-color: var(--principal);
+
+  /* 🔑 espacio para que la barra pueda montarse */
+  padding-bottom: 40px;
 }
 
 @media (max-width: 768px) {
@@ -213,7 +216,7 @@ button:active {
 
 .nav-principal {
   position: absolute;
-  bottom: -26px; /* sobresale un poco */
+  bottom: -22px;                /* 🔥 superposición sutil */
   left: 50%;
   transform: translateX(-50%);
 
@@ -228,7 +231,8 @@ button:active {
   justify-content: space-around;
   align-items: center;
 
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+  z-index: 5;
 }
 
 .nav-principal button {
@@ -264,7 +268,8 @@ button:active {
 
 @media (max-width: 480px) {
   .nav-principal {
-    bottom: -22px;
+    bottom: -18px;   /* menos solape en móvil */
+    padding: 12px 6px;
   }
 }
 

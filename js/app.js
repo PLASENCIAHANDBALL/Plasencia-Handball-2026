@@ -237,13 +237,8 @@ async function iniciarApp() {
   }
 }
 
-/* ================== Galeria (SUPABASE) ================== */
-async function cargarGaleriaAleatoria() {
-  const contenedor = document.getElementById("galeria-scroll");
-  console.log("📦 contenedor galería:", contenedor);
 
-  if (!contenedor) return;
-
+/* ================== GALERÍA (SUPABASE) ================== */
 async function obtenerFotosGaleria() {
   const { data, error } = await supabase
     .storage
@@ -263,6 +258,34 @@ async function obtenerFotosGaleria() {
         .from("galeria-torneo")
         .getPublicUrl(`edicion-anterior/${f.name}`).data.publicUrl
     );
+}
+
+async function cargarGaleriaAleatoria() {
+  const contenedor = document.getElementById("galeria-scroll");
+  console.log("📦 contenedor galería:", contenedor);
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "Cargando imágenes…";
+
+  const fotos = await obtenerFotosGaleria();
+
+  if (!fotos || fotos.length === 0) {
+    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
+    return;
+  }
+
+  contenedor.innerHTML = "";
+
+  fotos
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 6)
+    .forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.loading = "lazy";
+      contenedor.appendChild(img);
+    });
 }
 
 async function cargarGaleria(contenedorId, maxFotos = 6) {

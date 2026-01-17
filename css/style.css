@@ -1326,3 +1326,8 @@ body.splash-activo #splash {
   height: 100%;
   object-fit: contain;
 }
+/* Efecto toque icono badge galería */
+.galeria-badge:active .badge-icon img {
+  transform: scale(0.9);
+  transition: transform 0.15s ease;
+}

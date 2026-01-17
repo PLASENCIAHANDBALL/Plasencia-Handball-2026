@@ -1326,3 +1326,36 @@ body.splash-activo #splash {
   transform: scale(0.9);
   transition: transform 0.15s ease;
 }
+
+/* ===== PABELLONES ===== */
+
+.pabellones-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pabellon-card {
+  aspect-ratio: 1 / 1; /* 🔑 cuadrado perfecto */
+  background: linear-gradient(135deg, #f4a261, #f59e0b);
+  border-radius: 22px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  text-align: center;
+
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pabellon-card:active {
+  transform: scale(0.96);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}

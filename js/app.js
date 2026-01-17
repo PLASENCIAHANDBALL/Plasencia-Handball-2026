@@ -2097,7 +2097,7 @@ function mostrarPabellones() {
     "Universitario",
     "Miralvalle",
     "San Calixto",
-    "La Data"
+    "Multipista"
   ];
 
   const contarPartidos = pabellon =>

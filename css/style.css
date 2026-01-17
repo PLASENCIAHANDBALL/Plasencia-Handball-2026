@@ -78,7 +78,9 @@ body {
 
 /* BOTONES TRANSPARENTES */
 .nav-principal button {
-  background: transparent;
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   border: none;
   padding: 6px 4px;          /* 🔑 reduce ancho */
 
@@ -126,6 +128,41 @@ body {
   }
 }
 
+.nav-principal button {
+  opacity: 0.55;
+  filter: grayscale(20%);
+}
+
+.nav-principal button.activo {
+  opacity: 1;
+  color: var(--principal);
+  filter: none;
+}
+
+/* Emoji (primer nodo del botón) */
+.nav-principal button.activo {
+  text-shadow:
+    0 0 6px rgba(244,162,97,0.9),
+    0 0 14px rgba(244,162,97,0.6);
+  transform: scale(1.05);
+}
+
+/* Texto activo */
+.nav-principal button.activo span {
+  color: #1f2933;
+  font-weight: 700;
+}
+
+.nav-principal button.activo::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  width: 26px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(244,162,97,0.7);
+  box-shadow: 0 0 12px rgba(244,162,97,0.9);
+}
 
 /* CONTENIDO */
 main {

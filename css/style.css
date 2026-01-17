@@ -18,6 +18,13 @@ body {
   color: var(--oscuro);
 }
 
+/* ===== HEADER + NAV WRAPPER ===== */
+.header-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
 /* =========================
    CABECERA CON IMAGEN PNG
 ========================= */
@@ -43,10 +50,9 @@ body {
 ========================= */
 
 .nav-principal {
-  position: absolute;
-  bottom: -22px;                 /* 🔥 solape sutil */
-  left: 50%;
-  transform: translateX(-50%);
+  position: sticky;
+  top: 160px;               /* justo debajo del header */
+  margin: -22px auto 16px;  /* solape elegante */
 
   width: calc(100% - 32px);
   max-width: 900px;
@@ -69,7 +75,7 @@ body {
     0 20px 40px rgba(0,0,0,0.25),
     inset 0 1px 0 rgba(255,255,255,0.35);
 
-  z-index: 20;
+  z-index: 1001;
 }
 
 /* BOTONES TRANSPARENTES */
@@ -104,9 +110,11 @@ body {
 /* MÓVIL */
 @media (max-width: 480px) {
   .nav-principal {
-    bottom: -18px;
+    top: 145px;
+    margin-top: -18px;
     padding: 12px 6px;
   }
+}
 
   .nav-principal button {
     font-size: 16px;
@@ -120,7 +128,7 @@ body {
 
 /* CONTENIDO */
 main {
-  padding-top: 60px;
+  padding-top: 70px;
   padding-left: 15px;
   padding-right: 15px;
 }

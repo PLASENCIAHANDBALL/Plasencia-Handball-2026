@@ -2129,6 +2129,14 @@ window.actualizarClasificacion = actualizarClasificacion;
 // utilidades usadas en HTML
 window.abrirWeb = abrirWeb;
 
+window.setNavActivo = function (boton) {
+  document
+    .querySelectorAll('.nav-principal button')
+    .forEach(b => b.classList.remove('activo'));
+
+  boton.classList.add('activo');
+};
+
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {
   iniciarApp();

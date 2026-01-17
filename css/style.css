@@ -68,7 +68,7 @@ body {
   padding: 14px 10px;
 
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
 
   box-shadow:
@@ -82,23 +82,27 @@ body {
 .nav-principal button {
   background: transparent;
   border: none;
+  padding: 6px 4px;          /* 🔑 reduce ancho */
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
 
-  font-size: 18px;
-  color: white;
+  gap: 3px;                  /* 🔑 menos separación */
+  min-width: 44px;           /* 🔑 tamaño táctil iOS */
 
-  opacity: 0.9;
+  font-size: 15px;           /* 🔑 icono más pequeño */
+  color: #1f2933;            /* 🔑 TEXTO NEGRO */
+
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .nav-principal button span {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
+  line-height: 1;
 }
 
 /* Interacción tipo iOS */
@@ -112,19 +116,19 @@ body {
   .nav-principal {
     top: 145px;
     margin-top: -18px;
-    padding: 12px 6px;
+    padding: 10px 8px;
   }
-}
 
   .nav-principal button {
-    font-size: 16px;
-    gap: 4px;
+    font-size: 14px;   /* icono */
+    padding: 4px 2px;
   }
 
-  .nav-principal span {
-    font-size: 10px;
+  .nav-principal button span {
+    font-size: 9px;
   }
 }
+
 
 /* CONTENIDO */
 main {

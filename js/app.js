@@ -183,8 +183,9 @@ function mostrarHome() {
 
   // cargar galería
   requestAnimationFrame(() => {
-  cargarGaleriaAleatoria();
-});
+    cargarGaleriaAleatoria();
+  });
+}
 
 function formNuevoPatrocinador() {
   contenido.innerHTML = `

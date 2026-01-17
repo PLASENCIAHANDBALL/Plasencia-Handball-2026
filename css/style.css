@@ -1273,40 +1273,6 @@ body.splash-activo #splash {
   color: #444;
 }
 
-/* GALERÍA */
-.galeria {
-  padding: 16px 0;
-}
-
-.galeria-scroll {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 10px;
-}
-
-.galeria-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.galeria-scroll img {
-  width: 240px;
-  height: 160px;
-  object-fit: contain;          /* ✅ no recorta */
-  background: #f3f3f3;          /* fondo para huecos */
-  padding: 8px;                 /* aire alrededor */
-  border-radius: 16px;
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-}
-
-.galeria-loading {
-  font-size: 14px;
-  color: #666;
-}
-
 /* ===== GALERÍA 2026 – BADGE ENLACE ===== */
 
 .galeria2026-scroll {

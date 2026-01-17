@@ -275,6 +275,12 @@ function cargarGaleria2025() {
 }
 
 /* ================== GALERÍA (SUPABASE) ================== */
+function setNavActivo(boton) {
+  document.querySelectorAll('.nav-principal button')
+    .forEach(b => b.classList.remove('activo'));
+
+  boton.classList.add('activo');
+}
 
 /* ================== PATROCINADORES (SUPABASE) ================== */
 

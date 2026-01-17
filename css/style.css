@@ -114,7 +114,7 @@ body {
 /* MÓVIL */
 @media (max-width: 480px) {
   .nav-principal {
-    margin-top: -28px;
+    margin-top: -30px;
     padding: 10px 8px;
   }
 

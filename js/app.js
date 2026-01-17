@@ -243,14 +243,16 @@ function cargarGaleria2026() {
   const urlCarpeta = "https://www.amazon.es/photos/share/TU_URL_AQUI";
 
   contenedor.innerHTML = `
-    <a href="${urlCarpeta}" target="_blank" class="galeria-badge">
-      <div class="badge-icon">📸</div>
-      <div class="badge-texto">
-        <strong>Ver carpeta de fotos</strong>
-        <span>Torneo 2026</span>
-      </div>
-    </a>
-  `;
+  <a href="${urlCarpeta}" target="_blank" class="galeria-badge">
+    <div class="badge-icon">
+      <img src="img/iconos/fotos.png" alt="Fotos torneo 2026">
+    </div>
+    <div class="badge-texto">
+      <strong>Ver carpeta de fotos</strong>
+      <span>Torneo 2026</span>
+    </div>
+  </a>
+`;
 }
 
 function cargarGaleria2025() {
@@ -260,14 +262,16 @@ function cargarGaleria2025() {
   const urlCarpeta2025 = "https://www.amazon.es/photos/share/TU_URL_2025";
 
   contenedor.innerHTML = `
-    <a href="${urlCarpeta2025}" target="_blank" class="galeria-badge">
-      <div class="badge-icon">📸</div>
-      <div class="badge-texto">
-        <strong>Ver carpeta de fotos</strong>
-        <span>Torneo 2025</span>
-      </div>
-    </a>
-  `;
+  <a href="${urlCarpeta2025}" target="_blank" class="galeria-badge">
+    <div class="badge-icon">
+      <img src="img/iconos/fotos.png" alt="Fotos torneo 2025">
+    </div>
+    <div class="badge-texto">
+      <strong>Ver carpeta de fotos</strong>
+      <span>Torneo 2025</span>
+    </div>
+  </a>
+`;
 }
 
 /* ================== GALERÍA (SUPABASE) ================== */

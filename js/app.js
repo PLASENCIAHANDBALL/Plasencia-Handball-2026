@@ -104,7 +104,6 @@ function mostrarHome() {
   let html = `
     <h2>Inicio</h2>
 <section class="galeria2026">
-  <h3>Fotos del torneo 2026</h3>
   <div id="galeria2026-scroll" class="galeria2026-scroll">
     <div class="galeria2026-loading">Cargando imágenes…</div>
   </div>
@@ -112,7 +111,6 @@ function mostrarHome() {
     
     <!-- GALERÍA -->
     <section class="galeria">
-      <h3>Fotos del torneo 2025</h3>
       <div id="galeria-scroll" class="galeria-scroll">
         <div class="galeria-loading">Cargando imágenes…</div>
       </div>
@@ -181,7 +179,7 @@ function mostrarHome() {
 
   // cargar galería
   requestAnimationFrame(() => {
-    cargarGaleriaAleatoria();
+    cargarGaleria2025();
     cargarGaleria2026();
   });
 }
@@ -255,81 +253,24 @@ function cargarGaleria2026() {
   `;
 }
 
-/* ================== GALERÍA (SUPABASE) ================== */
-async function obtenerFotosGaleria() {
-  const { data, error } = await supabase
-    .storage
-    .from("galeria-torneo")
-    .list("", { limit: 100 }); // 👈 raíz del bucket
-
-  if (error) {
-    console.error("❌ Error Supabase:", error);
-    return [];
-  }
-
-  return data
-    .filter(f => f.name && /\.(jpg|jpeg|png)$/i.test(f.name))
-    .map(f =>
-      supabase
-        .storage
-        .from("galeria-torneo")
-        .getPublicUrl(f.name).data.publicUrl
-    );
-}
-
-async function cargarGaleriaAleatoria() {
+function cargarGaleria2025() {
   const contenedor = document.getElementById("galeria-scroll");
-  console.log("📦 contenedor galería:", contenedor);
-
   if (!contenedor) return;
 
-  contenedor.innerHTML = "Cargando imágenes…";
+  const urlCarpeta2025 = "https://www.amazon.es/photos/share/TU_URL_2025";
 
-  const fotos = await obtenerFotosGaleria();
-
-  if (!fotos || fotos.length === 0) {
-    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
-    return;
-  }
-
-  contenedor.innerHTML = "";
-
-  fotos
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 6)
-    .forEach(url => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.loading = "lazy";
-      contenedor.appendChild(img);
-    });
+  contenedor.innerHTML = `
+    <a href="${urlCarpeta2025}" target="_blank" class="galeria-badge">
+      <div class="badge-icon">📸</div>
+      <div class="badge-texto">
+        <strong>Ver carpeta de fotos</strong>
+        <span>Torneo 2025</span>
+      </div>
+    </a>
+  `;
 }
 
-async function cargarGaleria(contenedorId, maxFotos = 10) {
-  const contenedor = document.getElementById(contenedorId);
-  if (!contenedor) return;
-
-  contenedor.innerHTML = "Cargando imágenes…";
-
-  const fotos = await obtenerFotosGaleria();
-
-  if (fotos.length === 0) {
-    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
-    return;
-  }
-
-  contenedor.innerHTML = "";
-
-  fotos
-    .sort(() => 0.5 - Math.random())
-    .slice(0, maxFotos)
-    .forEach(url => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.loading = "lazy";
-      contenedor.appendChild(img);
-    });
-}
+/* ================== GALERÍA (SUPABASE) ================== */
 
 /* ================== PATROCINADORES (SUPABASE) ================== */
 

@@ -182,11 +182,9 @@ function mostrarHome() {
   contenido.innerHTML = html;
 
   // cargar galería
-  setTimeout(() => {
-  cargarGaleria("galeria-scroll", 6);      // Fotos torneo 2025
-  cargarGaleria("galeria2026-scroll", 6);  // Fotos torneo 2026 (por ahora mismas)
-}, 100);
-}
+  requestAnimationFrame(() => {
+  cargarGaleriaAleatoria();
+});
 
 function formNuevoPatrocinador() {
   contenido.innerHTML = `
@@ -240,23 +238,25 @@ async function iniciarApp() {
 }
 
 /* ================== Galeria (SUPABASE) ================== */
+async function cargarGaleriaAleatoria() {
+  const contenedor = document.getElementById("galeria-scroll");
+  console.log("📦 contenedor galería:", contenedor);
+
+  if (!contenedor) return;
+
 async function obtenerFotosGaleria() {
   const { data, error } = await supabase
     .storage
     .from("galeria-torneo")
-    .list("edicion-anterior");
+    .list("edicion-anterior", { limit: 100 });
 
   if (error) {
-    console.error("Error cargando galería:", error);
+    console.error("❌ Error Supabase:", error);
     return [];
   }
 
   return data
-    .filter(f =>
-      f.name &&
-      !f.name.endsWith("/") &&
-      /\.(jpg|jpeg|png|webp)$/i.test(f.name)
-    )
+    .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
     .map(f =>
       supabase
         .storage
@@ -289,33 +289,6 @@ async function cargarGaleria(contenedorId, maxFotos = 6) {
       img.loading = "lazy";
       contenedor.appendChild(img);
     });
-}
-
-async function cargarGaleriaAleatoria() {
-  const contenedor = document.getElementById("galeria-scroll");
-  if (!contenedor) return;
-
-  contenedor.innerHTML = "<div class='galeria-loading'>Cargando imágenes…</div>";
-
-  const fotos = await obtenerFotosGaleria();
-  if (fotos.length === 0) {
-    contenedor.innerHTML = "<p>No hay imágenes disponibles</p>";
-    return;
-  }
-
-  // 🔀 Mezclar aleatoriamente
-  const seleccion = fotos
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 6); // número de fotos visibles
-
-  contenedor.innerHTML = "";
-
-  seleccion.forEach(url => {
-    const img = document.createElement("img");
-    img.src = url;
-    img.loading = "lazy";
-    contenedor.appendChild(img);
-  });
 }
 
 /* ================== PATROCINADORES (SUPABASE) ================== */

@@ -248,8 +248,8 @@ function cargarGaleria2026() {
       <img src="img/iconos/fotos.png" alt="Fotos torneo 2026">
     </div>
     <div class="badge-texto">
-      <strong>Ver carpeta de fotos</strong>
-      <span>Torneo 2026</span>
+      <strong>Torneo 2026</strong>
+      <span>Ver carpeta de fotos</span>
     </div>
   </a>
 `;
@@ -267,8 +267,8 @@ function cargarGaleria2025() {
       <img src="img/iconos/fotos.png" alt="Fotos torneo 2025">
     </div>
     <div class="badge-texto">
-      <strong>Ver carpeta de fotos</strong>
-      <span>Torneo 2025</span>
+      <strong>Torneo 2025</strong>
+      <span>Ver carpeta de fotos</span>
     </div>
   </a>
 `;

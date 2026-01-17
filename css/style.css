@@ -24,7 +24,8 @@ body {
 
 .app-header {
   position: relative;
-  height: 180px;                /* altura real del header */
+  height: 220px;                /* altura real del header */
+  padding-bottom: 60px;
   
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
@@ -36,7 +37,8 @@ body {
 
 @media (max-width: 768px) {
   .app-header {
-    height: 160px;
+    height: 200px;
+    padding-bottom: 60px;
     background-position: center bottom;
   }
 }
@@ -216,10 +218,6 @@ button:active {
 /* =========================
    MENÚ PRINCIPAL BAJO HEADER
 ========================= */
-
-.app-header {
-  position: relative;
-}
 
 /* =========================
    MENÚ PRINCIPAL – CONTENEDOR

@@ -10,37 +10,15 @@
   <meta name="theme-color" content="#c4161c">
 </head>
 
-<!-- BOTÓN REDES SOCIALES -->
-<div class="social-fab">
-  <button class="social-main" onclick="toggleSocial()">
-    <img src="img/redes.png" alt="Redes">
-  </button>
+<body>
 
-  <div class="social-menu">
-    <a href="https://instagram.com/plasenciahandball" target="_blank" class="social-btn">
-      <img src="img/instagram.png" alt="Instagram">
-      <span>Instagram</span>
-    </a>
-
-    <a href="https://www.facebook.com/plasenciahandball/?locale=es_ES" target="_blank" class="social-btn">
-      <img src="img/facebook.png" alt="Facebook">
-      <span>Facebook</span>
-    </a>
-
-    <a href="https://www.twitch.tv/swl_tv?lang=es" target="_blank" class="social-btn">
-      <img src="img/twitch.png" alt="Twitch">
-      <span>Twitch</span>
-    </a>
-  </div>
-</div>
-
- <body>
-
+  <!-- SPLASH -->
   <div id="splash">
-    <img src="img/logo-torneo.png" alt="">
+    <img src="img/logo-torneo.png" alt="Plasencia Handball">
   </div>
 
-  <main>
+  <!-- HEADER CON IMAGEN -->
+  <header class="app-header">
     <nav class="nav-principal">
       <button onclick="mostrarHome()">🤾🏻‍♂️<span>Inicio</span></button>
       <button onclick="mostrarPartidos()">🥅<span>Partidos</span></button>
@@ -49,31 +27,56 @@
       <button onclick="mostrarClasificacion()">🏆<span>Tabla</span></button>
       <button onclick="mostrarPabellones()">🏘️<span>Pabellones</span></button>
     </nav>
+  </header>
 
+  <!-- CONTENIDO -->
+  <main>
     <section id="contenido"></section>
   </main>
 
-  <!-- SCRIPTS -->
+  <!-- BOTÓN REDES SOCIALES -->
+  <div class="social-fab">
+    <button class="social-main" onclick="toggleSocial()">
+      <img src="img/redes.png" alt="Redes">
+    </button>
+
+    <div class="social-menu">
+      <a href="https://instagram.com/plasenciahandball" target="_blank" class="social-btn">
+        <img src="img/instagram.png" alt="Instagram">
+        <span>Instagram</span>
+      </a>
+
+      <a href="https://www.facebook.com/plasenciahandball/?locale=es_ES" target="_blank" class="social-btn">
+        <img src="img/facebook.png" alt="Facebook">
+        <span>Facebook</span>
+      </a>
+
+      <a href="https://www.twitch.tv/swl_tv?lang=es" target="_blank" class="social-btn">
+        <img src="img/twitch.png" alt="Twitch">
+        <span>Twitch</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- BOTÓN ADMIN -->
+  <button id="admin-fab" onclick="toggleAdmin()">🔒</button>
+
+  <!-- SCRIPTS DATOS -->
   <script src="js/data/clubes.js"></script>
   <script src="js/data/partidos.js"></script>
   <script src="js/data/grupos.js"></script>
   <script src="js/data/equipos.js"></script>
   <script src="js/data/clasificacion.js"></script>
 
+  <!-- APP -->
   <script type="module" src="js/app.js"></script>
 
+  <!-- SOCIAL TOGGLE -->
   <script>
-    if ("serviceWorker" in navigator) {
-      //navigator.serviceWorker.register("service-worker.js");//
+    function toggleSocial() {
+      document.querySelector('.social-fab')?.classList.toggle('open');
     }
   </script>
 
-  <button id="admin-fab" onclick="toggleAdmin()">🔒</button>
-  
-  <script>
-  function toggleSocial() {
-    document.querySelector('.social-fab')?.classList.toggle('open');
-  }
-</script>
-
 </body>
+</html>

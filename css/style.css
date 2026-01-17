@@ -24,7 +24,7 @@ body {
 
 .app-header {
   position: relative;
-  height: 190px;
+  height: 130px;
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
   background-size: cover;

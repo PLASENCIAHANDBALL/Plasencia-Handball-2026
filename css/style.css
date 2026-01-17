@@ -24,15 +24,12 @@ body {
 
 .app-header {
   position: relative;
-  height: 200px;
+  height: 190px;
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
   background-color: var(--principal);
-
-  /* 🔑 espacio para que la barra pueda montarse */
-  padding-bottom: 40px;
 }
 
 @media (max-width: 768px) {
@@ -41,9 +38,89 @@ body {
   }
 }
 
+/* =========================
+   NAV GLASS iOS STYLE
+========================= */
+
+.nav-principal {
+  position: absolute;
+  bottom: -22px;                 /* 🔥 solape sutil */
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: calc(100% - 32px);
+  max-width: 900px;
+
+  /* GLASS EFFECT */
+  background: rgba(255, 170, 90, 0.35);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 28px;
+
+  padding: 14px 10px;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+
+  z-index: 20;
+}
+
+/* BOTONES TRANSPARENTES */
+.nav-principal button {
+  background: transparent;
+  border: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 18px;
+  color: white;
+
+  opacity: 0.9;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-principal button span {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Interacción tipo iOS */
+.nav-principal button:active {
+  transform: scale(0.88);
+  opacity: 1;
+}
+
+/* MÓVIL */
+@media (max-width: 480px) {
+  .nav-principal {
+    bottom: -18px;
+    padding: 12px 6px;
+  }
+
+  .nav-principal button {
+    font-size: 16px;
+    gap: 4px;
+  }
+
+  .nav-principal span {
+    font-size: 10px;
+  }
+}
+
 /* CONTENIDO */
 main {
-  padding-top: 40px;
+  padding-top: 60px;
   padding-left: 15px;
   padding-right: 15px;
 }
@@ -193,84 +270,6 @@ button {
 
 button:active {
   transform: scale(0.97);
-}
-
-.app-header {
-  height: 190px;
-  background-image: url("../img/header.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  background-color: var(--principal);
-}
-
-@media (max-width: 768px) {
-  .app-header {
-    height: 170px;
-  }
-}
-
-/* =========================
-   NUEVO MENÚ PRINCIPAL
-========================= */
-
-.nav-principal {
-  position: absolute;
-  bottom: -22px;                /* 🔥 superposición sutil */
-  left: 50%;
-  transform: translateX(-50%);
-
-  width: calc(100% - 32px);
-  max-width: 900px;
-
-  background: linear-gradient(135deg, #f4a261, #f59e0b);
-  border-radius: 26px;
-  padding: 14px 8px;
-
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-
-  box-shadow: 0 14px 30px rgba(0,0,0,0.28);
-  z-index: 5;
-}
-
-.nav-principal button {
-  background: none;
-  border: none;
-  padding: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-
-  font-size: 18px;
-  color: white;
-  cursor: pointer;
-}
-
-.nav-principal span {
-  font-size: 11px;
-  font-weight: 600;
-}
-
-@media (max-width: 480px) {
-  .nav-principal button {
-    font-size: 16px;
-    gap: 4px;
-  }
-
-  .nav-principal span {
-    font-size: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .nav-principal {
-    bottom: -18px;   /* menos solape en móvil */
-    padding: 12px 6px;
-  }
 }
 
 /* =========================

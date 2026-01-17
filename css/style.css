@@ -24,20 +24,18 @@ body {
 
 .app-header {
   position: relative;
-  height: 170px;              /* altura realista en móvil */
-  padding-bottom: 40px;       /* espacio justo para el menú */
+  height: 200px;                 /* espacio total */
+  background-color: var(--principal);
 
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
-  background-size: contain;   /* 🔑 NO recorta */
-  background-position: center top; /* 🔑 arriba del todo */
-  background-color: var(--principal);
+  background-size: cover;        /* ocupa todo el ancho */
+  background-position: center;
 }
 
 @media (max-width: 768px) {
   .app-header {
-    height: 150px;
-    padding-bottom: 36px;
+    height: 180px;
   }
 }
 
@@ -222,27 +220,25 @@ button:active {
 ========================= */
 
 .bottom-nav {
-  position: relative;
-  margin: -28px auto 16px;   /* 🔑 menos separación */
-  padding: 12px 8px;         /* 🔑 más compacto */
+  position: absolute;
+  bottom: -30px;                 /* baja el menú */
+  left: 50%;
+  transform: translateX(-50%);
+
   width: calc(100% - 32px);
   max-width: 900px;
 
-  background: linear-gradient(
-    135deg,
-    var(--principal),
-    #f59e0b
-  );
-
+  background: linear-gradient(135deg, #f4a261, #f59e0b);
   border-radius: 28px;
+
+  padding: 14px 10px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 
   display: flex;
   justify-content: space-around;
   align-items: center;
 
-  padding: 16px 10px;
-  z-index: 50;
+  z-index: 10;
 }
 
 /* =========================
@@ -849,7 +845,7 @@ button:active {
 
 main {
   min-height: 100vh;
-  padding-bottom: 80px; /* espacio para el bottom nav */
+  padding-bottom: 50px; /* espacio para el bottom nav */
 }
 
 #contenido {
@@ -1341,7 +1337,7 @@ body.splash-activo #splash {
 @media (max-width: 480px) {
 
   .bottom-nav button {
-    font-size: 18px;     /* icono un poco más pequeño */
+    font-size: 16px;     /* icono un poco más pequeño */
     gap: 4px;
   }
 

@@ -2080,8 +2080,8 @@ function guardarNuevoEquipoClub(clubId) {
 }
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
-  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
-
+  setNavActivoPorVista("pabellones");
+  
   const pabellones = [
     "Municipal",
     "Escuela",

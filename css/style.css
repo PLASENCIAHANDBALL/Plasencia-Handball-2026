@@ -41,7 +41,7 @@ body {
 
 @media (max-width: 768px) {
   .app-header {
-    height: 170px;
+    height: 150px;
   }
 }
 

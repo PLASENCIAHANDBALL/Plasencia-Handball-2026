@@ -221,55 +221,64 @@ button:active {
   position: relative;
 }
 
-/* contenedor del menú */
+/* =========================
+   MENÚ PRINCIPAL – CONTENEDOR
+========================= */
+
 .bottom-nav {
   position: relative;
-  margin: -35px auto 20px; /* sube el menú sobre el header */
+  margin: -35px auto 20px;
   width: calc(100% - 32px);
   max-width: 900px;
 
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(6px);
+  background: linear-gradient(
+    135deg,
+    var(--principal),
+    #f59e0b
+  );
 
   border-radius: 28px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 
   display: flex;
   justify-content: space-around;
   align-items: center;
 
-  padding: 14px 10px;
+  padding: 16px 10px;
   z-index: 50;
 }
 
-/* botones */
+/* =========================
+   MENÚ – BOTONES TRANSPARENTES
+========================= */
+
 .bottom-nav button {
-  background: none;
+  background: transparent !important;
+  box-shadow: none !important;
   border: none;
-  padding: 0;
+
   width: auto;
+  padding: 6px 8px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 
-  font-size: 20px;
-  color: #444;
+  font-size: 22px;
+  color: white;
   cursor: pointer;
 }
 
-/* texto */
-.bottom-nav span {
+.bottom-nav button span {
   font-size: 11px;
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.95;
 }
 
-/* efecto toque */
 .bottom-nav button:active {
-  transform: scale(0.92);
-  color: #f59e0b;
+  transform: scale(0.9);
+  opacity: 0.85;
 }
 
 /* Texto debajo */

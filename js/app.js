@@ -103,14 +103,12 @@ probarSupabase();
 function mostrarHome() {
   let html = `
     <h2>Inicio</h2>
-
-<!-- GALERÍA2026 -->
-    <section class="galeria2026">
-      <h3>Fotos del torneo 2026</h3>
-      <div id="galeria2026-scroll" class="galeria2026-scroll">
-        <div class="galeria2026-loading">Cargando imágenes…</div>
-      </div>
-    </section>
+<section class="galeria2026">
+  <h3>Fotos del torneo 2026</h3>
+  <div id="galeria2026-scroll" class="galeria2026-scroll">
+    <div class="galeria2026-loading">Cargando imágenes…</div>
+  </div>
+</section>
     
     <!-- GALERÍA -->
     <section class="galeria">
@@ -184,6 +182,7 @@ function mostrarHome() {
   // cargar galería
   requestAnimationFrame(() => {
     cargarGaleriaAleatoria();
+    cargarGaleria2026();
   });
 }
 
@@ -238,6 +237,23 @@ async function iniciarApp() {
   }
 }
 
+/* ================== GALERÍA ================== */
+function cargarGaleria2026() {
+  const contenedor = document.getElementById("galeria2026-scroll");
+  if (!contenedor) return;
+
+  const urlCarpeta = "https://www.amazon.es/photos/share/TU_URL_AQUI";
+
+  contenedor.innerHTML = `
+    <a href="${urlCarpeta}" target="_blank" class="galeria-badge">
+      <div class="badge-icon">📸</div>
+      <div class="badge-texto">
+        <strong>Ver carpeta de fotos</strong>
+        <span>Torneo 2026</span>
+      </div>
+    </a>
+  `;
+}
 
 /* ================== GALERÍA (SUPABASE) ================== */
 async function obtenerFotosGaleria() {

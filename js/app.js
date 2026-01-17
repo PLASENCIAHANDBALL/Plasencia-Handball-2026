@@ -2179,27 +2179,28 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
 
   const filtrados = partidos.filter(p => p.pabellon === pabellon);
 
-  let html = `
-    <h2>${pabellon}</h2>
-  `;
+  let html = `<h2>${pabellon}</h2>`;
+
+  if (filtrados.length === 0) {
+    html += `<p>No hay partidos en este pabellón.</p>`;
+  }
 
   filtrados.forEach(p => {
-  const local = equipos.find(e => e.id === p.local_id);
-  const visitante = equipos.find(e => e.id === p.visitante_id);
+    const local = equipos.find(e => e.id === p.local_id);
+    const visitante = equipos.find(e => e.id === p.visitante_id);
 
-  html += `
-    <div class="card partido-card" onclick="abrirPartido(${p.id})">
-      <div class="partido-fecha">${p.fecha} · ${formatearHora(p.hora)}</div>
-      <div class="partido-nombre">
-        ${local?.nombre} vs ${visitante?.nombre}
+    html += `
+      <div class="card partido-card" onclick="abrirPartido(${p.id})">
+        <div class="partido-fecha">${p.fecha} · ${formatearHora(p.hora)}</div>
+        <div class="partido-nombre">
+          ${local?.nombre} vs ${visitante?.nombre}
+        </div>
+        <div class="partido-categoria">
+          ${p.categoria} · ${p.genero}
+        </div>
       </div>
-      <div class="partido-categoria">
-        ${p.categoria} · ${p.genero}
-      </div>
-    </div>
-  `;
-});
-  }
+    `;
+  });
 
   document.getElementById("contenido").innerHTML = html;
 };

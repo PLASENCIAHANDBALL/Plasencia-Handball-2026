@@ -1293,7 +1293,9 @@ body.splash-activo #splash {
 .galeria-scroll img {
   width: 240px;
   height: 160px;
-  object-fit: cover;
+  object-fit: contain;          /* ✅ no recorta */
+  background: #f3f3f3;          /* fondo para huecos */
+  padding: 8px;                 /* aire alrededor */
   border-radius: 16px;
   flex-shrink: 0;
   scroll-snap-align: start;

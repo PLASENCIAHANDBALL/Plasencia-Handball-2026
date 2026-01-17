@@ -24,24 +24,25 @@ body {
 
 .app-header {
   position: relative;
-  height: 200px;                 /* espacio total */
-  background-color: var(--principal);
-
+  height: 190px;
   background-image: url("../img/header.png");
   background-repeat: no-repeat;
-  background-size: cover;        /* ocupa todo el ancho */
+  background-size: cover;
   background-position: center;
+  background-color: var(--principal);
 }
 
 @media (max-width: 768px) {
   .app-header {
-    height: 180px;
+    height: 170px;
   }
 }
 
 /* CONTENIDO */
 main {
-  padding: 15px;
+  padding-top: 40px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 /* BOTONES GENERALES */
@@ -211,7 +212,11 @@ button:active {
 ========================= */
 
 .nav-principal {
-  margin: -28px auto 24px;
+  position: absolute;
+  bottom: -26px; /* sobresale un poco */
+  left: 50%;
+  transform: translateX(-50%);
+
   width: calc(100% - 32px);
   max-width: 900px;
 
@@ -254,6 +259,12 @@ button:active {
 
   .nav-principal span {
     font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-principal {
+    bottom: -22px;
   }
 }
 
@@ -813,11 +824,6 @@ button:active {
   width: 26px;
   height: 26px;
   object-fit: contain;
-}
-
-main {
-  min-height: 100vh;
-  padding-bottom: 50px; /* espacio para el bottom nav */
 }
 
 #contenido {

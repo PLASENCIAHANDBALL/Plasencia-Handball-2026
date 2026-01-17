@@ -285,11 +285,13 @@ function cargarGaleria2025() {
 }
 
 /* ================== GALERÍA (SUPABASE) ================== */
-function setNavActivo(boton) {
-  document.querySelectorAll('.nav-principal button')
+function setNavActivoPorVista(vista) {
+  document
+    .querySelectorAll('.nav-principal button')
     .forEach(b => b.classList.remove('activo'));
 
-  boton.classList.add('activo');
+  const btn = document.querySelector(`.nav-principal button[data-view="${vista}"]`);
+  if (btn) btn.classList.add('activo');
 }
 
 /* ================== PATROCINADORES (SUPABASE) ================== */
@@ -2078,7 +2080,7 @@ function guardarNuevoEquipoClub(clubId) {
 }
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
-  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
+  setNavActivoPorVista("pabellones");
 
   const pabellones = [
     "Municipal",
@@ -2089,7 +2091,7 @@ function mostrarPabellones() {
     "La Data"
   ];
 
-  document.getElementById("contenido").innerHTML = `
+  contenido.innerHTML = `
     <h2>Pabellones</h2>
     <div class="pabellones-grid">
       ${pabellones.map(p => `
@@ -2162,20 +2164,12 @@ window.guardarEdicionEquipo = guardarEdicionEquipo;
 
 // clasificación
 window.actualizarClasificacion = actualizarClasificacion;
-
+window.setNavActivoPorVista = setNavActivoPorVista;
 // utilidades usadas en HTML
 window.abrirWeb = abrirWeb;
 
-window.setNavActivo = function (boton) {
-  document
-    .querySelectorAll('.nav-principal button')
-    .forEach(b => b.classList.remove('activo'));
-
-  boton.classList.add('activo');
-};
-
 window.mostrarPartidosPorPabellon = function(pabellon) {
-  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
+  setNavActivoPorVista("pabellones");
 
   const filtrados = partidos.filter(p => p.pabellon === pabellon);
 
@@ -2202,7 +2196,7 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
     `;
   });
 
-  document.getElementById("contenido").innerHTML = html;
+  contenido.innerHTML = html;
 };
 
 /* ================== ARRANQUE ================== */

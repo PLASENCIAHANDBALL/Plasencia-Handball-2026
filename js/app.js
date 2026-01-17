@@ -244,7 +244,7 @@ async function obtenerFotosGaleria() {
   const { data, error } = await supabase
     .storage
     .from("galeria-torneo")
-    .list("edicion-anterior", { limit: 100 });
+    .list("", { limit: 100 }); // 👈 raíz del bucket
 
   if (error) {
     console.error("❌ Error Supabase:", error);
@@ -252,12 +252,12 @@ async function obtenerFotosGaleria() {
   }
 
   return data
-    .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
+    .filter(f => f.name && /\.(jpg|jpeg|png)$/i.test(f.name))
     .map(f =>
       supabase
         .storage
         .from("galeria-torneo")
-        .getPublicUrl(`edicion-anterior/${f.name}`).data.publicUrl
+        .getPublicUrl(f.name).data.publicUrl
     );
 }
 

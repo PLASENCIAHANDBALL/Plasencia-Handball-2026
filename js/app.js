@@ -240,7 +240,7 @@ function cargarGaleria2026() {
   const contenedor = document.getElementById("galeria2026-scroll");
   if (!contenedor) return;
 
-  const urlCarpeta = "https://www.amazon.es/photos/share/TU_URL_AQUI";
+  const urlCarpeta = "https://www.amazon.es/photos/share/TxSZwjC6rqwphi90RIM8zuamYEm31y31Z92Zm39SfHk";
 
   contenedor.innerHTML = `
   <a href="${urlCarpeta}" target="_blank" class="galeria-badge">
@@ -259,7 +259,7 @@ function cargarGaleria2025() {
   const contenedor = document.getElementById("galeria-scroll");
   if (!contenedor) return;
 
-  const urlCarpeta2025 = "https://www.amazon.es/photos/share/TU_URL_2025";
+  const urlCarpeta2025 = "https://www.amazon.es/photos/share/aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s";
 
   contenedor.innerHTML = `
   <a href="${urlCarpeta2025}" target="_blank" class="galeria-badge">

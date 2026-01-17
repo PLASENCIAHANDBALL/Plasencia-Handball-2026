@@ -2058,9 +2058,26 @@ function guardarNuevoEquipoClub(clubId) {
 }
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
-  contenido.innerHTML = `
+  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
+
+  const pabellones = [
+    "Municipal",
+    "Escuela",
+    "Universitario",
+    "Miralvalle",
+    "San Calixto",
+    "La Data"
+  ];
+
+  document.getElementById("contenido").innerHTML = `
     <h2>Pabellones</h2>
-    <p>Sección en construcción</p>
+    <div class="pabellones-grid">
+      ${pabellones.map(p => `
+        <div class="pabellon-card" onclick="mostrarPartidosPorPabellon('${p}')">
+          <div class="pabellon-nombre">${p}</div>
+        </div>
+      `).join("")}
+    </div>
   `;
 }
 
@@ -2135,6 +2152,32 @@ window.setNavActivo = function (boton) {
     .forEach(b => b.classList.remove('activo'));
 
   boton.classList.add('activo');
+};
+
+window.mostrarPartidosPorPabellon = function(pabellon) {
+  setNavActivo(document.querySelector('[onclick="mostrarPabellones()"]'));
+
+  const filtrados = partidos.filter(p => p.pabellon === pabellon);
+
+  let html = `
+    <h2>${pabellon}</h2>
+  `;
+
+  if (filtrados.length === 0) {
+    html += `<p>No hay partidos en este pabellón.</p>`;
+  } else {
+    filtrados.forEach(p => {
+      html += `
+        <div class="partido-card">
+          <div class="partido-fecha">${p.fecha} · ${p.hora}</div>
+          <div class="partido-nombre">${p.local} vs ${p.visitante}</div>
+          <div class="partido-categoria">${p.categoria}</div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("contenido").innerHTML = html;
 };
 
 /* ================== ARRANQUE ================== */

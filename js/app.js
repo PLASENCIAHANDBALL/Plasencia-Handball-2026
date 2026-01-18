@@ -137,7 +137,7 @@ function mostrarHome() {
 
     <!-- PATROCINADORES -->
     <h3>Patrocinadores</h3>
-    <div class="patrocinadores-scroll">
+    <div class="patrocinadores-grid">
   `;
 
   patrocinadores.forEach(p => {

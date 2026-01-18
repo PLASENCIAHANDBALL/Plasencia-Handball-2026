@@ -397,7 +397,6 @@ function mostrarPartidos() {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
 
-  // 🔹 ordenar por fecha + hora
   const ordenados = [...partidos].sort((a, b) => {
     const fa = new Date(`${a.fecha}T${a.hora || "00:00"}`);
     const fb = new Date(`${b.fecha}T${b.hora || "00:00"}`);
@@ -409,23 +408,15 @@ function mostrarPartidos() {
 
   /* ===== PRÓXIMOS ===== */
   html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
-
-  if (proximos.length === 0) {
-    html += `<p>No hay próximos partidos</p>`;
-  }
-
-  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
-html += renderBloquesPorFecha(proximos);
-
-html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
-html += renderBloquesPorFecha(finalizados);
+  html += proximos.length
+    ? renderBloquesPorFecha(proximos)
+    : `<p>No hay próximos partidos</p>`;
 
   /* ===== FINALIZADOS ===== */
   html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
-
-  if (finalizados.length === 0) {
-    html += `<p>No hay partidos finalizados</p>`;
-  }
+  html += finalizados.length
+    ? renderBloquesPorFecha(finalizados)
+    : `<p>No hay partidos finalizados</p>`;
 
   contenido.innerHTML = html;
 }

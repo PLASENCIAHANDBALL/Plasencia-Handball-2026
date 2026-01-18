@@ -1420,3 +1420,51 @@ body.splash-activo #splash {
 .nav-principal {
   background-color: transparent;
 }
+
+/* =========================
+   BADGES PABELLÓN (GLASS)
+========================= */
+
+.pabellon-badges {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 18px;
+  flex-wrap: wrap;
+}
+
+/* Base badge glass */
+.badge-glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+  color: #fff;
+}
+
+/* 🗺️ Ubicación (verde) */
+.badge-ubicacion {
+  background: rgba(46, 204, 113, 0.55);
+}
+
+/* 🔴 Directo (rojo) */
+.badge-directo {
+  background: rgba(231, 76, 60, 0.55);
+}
+
+/* efecto toque */
+.badge-glass:active {
+  transform: scale(0.95);
+}

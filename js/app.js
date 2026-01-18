@@ -345,6 +345,47 @@ async function borrarPatrocinadorSupabase(id) {
 }
 
 /* ================== PARTIDOS ================== */
+function agruparPartidosPorFecha(lista) {
+  return lista.reduce((acc, partido) => {
+    const fecha = partido.fecha || "sin-fecha";
+    if (!acc[fecha]) acc[fecha] = [];
+    acc[fecha].push(partido);
+    return acc;
+  }, {});
+}
+
+function toggleFecha(id) {
+  const bloque = document.getElementById(id);
+  if (!bloque) return;
+  bloque.classList.toggle("oculto");
+}
+
+window.toggleFecha = toggleFecha;
+
+function renderBloqueFecha(fecha, partidos, idBloque) {
+  const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long"
+  });
+
+  return `
+    <div class="bloque-fecha">
+      <button
+        class="fecha-toggle"
+        onclick="toggleFecha('${idBloque}')"
+      >
+        📅 ${fechaBonita}
+        <span class="flecha">▾</span>
+      </button>
+
+      <div id="${idBloque}" class="lista-fecha oculto">
+        ${partidos.map(p => renderPartidoCard(p)).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function refrescarPartidos() {
   partidos = obtenerPartidos();
   mostrarPartidos();
@@ -376,9 +417,15 @@ function mostrarPartidos() {
     html += `<p>No hay próximos partidos</p>`;
   }
 
-  proximos.forEach(p => {
-    html += renderPartidoCard(p);
-  });
+  const proximosPorFecha = agruparPartidosPorFecha(proximos);
+
+Object.entries(proximosPorFecha).forEach(([fecha, lista], index) => {
+  html += renderBloqueFecha(
+    fecha,
+    lista,
+    `proximos-${index}`
+  );
+});
 
   /* ===== FINALIZADOS ===== */
   html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
@@ -387,9 +434,15 @@ function mostrarPartidos() {
     html += `<p>No hay partidos finalizados</p>`;
   }
 
-  finalizados.forEach(p => {
-    html += renderPartidoCard(p);
-  });
+  const finalizadosPorFecha = agruparPartidosPorFecha(finalizados);
+
+Object.entries(finalizadosPorFecha).forEach(([fecha, lista], index) => {
+  html += renderBloqueFecha(
+    fecha,
+    lista,
+    `finalizados-${index}`
+  );
+});
 
   contenido.innerHTML = html;
 }

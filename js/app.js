@@ -639,6 +639,22 @@ const fechaBonita = partidoActual.fecha
   <div class="detalle-lugar">
     📍 ${partidoActual.pabellon || "-"}
   </div>
+  
+  <div class="pabellon-badges">
+  <a
+    href="${UBICACIONES_PABELLONES?.[partidoActual.pabellon] || '#'}"
+    target="_blank"
+    class="badge-glass badge-ubicacion"
+  >
+    🗺️ Ubicación
+  </a>
+
+  ${
+    calcularEstadoPartido(partidoActual) === "en_juego"
+      ? `<span class="badge-glass badge-directo">🔴 En directo</span>`
+      : ``
+  }
+</div>
 
 </div>
 

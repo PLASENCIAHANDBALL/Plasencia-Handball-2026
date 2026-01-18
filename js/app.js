@@ -2291,60 +2291,16 @@ let html = `
 `;
 
   /* ===== PRÓXIMOS ===== */
-  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += proximos.length
+  ? renderBloquesPorFecha(proximos)
+  : `<p>No hay próximos partidos.</p>`;
 
-  if (proximos.length === 0) {
-    html += `<p>No hay próximos partidos.</p>`;
-  } else {
-    proximos.forEach(p => {
-      const local = equipos.find(e => e.id === p.local_id);
-      const visitante = equipos.find(e => e.id === p.visitante_id);
-
-      html += `
-        <div class="card partido-card" onclick="abrirPartido(${p.id})">
-          <div class="partido-fecha">
-            📅 ${new Date(p.fecha).toLocaleDateString("es-ES")} · 🕒 ${formatearHora(p.hora)}
-          </div>
-
-          <div class="partido-nombre">
-            ${local?.nombre || "-"} vs ${visitante?.nombre || "-"}
-          </div>
-
-          <div class="partido-categoria">
-            ${p.categoria} · ${p.genero} · ${p.grupo}
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  /* ===== FINALIZADOS ===== */
-  html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
-
-  if (finalizados.length === 0) {
-    html += `<p>No hay partidos finalizados.</p>`;
-  } else {
-    finalizados.forEach(p => {
-      const local = equipos.find(e => e.id === p.local_id);
-      const visitante = equipos.find(e => e.id === p.visitante_id);
-
-      html += `
-        <div class="card partido-card finalizado" onclick="abrirPartido(${p.id})">
-          <div class="partido-fecha">
-            📅 ${new Date(p.fecha).toLocaleDateString("es-ES")} · 🕒 ${formatearHora(p.hora)}
-          </div>
-
-          <div class="partido-nombre">
-            ${local?.nombre || "-"} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre || "-"}
-          </div>
-
-          <div class="partido-categoria">
-            ${p.categoria} · ${p.genero} · ${p.grupo}
-          </div>
-        </div>
-      `;
-    });
-  }
+/* ===== FINALIZADOS ===== */
+html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+html += finalizados.length
+  ? renderBloquesPorFecha(finalizados)
+  : `<p>No hay partidos finalizados.</p>`;
 
   /* ===== BOTÓN ÚNICO DE VOLVER ===== */
   html += `

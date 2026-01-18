@@ -613,9 +613,6 @@ function abrirPartido(id) {
     <label>Hora</label>
     <input type="time" id="hora" value="${partidoActual.hora || ""}">
 
-    <label>Lugar</label>
-    <input id="lugar" value="${partidoActual.lugar || ""}">
-
     <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
   ` : `
   `;
@@ -640,7 +637,7 @@ const fechaBonita = partidoActual.fecha
   </div>
 
   <div class="detalle-lugar">
-    📍 ${partidoActual.lugar || "-"}
+    📍 ${partidoActual.pabellon || "-"}
   </div>
 
 </div>
@@ -781,12 +778,6 @@ function refrescarVistaPartido() {
     partidoActual = partidos[index];
   }
   abrirPartido(partidoActual.id);
-}
-
-function guardarDatosPartido() {
-  partidoActual.hora = document.getElementById("hora").value;
-  partidoActual.lugar = document.getElementById("lugar").value;
-  actualizarPartido();
 }
 
 function actualizarPartido() {

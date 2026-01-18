@@ -23,8 +23,6 @@ console.log("✅ app.js cargado");
 const contenido = document.getElementById("contenido");
 
 /* ================== ESTADO GLOBAL ================== */
-const PIN_ADMIN = "1234";
-const PIN_MESA = "5678";
 
 let rolUsuario = localStorage.getItem("rol") || null;
 
@@ -910,9 +908,22 @@ async function guardarResultado() {
 }
 
 /* ================== ADMIN ================== */
-function toggleAdmin() {
+async function validarPinSupabase(pin) {
+  const { data, error } = await supabase
+    .from("roles_acceso")
+    .select("rol")
+    .eq("pin", pin)
+    .eq("activo", true)
+    .single();
+
+  if (error || !data) return null;
+
+  return data.rol; // "admin" o "mesa"
+}
+
+async function toggleAdmin() {
+  // 🔓 Cerrar sesión
   if (rolUsuario) {
-    // salir
     rolUsuario = null;
     adminActivo = false;
     mesaActiva = false;
@@ -924,26 +935,23 @@ function toggleAdmin() {
   }
 
   const pin = prompt("Introduce PIN:");
-  if (pin === PIN_ADMIN) {
-    rolUsuario = "admin";
-    adminActivo = true;
-    mesaActiva = false;
-    localStorage.setItem("rol", "admin");
-    document.getElementById("admin-fab")?.classList.add("admin-activo");
-    alert("Modo ADMIN activado");
-  } 
-  else if (pin === PIN_MESA) {
-    rolUsuario = "mesa";
-    adminActivo = false;
-    mesaActiva = true;
-    document.getElementById("admin-fab")?.classList.add("admin-activo");
-    localStorage.setItem("rol", "mesa");
-    alert("Modo MESA activado");
-  } 
-  else {
+  if (!pin) return;
+
+  const rol = await validarPinSupabase(pin);
+
+  if (!rol) {
     alert("PIN incorrecto");
+    return;
   }
 
+  rolUsuario = rol;
+  adminActivo = rol === "admin";
+  mesaActiva = rol === "mesa";
+
+  localStorage.setItem("rol", rol);
+  document.getElementById("admin-fab")?.classList.add("admin-activo");
+
+  alert(`Modo ${rol.toUpperCase()} activado`);
   refrescarVistaActual();
 }
 

@@ -94,7 +94,7 @@ const LISTA_PABELLONES = [
   "Universitario",
   "Miralvalle",
   "San Calixto",
-  "La Data"
+  "Multipista"
 ];
 
 const IMAGENES_PABELLONES = {
@@ -103,7 +103,7 @@ const IMAGENES_PABELLONES = {
   "Universitario": "img/pabellones/universitario.png",
   "Miralvalle": "img/pabellones/miralvalle.png",
   "San Calixto": "img/pabellones/san-calixto.png",
-  "La Data": "img/pabellones/la-data.png"
+  "Multipista": "img/pabellones/la-data.png"
 };
 
 /* ================== supabase ================== */

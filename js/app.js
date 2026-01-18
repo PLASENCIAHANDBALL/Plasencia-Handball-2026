@@ -359,6 +359,9 @@ function renderBloquesPorFecha(lista) {
   const grupos = agruparPorFecha(lista);
   let html = "";
 
+  // 📅 fecha de hoy en formato YYYY-MM-DD
+  const hoy = new Date().toISOString().split("T")[0];
+
   Object.entries(grupos).forEach(([fecha, partidosDia]) => {
     const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
       weekday: "long",
@@ -366,8 +369,11 @@ function renderBloquesPorFecha(lista) {
       month: "long"
     });
 
+    // 🔥 abrir solo si es hoy
+    const abierta = fecha === hoy ? "abierta" : "";
+
     html += `
-      <div class="fecha-bloque">
+      <div class="fecha-bloque ${abierta}">
         <div class="fecha-header" onclick="this.parentElement.classList.toggle('abierta')">
           <span>📅 ${fechaBonita}</span>
           <span class="flecha">⌄</span>

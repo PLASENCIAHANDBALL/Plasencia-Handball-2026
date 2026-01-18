@@ -2216,9 +2216,40 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
     .filter(p => p.estado === "finalizado")
     .reverse(); // más recientes arriba
 
-  let html = `
-    <h2>${pabellon}</h2>
-  `;
+  // 🔹 detectar si hay partido en juego en este pabellón
+const hayDirecto = partidosPabellon.some(
+  p => calcularEstadoPartido(p) === "en_juego"
+);
+
+// 🔹 enlaces Google Maps por pabellón
+const UBICACIONES_PABELLONES = {
+  "Municipal": "https://maps.app.goo.gl/gJ6VNo8LdWAxaFQY6?g_st=ic",
+  "Escuela": "https://maps.app.goo.gl/3M4jN1N14ffH8pKN7?g_st=ic",
+  "Universitario": "https://maps.app.goo.gl/bG1utwiJEu78Efxm7?g_st=ic",
+  "Miralvalle": "https://maps.app.goo.gl/JxhyUgo4sH8FadMEA?g_st=ic",
+  "San Calixto": "https://maps.app.goo.gl/yjwJzYRLtLHZ9xxh7?g_st=ic",
+  "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic"
+};
+
+let html = `
+  <h2>${pabellon}</h2>
+
+  <div class="pabellon-badges">
+    <a
+      href="${UBICACIONES_PABELLONES[pabellon] || '#'}"
+      target="_blank"
+      class="badge-glass badge-ubicacion"
+    >
+      🗺️ Ubicación
+    </a>
+
+    ${
+      hayDirecto
+        ? `<span class="badge-glass badge-directo">🔴 En directo</span>`
+        : ``
+    }
+  </div>
+`;
 
   /* ===== PRÓXIMOS ===== */
   html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;

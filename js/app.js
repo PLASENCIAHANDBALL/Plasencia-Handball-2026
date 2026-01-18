@@ -359,7 +359,7 @@ function renderBloquesPorFecha(lista) {
   const grupos = agruparPorFecha(lista);
   let html = "";
 
-  Object.keys(grupos).forEach(fecha => {
+  Object.entries(grupos).forEach(([fecha, partidosDia]) => {
     const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
       weekday: "long",
       day: "2-digit",
@@ -367,14 +367,14 @@ function renderBloquesPorFecha(lista) {
     });
 
     html += `
-    <div class="partido-categoria">
-  ${p.categoria} · ${p.genero}
-</div>
-
       <div class="fecha-bloque">
         <div class="fecha-header" onclick="this.parentElement.classList.toggle('abierta')">
           <span>📅 ${fechaBonita}</span>
           <span class="flecha">⌄</span>
+        </div>
+
+        <div class="fecha-partidos">
+          ${partidosDia.map(p => renderPartidoCard(p)).join("")}
         </div>
       </div>
     `;
@@ -426,16 +426,6 @@ html += renderBloquesPorFecha(finalizados);
   if (finalizados.length === 0) {
     html += `<p>No hay partidos finalizados</p>`;
   }
-
-  const finalizadosPorFecha = agruparPartidosPorFecha(finalizados);
-
-Object.entries(finalizadosPorFecha).forEach(([fecha, lista], index) => {
-  html += renderBloqueFecha(
-    fecha,
-    lista,
-    `finalizados-${index}`
-  );
-});
 
   contenido.innerHTML = html;
 }

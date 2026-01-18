@@ -120,6 +120,8 @@ probarSupabase();
 
 /* ================== HOME ================== */
 function mostrarHome() {
+  setNavActivoPorVista("inicio");
+  
   let html = `
     <h2>Inicio</h2>
 <section class="galeria2026">
@@ -349,6 +351,8 @@ function refrescarPartidos() {
 }
 
 function mostrarPartidos() {
+  setNavActivoPorVista("partidos");
+  
   let html = `<h2>Partidos</h2>`;
 
   if (adminActivo) {
@@ -1339,6 +1343,8 @@ function guardarEdicionGrupo() {
 
 /* ================== CATEGORIAS ================== */
 function mostrarCategorias() {
+  setNavActivoPorVista("categorias");
+  
   contenido.innerHTML = `
     <h2>Categorías</h2>
 
@@ -1608,6 +1614,8 @@ async function borrarEquipo(id) {
 
 /* ================== CLASIFICACION ================== */
 function mostrarClasificacion() {
+  setNavActivoPorVista("tabla");
+  
   contenido.innerHTML = `
     <h2>Clasificación</h2>
 
@@ -1838,6 +1846,8 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
 
 /* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
+  setNavActivoPorVista("clubs");
+  
   let html = `<h2>Clubs Participantes</h2>`;
 
   if (adminActivo) {

@@ -2192,22 +2192,36 @@ window.abrirWeb = abrirWeb;
 window.mostrarPartidosPorPabellon = function(pabellon) {
   setNavActivoPorVista("pabellones");
 
-  const filtrados = partidos.filter(p => p.pabellon === pabellon);
+  const partidosPabellon = partidos.filter(p => p.pabellon === pabellon);
+
+  // 🔹 ordenar por fecha + hora
+  const ordenados = [...partidosPabellon].sort((a, b) => {
+    const fa = new Date(`${a.fecha}T${a.hora || "00:00"}`);
+    const fb = new Date(`${b.fecha}T${b.hora || "00:00"}`);
+    return fa - fb;
+  });
+
+  const proximos = ordenados.filter(p => p.estado !== "finalizado");
+  const finalizados = ordenados
+    .filter(p => p.estado === "finalizado")
+    .reverse(); // más recientes arriba
 
   let html = `
-  <h2>${pabellon}</h2>
-`;
+    <h2>${pabellon}</h2>
+  `;
 
-  if (filtrados.length === 0) {
-    html += `<p>No hay partidos en este pabellón.</p>`;
+  /* ===== PRÓXIMOS ===== */
+  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+
+  if (proximos.length === 0) {
+    html += `<p>No hay próximos partidos.</p>`;
   } else {
-    filtrados.forEach(p => {
+    proximos.forEach(p => {
       const local = equipos.find(e => e.id === p.local_id);
       const visitante = equipos.find(e => e.id === p.visitante_id);
 
       html += `
         <div class="card partido-card" onclick="abrirPartido(${p.id})">
-          
           <div class="partido-fecha">
             📅 ${new Date(p.fecha).toLocaleDateString("es-ES")} · 🕒 ${formatearHora(p.hora)}
           </div>
@@ -2219,15 +2233,43 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
           <div class="partido-categoria">
             ${p.categoria} · ${p.genero} · ${p.grupo}
           </div>
-          
-          <button class="volver volver-pabellones" onclick="mostrarPabellones()">.
-             ⬅ Volver a pabellones
-           </button>
-  
         </div>
       `;
     });
   }
+
+  /* ===== FINALIZADOS ===== */
+  html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+
+  if (finalizados.length === 0) {
+    html += `<p>No hay partidos finalizados.</p>`;
+  } else {
+    finalizados.forEach(p => {
+      const local = equipos.find(e => e.id === p.local_id);
+      const visitante = equipos.find(e => e.id === p.visitante_id);
+
+      html += `
+        <div class="card partido-card finalizado" onclick="abrirPartido(${p.id})">
+          <div class="partido-fecha">
+            📅 ${new Date(p.fecha).toLocaleDateString("es-ES")} · 🕒 ${formatearHora(p.hora)}
+          </div>
+
+          <div class="partido-nombre">
+            ${local?.nombre || "-"} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre || "-"}
+          </div>
+
+          <div class="partido-categoria">
+            ${p.categoria} · ${p.genero} · ${p.grupo}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  /* ===== BOTÓN ÚNICO DE VOLVER ===== */
+  html += `
+    <button class="volver" onclick="mostrarPabellones()">⬅ Volver a pabellones</button>
+  `;
 
   contenido.innerHTML = html;
 };

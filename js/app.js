@@ -429,7 +429,11 @@ function renderPartidoCard(p) {
           <span>${equipoLocal?.nombre || "-"}</span>
         </div>
 
-        <span class="vs">vs</span>
+        ${
+  p.estado === "finalizado"
+    ? `<span class="vs resultado-centro"><strong>${p.goles_local} - ${p.goles_visitante}</strong></span>`
+    : `<span class="vs">vs</span>`
+}
 
         <div class="equipo-partido">
           ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
@@ -452,12 +456,6 @@ function renderPartidoCard(p) {
       </div>
 
       <div class="partido-grupo">🏷️ ${p.grupo}</div>
-
-      ${
-        p.estado === "finalizado"
-          ? `<div class="resultado-final"><strong>${p.goles_local} - ${p.goles_visitante}</strong></div>`
-          : ""
-      }
 
       <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 

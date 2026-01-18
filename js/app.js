@@ -345,45 +345,42 @@ async function borrarPatrocinadorSupabase(id) {
 }
 
 /* ================== PARTIDOS ================== */
-function agruparPartidosPorFecha(lista) {
-  return lista.reduce((acc, partido) => {
-    const fecha = partido.fecha || "sin-fecha";
-    if (!acc[fecha]) acc[fecha] = [];
-    acc[fecha].push(partido);
+function agruparPorFecha(lista) {
+  return lista.reduce((acc, p) => {
+    if (!acc[p.fecha]) acc[p.fecha] = [];
+    acc[p.fecha].push(p);
     return acc;
   }, {});
 }
 
-function toggleFecha(id) {
-  const bloque = document.getElementById(id);
-  if (!bloque) return;
-  bloque.classList.toggle("oculto");
-}
+function renderBloquesPorFecha(lista) {
+  if (lista.length === 0) return `<p>No hay partidos</p>`;
 
-window.toggleFecha = toggleFecha;
+  const grupos = agruparPorFecha(lista);
+  let html = "";
 
-function renderBloqueFecha(fecha, partidos, idBloque) {
-  const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long"
+  Object.keys(grupos).forEach(fecha => {
+    const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    });
+
+    html += `
+    <div class="partido-categoria">
+  ${p.categoria} · ${p.genero}
+</div>
+
+      <div class="fecha-bloque">
+        <div class="fecha-header" onclick="this.parentElement.classList.toggle('abierta')">
+          <span>📅 ${fechaBonita}</span>
+          <span class="flecha">⌄</span>
+        </div>
+      </div>
+    `;
   });
 
-  return `
-    <div class="bloque-fecha">
-      <button
-        class="fecha-toggle"
-        onclick="toggleFecha('${idBloque}')"
-      >
-        📅 ${fechaBonita}
-        <span class="flecha">▾</span>
-      </button>
-
-      <div id="${idBloque}" class="lista-fecha oculto">
-        ${partidos.map(p => renderPartidoCard(p)).join("")}
-      </div>
-    </div>
-  `;
+  return html;
 }
 
 function refrescarPartidos() {
@@ -417,15 +414,11 @@ function mostrarPartidos() {
     html += `<p>No hay próximos partidos</p>`;
   }
 
-  const proximosPorFecha = agruparPartidosPorFecha(proximos);
+  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += renderBloquesPorFecha(proximos);
 
-Object.entries(proximosPorFecha).forEach(([fecha, lista], index) => {
-  html += renderBloqueFecha(
-    fecha,
-    lista,
-    `proximos-${index}`
-  );
-});
+html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+html += renderBloquesPorFecha(finalizados);
 
   /* ===== FINALIZADOS ===== */
   html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;

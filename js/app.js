@@ -612,8 +612,6 @@ function abrirPartido(id) {
   let adminBloque = adminActivo ? `
     <label>Hora</label>
     <input type="time" id="hora" value="${partidoActual.hora || ""}">
-
-    <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
   ` : `
   `;
 

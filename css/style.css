@@ -1483,3 +1483,36 @@ body.splash-activo #splash {
 .goles {
   margin-top: 10px;
 }
+
+/* =========================
+   MARCADOR CENTRADO (LISTA PARTIDOS)
+========================= */
+
+/* Contenedor central */
+.partido-equipos .vs {
+  min-width: 64px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #999;
+}
+
+/* VS normal (pendiente / en juego) */
+.partido-equipos .vs {
+  opacity: 0.6;
+  letter-spacing: 1px;
+}
+
+/* Resultado cuando está finalizado */
+.partido-equipos .resultado-centro {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+  opacity: 1;
+  letter-spacing: 0;
+}
+
+/* Un poco de aire visual */
+.partido-equipos {
+  margin: 10px 0;
+}

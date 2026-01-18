@@ -104,6 +104,13 @@ const IMAGENES_PABELLONES = {
   "Multipista": "img/pabellones/la-data.png"
 };
 
+// 🔴 DIRECTOS POR PABELLÓN
+const DIRECTOS_PABELLONES = {
+  "Municipal": "https://www.twitch.tv/swl_tv",
+  "Escuela": "https://www.twitch.tv/swl_tv",
+  "Universitario": "https://www.twitch.tv/swl_tv"
+};
+
 /* ================== supabase ================== */
 async function probarSupabase() {
   const { data, error } = await supabase
@@ -2283,10 +2290,18 @@ let html = `
     </a>
 
     ${
-      hayDirecto
-        ? `<span class="badge-glass badge-directo">🔴 En directo</span>`
-        : ``
-    }
+  DIRECTOS_PABELLONES[pabellon] && hayDirecto
+    ? `
+      <a
+        href="${DIRECTOS_PABELLONES[pabellon]}"
+        target="_blank"
+        class="badge-glass badge-directo"
+      >
+        🔴 Ver directo
+      </a>
+    `
+    : ``
+}
   </div>
 `;
 

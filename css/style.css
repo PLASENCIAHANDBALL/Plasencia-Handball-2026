@@ -1516,3 +1516,56 @@ body.splash-activo #splash {
 .partido-equipos {
   margin: 10px 0;
 }
+
+/* =========================
+   PARTIDOS AGRUPADOS POR FECHA
+========================= */
+
+.fecha-bloque {
+  margin-bottom: 18px;
+}
+
+/* Cabecera de fecha (clicable) */
+.fecha-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 16px;
+  border-radius: 18px;
+
+  background: linear-gradient(135deg, #f4a261, #f59e0b);
+  color: white;
+
+  font-weight: 700;
+  font-size: 15px;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  cursor: pointer;
+}
+
+.fecha-header:active {
+  transform: scale(0.97);
+}
+
+/* Flecha */
+.fecha-header .flecha {
+  transition: transform 0.25s ease;
+}
+
+/* Abierta */
+.fecha-bloque.abierta .fecha-header .flecha {
+  transform: rotate(180deg);
+}
+
+/* Contenedor de partidos */
+.fecha-partidos {
+  margin-top: 10px;
+  display: none;
+}
+
+/* Mostrar cuando está abierta */
+.fecha-bloque.abierta .fecha-partidos {
+  display: block;
+  animation: fadeEnter 0.25s ease;
+}

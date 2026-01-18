@@ -121,7 +121,7 @@ probarSupabase();
 /* ================== HOME ================== */
 function mostrarHome() {
   setNavActivoPorVista("inicio");
-  
+
   let html = `
     <h2>Inicio</h2>
 <section class="galeria2026">
@@ -352,7 +352,7 @@ function refrescarPartidos() {
 
 function mostrarPartidos() {
   setNavActivoPorVista("partidos");
-  
+
   let html = `<h2>Partidos</h2>`;
 
   if (adminActivo) {
@@ -612,6 +612,11 @@ function abrirPartido(id) {
   let adminBloque = adminActivo ? `
     <label>Hora</label>
     <input type="time" id="hora" value="${partidoActual.hora || ""}">
+
+    <label>Lugar</label>
+    <input id="pabellon" value="${partidoActual.pabellon || ""}">
+
+    <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
   ` : `
   `;
 
@@ -622,7 +627,7 @@ const fechaBonita = partidoActual.fecha
       month: "long"
     })
   : "-";
-  
+
   contenido.innerHTML = `
   <div class="info-partido-detalle">
 
@@ -637,22 +642,6 @@ const fechaBonita = partidoActual.fecha
   <div class="detalle-lugar">
     📍 ${partidoActual.pabellon || "-"}
   </div>
-  
-  <div class="pabellon-badges">
-  <a
-    href="${UBICACIONES_PABELLONES?.[partidoActual.pabellon] || '#'}"
-    target="_blank"
-    class="badge-glass badge-ubicacion"
-  >
-    🗺️ Ubicación
-  </a>
-
-  ${
-    calcularEstadoPartido(partidoActual) === "en_juego"
-      ? `<span class="badge-glass badge-directo">🔴 En directo</span>`
-      : ``
-  }
-</div>
 
 </div>
 
@@ -744,7 +733,7 @@ async function finalizarPartido() {
   document.dispatchEvent(new Event("partido-finalizado"));
 
   alert("Partido finalizado");
-  
+
   await guardarClasificacionSupabase(
   partidoActual.categoria,
   partidoActual.genero,
@@ -792,6 +781,12 @@ function refrescarVistaPartido() {
     partidoActual = partidos[index];
   }
   abrirPartido(partidoActual.id);
+}
+
+function guardarDatosPartido() {
+  partidoActual.hora = document.getElementById("hora").value;
+  partidoActual.pabellon = document.getElementById("pabellon").value;
+  actualizarPartido();
 }
 
 function actualizarPartido() {
@@ -1349,7 +1344,7 @@ function guardarEdicionGrupo() {
 /* ================== CATEGORIAS ================== */
 function mostrarCategorias() {
   setNavActivoPorVista("categorias");
-  
+
   contenido.innerHTML = `
     <h2>Categorías</h2>
 
@@ -1620,7 +1615,7 @@ async function borrarEquipo(id) {
 /* ================== CLASIFICACION ================== */
 function mostrarClasificacion() {
   setNavActivoPorVista("tabla");
-  
+
   contenido.innerHTML = `
     <h2>Clasificación</h2>
 
@@ -1852,7 +1847,7 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
 /* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
   setNavActivoPorVista("clubs");
-  
+
   let html = `<h2>Clubs Participantes</h2>`;
 
   if (adminActivo) {
@@ -2105,7 +2100,7 @@ function guardarNuevoEquipoClub(clubId) {
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
   setNavActivoPorVista("pabellones");
-  
+
   const pabellones = [
     "Municipal",
     "Escuela",

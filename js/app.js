@@ -461,6 +461,10 @@ function mostrarPartidos() {
   setNavActivoPorVista("partidos");
 
   let html = `<h2>Partidos</h2>`;
+  
+  if (adminActivo) {
+  html += `<button onclick="generarFaseFinal()">🏆 Generar fase final</button>`;
+}
 
   if (adminActivo) {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
@@ -834,7 +838,15 @@ async function finalizarPartido() {
   partidoActual.grupo
 );
 
-  mostrarPartidos();
+// 👇 AQUÍ
+if (partidoActual.fase === "semifinal") {
+  await intentarCrearFinalDesdeSemis(
+    partidoActual.categoria,
+    partidoActual.genero
+  );
+}
+
+mostrarPartidos();
 }
 
 function cambiarGol(equipo, cambio) {
@@ -935,6 +947,111 @@ function calcularEstadoPartido(partido) {
   return "pendiente";
 }
 
+function gruposFinalizados(categoria, genero) {
+  return partidos
+    .filter(p =>
+      p.categoria === categoria &&
+      p.genero === genero &&
+      p.fase === "grupos"
+    )
+    .every(p => p.estado === "finalizado");
+}
+
+async function generarFaseFinal() {
+  const categoria = prompt("Categoría (Infantil / Cadete / Juvenil)");
+  const genero = prompt("Género (Masculino / Femenino)");
+
+  if (!gruposFinalizados(categoria, genero)) {
+    alert("Aún no han terminado todos los partidos de grupo");
+    return;
+  }
+
+  const grupos = await obtenerClasificadosPorGrupo(categoria, genero);
+  const nombresGrupos = Object.keys(grupos);
+
+  // 🟢 CASO: GRUPO ÚNICO
+  if (nombresGrupos.length === 1 && nombresGrupos[0] === "Grupo Único") {
+    const clas = grupos["Grupo Único"];
+
+    if (clas.length < 2) {
+      alert("No hay suficientes equipos para final");
+      return;
+    }
+
+    await crearPartidoSupabase({
+      local_id: clas[1].equipo_id,
+      visitante_id: clas[0].equipo_id,
+      categoria,
+      genero,
+      grupo: "Final",
+      fase: "final",
+      estado: "pendiente"
+    });
+
+    alert("✅ Final creada (Grupo Único)");
+  }
+
+  // 🔵 CASO: VARIOS GRUPOS (A / B)
+  else {
+    const A = grupos["Grupo A"];
+    const B = grupos["Grupo B"];
+
+    if (!A || !B || A.length < 2 || B.length < 2) {
+      alert("Faltan equipos para semifinales");
+      return;
+    }
+
+    // Semifinal 1
+    await crearPartidoSupabase({
+      local_id: A[0].equipo_id,
+      visitante_id: B[1].equipo_id,
+      categoria,
+      genero,
+      grupo: "Semifinal",
+      fase: "semifinal",
+      estado: "pendiente"
+    });
+
+    // Semifinal 2
+    await crearPartidoSupabase({
+      local_id: B[0].equipo_id,
+      visitante_id: A[1].equipo_id,
+      categoria,
+      genero,
+      grupo: "Semifinal",
+      fase: "semifinal",
+      estado: "pendiente"
+    });
+
+    alert("✅ Semifinales creadas");
+  }
+
+  partidos = await obtenerPartidosSupabase();
+  mostrarPartidos();
+}
+
+async function obtenerClasificadosPorGrupo(categoria, genero) {
+  const { data, error } = await supabase
+    .from("clasificacion")
+    .select("*")
+    .eq("categoria", categoria)
+    .eq("genero", genero)
+    .order("puntos", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return {};
+  }
+
+  const grupos = {};
+  data.forEach(f => {
+    if (!grupos[f.grupo]) grupos[f.grupo] = [];
+    grupos[f.grupo].push(f);
+  });
+
+  return grupos;
+}
+
 async function guardarResultado() {
   const inputLocal = document.getElementById("inputLocal");
   const inputVisitante = document.getElementById("inputVisitante");
@@ -970,6 +1087,62 @@ async function guardarResultado() {
   }
 
   abrirPartido(partidoActual.id);
+}
+
+function obtenerGanador(partido) {
+  if (partido.goles_local > partido.goles_visitante) {
+    return partido.local_id;
+  }
+  if (partido.goles_visitante > partido.goles_local) {
+    return partido.visitante_id;
+  }
+  return null; // empate (no debería pasar en semis)
+}
+
+function existeFinal(categoria, genero) {
+  return partidos.some(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "final"
+  );
+}
+
+async function intentarCrearFinalDesdeSemis(categoria, genero) {
+
+  // ❌ Si ya hay final, no hacemos nada
+  if (existeFinal(categoria, genero)) return;
+
+  // 🔍 Buscar semifinales finalizadas
+  const semis = partidos.filter(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "semifinal" &&
+    p.estado === "finalizado"
+  );
+
+  // Necesitamos exactamente 2 semifinales
+  if (semis.length !== 2) return;
+
+  const ganador1 = obtenerGanador(semis[0]);
+  const ganador2 = obtenerGanador(semis[1]);
+
+  if (!ganador1 || !ganador2) return;
+
+  // 🏆 Crear la final
+  await crearPartidoSupabase({
+    local_id: ganador1,
+    visitante_id: ganador2,
+    categoria,
+    genero,
+    grupo: "Final",
+    fase: "final",
+    estado: "pendiente",
+    goles_local: 0,
+    goles_visitante: 0
+  });
+
+  partidos = await obtenerPartidosSupabase();
+  alert(`🏆 Final creada automáticamente (${categoria} ${genero})`);
 }
 
 /* ================== ADMIN ================== */
@@ -1313,6 +1486,7 @@ async function guardarNuevoPartido() {
     goles_local: 0,
     goles_visitante: 0,
     estado: "pendiente"
+    fase: "grupos"
   };
 
   const { error } = await supabase

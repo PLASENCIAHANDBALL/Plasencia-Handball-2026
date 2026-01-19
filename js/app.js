@@ -29,6 +29,9 @@ let rolUsuario = localStorage.getItem("rol") || null;
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
+let progresoSplash = 0;
+let intervaloSplash = null;
+
 let clubes = [];
 
 let clasificacionFiltro = {
@@ -122,6 +125,29 @@ async function probarSupabase() {
 }
 
 probarSupabase();
+
+/* ================== splash ================== */
+function iniciarBarraSplash() {
+  const barra = document.getElementById("splash-progreso");
+  if (!barra) return;
+
+  progresoSplash = 0;
+
+  intervaloSplash = setInterval(() => {
+    if (progresoSplash < 90) {
+      progresoSplash += Math.random() * 6;
+      barra.style.width = `${Math.min(progresoSplash, 90)}%`;
+    }
+  }, 400);
+}
+
+function completarBarraSplash() {
+  const barra = document.getElementById("splash-progreso");
+  if (!barra) return;
+
+  clearInterval(intervaloSplash);
+  barra.style.width = "100%";
+}
 
 /* ================== HOME ================== */
 function mostrarHome() {
@@ -236,6 +262,7 @@ function abrirWeb(url) {
 async function iniciarApp() {
   try {
     document.body.classList.add("splash-activo");
+iniciarBarraSplash();
 
     clubes = await obtenerClubesSupabase();
     equipos = await obtenerEquiposSupabase();
@@ -248,16 +275,18 @@ async function iniciarApp() {
     console.error("Error iniciando app:", e);
     alert("Error cargando datos");
   } finally {
-    document.body.classList.remove("splash-activo");
+    completarBarraSplash();
 
-    const splash = document.getElementById("splash");
-    if (splash) {
-      splash.classList.add("splash-hide");
+setTimeout(() => {
+  document.body.classList.remove("splash-activo");
 
-      setTimeout(() => {
-        splash.remove();
-      }, 600);
-    }
+  const splash = document.getElementById("splash");
+  if (splash) {
+    splash.classList.add("splash-hide");
+
+    setTimeout(() => splash.remove(), 600);
+  }
+}, 500);
   }
 }
 

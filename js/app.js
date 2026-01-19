@@ -2453,6 +2453,7 @@ window.editarClub = editarClub;
 window.borrarClub = borrarClub;
 window.formNuevoEquipoClub = formNuevoEquipoClub;
 window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
+window.generarFaseFinal = generarFaseFinal;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

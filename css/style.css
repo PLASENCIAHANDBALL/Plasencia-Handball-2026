@@ -1592,7 +1592,7 @@ body.splash-activo #splash {
 
 .splash-content {
   position: absolute;
-  bottom: 80px;          /* 🔑 distancia desde abajo (ajústala a gusto) */
+  bottom: 30px;          /* 🔑 distancia desde abajo (ajústala a gusto) */
   left: 50%;
   transform: translateX(-50%);
 

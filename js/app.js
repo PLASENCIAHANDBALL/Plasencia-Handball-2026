@@ -1485,7 +1485,7 @@ async function guardarNuevoPartido() {
     pabellon: document.getElementById("pabellon").value,
     goles_local: 0,
     goles_visitante: 0,
-    estado: "pendiente"
+    estado: "pendiente",
     fase: "grupos"
   };
 

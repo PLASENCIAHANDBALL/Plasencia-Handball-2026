@@ -1653,3 +1653,38 @@ body.splash-activo #splash {
   padding-left: 6px;
   border-left: 4px solid #f4a261;
 }
+
+.cuadro-eliminatorio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.columna.final {
+  justify-content: center;
+}
+
+.partido-cuadro {
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+}
+
+.partido-cuadro:hover {
+  transform: scale(1.03);
+}
+
+.partido-cuadro .resultado {
+  font-weight: bold;
+  margin: 6px 0;
+}

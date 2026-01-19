@@ -503,13 +503,13 @@ function renderPartidoCard(p) {
   const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
 
   const fechaBonita = p.fecha
-    ? new Date(p.fecha).toLocaleDateString("es-ES", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long"
-      })
-    : "";
-
+  ? new Date(p.fecha).toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    })
+  : "📅 Fecha por confirmar";
+  
   return `
     <div class="card partido-card">
 
@@ -522,6 +522,12 @@ function renderPartidoCard(p) {
 <div class="partido-categoria">
   ${p.categoria} · ${p.genero}
 </div>
+
+${p.fase !== "grupos" ? `
+  <div class="badge-fase">
+    ${textoFase(p.fase)}
+  </div>
+` : ""}
 
       <div class="partido-equipos">
         <div class="equipo-partido">
@@ -663,6 +669,9 @@ function editarPartido(id) {
       <option ${partidoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
     </select>
 
+    <label>Fecha</label>
+    <input type="date" id="fecha" value="${partidoActual.fecha || ""}">
+    
     <label>Hora</label>
     <input type="time" id="hora" value="${partidoActual.hora || ""}">
 
@@ -680,21 +689,36 @@ function editarPartido(id) {
   `;
 }
 
-function guardarEdicionPartido() {
-  partidoActual.local = document.getElementById("local").value;
-  partidoActual.visitante = document.getElementById("visitante").value;
-  partidoActual.categoria = document.getElementById("categoria").value;
-  partidoActual.genero = document.getElementById("genero").value;
-  partidoActual.grupo = document.getElementById("grupo").value;
-  partidoActual.hora = document.getElementById("hora").value;
-  partidoActual.pabellon = document.getElementById("pabellon").value;
+async function guardarEdicionPartido() {
+  const cambios = {
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo: document.getElementById("grupo").value,
+    fecha: document.getElementById("fecha").value,
+    hora: document.getElementById("hora").value,
+    pabellon: document.getElementById("pabellon").value
+  };
 
-  partidos = partidos.map(p =>
-    p.id === partidoActual.id ? partidoActual : p
-  );
+  const { error } = await supabase
+    .from("partidos")
+    .update(cambios)
+    .eq("id", partidoActual.id);
 
-  guardarPartidos(partidos);
+  if (error) {
+    console.error(error);
+    alert("Error guardando cambios");
+    return;
+  }
+
+  partidos = await obtenerPartidosSupabase();
   mostrarPartidos();
+}
+
+function textoFase(fase) {
+  if (fase === "final") return "🏆 FINAL";
+  if (fase === "semifinal") return "🥈 SEMIFINAL";
+  if (fase === "playoff") return "⚔️ PLAYOFF";
+  return "";
 }
 
 function abrirPartido(id) {
@@ -979,14 +1003,19 @@ async function generarFaseFinal() {
     }
 
     await crearPartidoSupabase({
-      local_id: clas[1].equipo_id,
-      visitante_id: clas[0].equipo_id,
-      categoria,
-      genero,
-      grupo: "Final",
-      fase: "final",
-      estado: "pendiente"
-    });
+  local_id: clas[1].equipo_id,
+  visitante_id: clas[0].equipo_id,
+  categoria,
+  genero,
+  grupo: "Final",
+  fase: "final",
+  fecha: "",        // 🔑
+  hora: "",
+  pabellon: "",
+  estado: "pendiente",
+  goles_local: 0,
+  goles_visitante: 0
+});
 
     alert("✅ Final creada (Grupo Único)");
   }
@@ -1009,7 +1038,12 @@ async function generarFaseFinal() {
       genero,
       grupo: "Semifinal",
       fase: "semifinal",
+      fecha: "",
+      hora: "",
+      pabellon: "",
       estado: "pendiente"
+      goles_local: 0,
+      goles_visitante: 0
     });
 
     // Semifinal 2
@@ -1020,7 +1054,12 @@ async function generarFaseFinal() {
       genero,
       grupo: "Semifinal",
       fase: "semifinal",
+      fecha: "",
+      hora: "",
+      pabellon: "",
       estado: "pendiente"
+      goles_local: 0,
+      goles_visitante: 0
     });
 
     alert("✅ Semifinales creadas");
@@ -1130,16 +1169,19 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
 
   // 🏆 Crear la final
   await crearPartidoSupabase({
-    local_id: ganador1,
-    visitante_id: ganador2,
-    categoria,
-    genero,
-    grupo: "Final",
-    fase: "final",
-    estado: "pendiente",
-    goles_local: 0,
-    goles_visitante: 0
-  });
+  local_id: ganador1,
+  visitante_id: ganador2,
+  categoria,
+  genero,
+  grupo: "Final",
+  fase: "final",
+  fecha: "",        // 🔑
+  hora: "",
+  pabellon: "",
+  estado: "pendiente",
+  goles_local: 0,
+  goles_visitante: 0
+});
 
   partidos = await obtenerPartidosSupabase();
   alert(`🏆 Final creada automáticamente (${categoria} ${genero})`);

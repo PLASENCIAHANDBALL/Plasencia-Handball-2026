@@ -414,8 +414,37 @@ function renderBloquesPorFecha(lista) {
         </div>
 
         <div class="fecha-partidos">
-          ${partidosDia.map(p => renderPartidoCard(p)).join("")}
-        </div>
+  ${renderBloquesCategoriaGenero(partidosDia)}
+</div>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+function agruparPorCategoriaGenero(lista) {
+  return lista.reduce((acc, p) => {
+    const clave = `${p.categoria} · ${p.genero}`;
+
+    if (!acc[clave]) acc[clave] = [];
+    acc[clave].push(p);
+
+    return acc;
+  }, {});
+}
+
+function renderBloquesCategoriaGenero(partidosDia) {
+  const grupos = agruparPorCategoriaGenero(partidosDia);
+
+  let html = "";
+
+  Object.entries(grupos).forEach(([titulo, lista]) => {
+    html += `
+      <div class="bloque-categoria-dia">
+        <h4 class="titulo-categoria-dia">${titulo}</h4>
+
+        ${lista.map(p => renderPartidoCard(p)).join("")}
       </div>
     `;
   });

@@ -1591,10 +1591,15 @@ body.splash-activo #splash {
 ========================= */
 
 .splash-content {
+  position: absolute;
+  bottom: 80px;          /* 🔑 distancia desde abajo (ajústala a gusto) */
+  left: 50%;
+  transform: translateX(-50%);
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 .splash-texto {

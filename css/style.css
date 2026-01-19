@@ -1585,3 +1585,51 @@ body.splash-activo #splash {
   display: block;
   animation: fadeEnter 0.25s ease;
 }
+
+/* =========================
+   SPLASH – BARRA DE CARGA GLASS
+========================= */
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.splash-texto {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  opacity: 0.9;
+}
+
+/* contenedor barra */
+.splash-barra {
+  width: 260px;
+  height: 18px;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,0.35);
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* progreso */
+#splash-progreso {
+  height: 100%;
+  width: 0%;
+
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.95),
+    rgba(255,255,255,0.65)
+  );
+
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}

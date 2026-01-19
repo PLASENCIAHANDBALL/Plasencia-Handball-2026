@@ -466,6 +466,14 @@ function mostrarPartidos() {
   html += `<button onclick="generarFaseFinal()">🏆 Generar fase final</button>`;
 }
 
+if (adminActivo) {
+  html += `
+    <button onclick="mostrarCuadroEliminatorio('Infantil','Masculino')">
+      🏆 Ver cuadro eliminatorio
+    </button>
+  `;
+}
+
   if (adminActivo) {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
@@ -492,6 +500,69 @@ function mostrarPartidos() {
     : `<p>No hay partidos finalizados</p>`;
 
   contenido.innerHTML = html;
+}
+
+function mostrarCuadroEliminatorio(categoria, genero) {
+  setNavActivoPorVista("partidos");
+
+  const semis = partidos.filter(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "semifinal"
+  );
+
+  const final = partidos.find(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "final"
+  );
+
+  let html = `
+    <h2>🏆 Cuadro eliminatorio</h2>
+    <h3>${categoria} · ${genero}</h3>
+
+    <div class="cuadro-eliminatorio">
+      <div class="columna">
+        <h4>Semifinal</h4>
+        ${semis[0] ? renderPartidoCuadro(semis[0]) : "<p>—</p>"}
+      </div>
+
+      <div class="columna final">
+        <h4>Final</h4>
+        ${final ? renderPartidoCuadro(final) : "<p>Por definir</p>"}
+      </div>
+
+      <div class="columna">
+        <h4>Semifinal</h4>
+        ${semis[1] ? renderPartidoCuadro(semis[1]) : "<p>—</p>"}
+      </div>
+    </div>
+
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+
+  contenido.innerHTML = html;
+}
+
+function renderPartidoCuadro(p) {
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+
+  return `
+    <div class="partido-cuadro" onclick="abrirPartido(${p.id})">
+      <div class="equipo">${local?.nombre || "—"}</div>
+
+      <div class="resultado">
+        ${
+          p.estado === "finalizado"
+            ? `${p.goles_local} - ${p.goles_visitante}`
+            : "vs"
+        }
+      </div>
+
+      <div class="equipo">${visitante?.nombre || "—"}</div>
+    </div>
+  `;
 }
 
 function renderPartidoCard(p) {
@@ -1041,7 +1112,7 @@ async function generarFaseFinal() {
       fecha: "",
       hora: "",
       pabellon: "",
-      estado: "pendiente"
+      estado: "pendiente",
       goles_local: 0,
       goles_visitante: 0
     });
@@ -1057,7 +1128,7 @@ async function generarFaseFinal() {
       fecha: "",
       hora: "",
       pabellon: "",
-      estado: "pendiente"
+      estado: "pendiente",
       goles_local: 0,
       goles_visitante: 0
     });
@@ -2496,6 +2567,7 @@ window.borrarClub = borrarClub;
 window.formNuevoEquipoClub = formNuevoEquipoClub;
 window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
 window.generarFaseFinal = generarFaseFinal;
+window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

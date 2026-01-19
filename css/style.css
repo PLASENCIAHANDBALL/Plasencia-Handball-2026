@@ -1638,3 +1638,18 @@ body.splash-activo #splash {
   border-radius: inherit;
   transition: width 0.4s ease;
 }
+
+/* ===== CATEGORÍAS DENTRO DEL DÍA ===== */
+
+.bloque-categoria-dia {
+  margin-top: 16px;
+}
+
+.titulo-categoria-dia {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e07a1f;
+  margin: 10px 0 8px;
+  padding-left: 6px;
+  border-left: 4px solid #f4a261;
+}

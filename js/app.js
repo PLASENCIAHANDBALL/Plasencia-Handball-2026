@@ -568,7 +568,11 @@ function renderBracket(categoria, genero) {
   );
 
   return `
-    <div class="bracket">
+    <div class="bracket-scroll">
+  <div class="bracket">
+    <!-- rounds -->
+  </div>
+</div>
 
       <div class="round">
         <h4>Semifinal</h4>

@@ -40,6 +40,8 @@ let clasificacionFiltro = {
   grupo: ""
 };
 
+window.clasificacionFiltro = clasificacionFiltro;
+
 let partidos = [];
 
 let partidoActual = null;
@@ -528,13 +530,11 @@ partidos = partidos.map(p => ({
 }
 
 function renderBracket(categoria, genero) {
-  const semis = partidos
-    .filter(p =>
-      p.categoria === categoria &&
-      p.genero === genero &&
-      p.fase === "semifinal"
-    )
-    .sort((a, b) => a.id - b.id);
+  const semis = partidos.filter(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "semifinal"
+  );
 
   const final = partidos.find(p =>
     p.categoria === categoria &&
@@ -542,32 +542,37 @@ function renderBracket(categoria, genero) {
     p.fase === "final"
   );
 
-  const semi1 = semis[0] || null;
-  const semi2 = semis[1] || null;
+  const tercer = partidos.find(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "tercer_puesto"
+  );
 
   return `
-  <div class="bracket">
+    <div class="bracket">
 
-    <!-- SEMI IZQUIERDA -->
-    <div class="round">
-      <h4>Semifinal</h4>
-      ${renderMatchBracket(semi1)}
+      <div class="round">
+        <h4>Semifinal</h4>
+        ${renderMatchBracket(semis[0])}
+      </div>
+
+      <div class="round final">
+        <h4>Final</h4>
+        ${renderMatchBracket(final, true)}
+      </div>
+
+      <div class="round">
+        <h4>Semifinal</h4>
+        ${renderMatchBracket(semis[1])}
+      </div>
+
     </div>
 
-    <!-- FINAL -->
-    <div class="round final">
-      <h4>Final</h4>
-      ${renderMatchBracket(final, true)}
+    <div class="bracket-tercer">
+      <h4>🥉 3.º / 4.º puesto</h4>
+      ${renderMatchBracket(tercer)}
     </div>
-
-    <!-- SEMI DERECHA -->
-    <div class="round">
-      <h4>Semifinal</h4>
-      ${renderMatchBracket(semi2)}
-    </div>
-
-  </div>
-`;
+  `;
 }
 
 function renderMatchBracket(partido, esFinal = false) {
@@ -851,11 +856,13 @@ if (partidoActual.fase !== "grupos") {
   partidos = await obtenerPartidosSupabase();
 
   // 🔥 RECALCULAR CLASIFICACIÓN
+  if (partidoActual.fase === "grupos") {
   await guardarClasificacionSupabase(
     cambios.categoria,
     cambios.genero,
     cambios.grupo
   );
+}
 
   mostrarPartidos();
 }
@@ -1009,11 +1016,13 @@ async function finalizarPartido() {
 
   alert("Partido finalizado");
 
+  if (partidoActual.fase === "grupos") {
   await guardarClasificacionSupabase(
-  partidoActual.categoria,
-  partidoActual.genero,
-  partidoActual.grupo
-);
+    partidoActual.categoria,
+    partidoActual.genero,
+    partidoActual.grupo
+  );
+}
 
 // 👇 AQUÍ
 if (partidoActual.fase === "semifinal") {
@@ -1119,13 +1128,13 @@ async function borrarPartido(id) {
   partidos = await obtenerPartidosSupabase();
 
   // 🔥 recalcular clasificación SI estaba finalizado
-  if (partido?.estado === "finalizado") {
-    await guardarClasificacionSupabase(
-      partido.categoria,
-      partido.genero,
-      partido.grupo
-    );
-  }
+  if (partido?.estado === "finalizado" && partido.fase === "grupos") {
+  await guardarClasificacionSupabase(
+    partido.categoria,
+    partido.genero,
+    partido.grupo
+  );
+}
 
   mostrarPartidos();
   actualizarClasificacion();

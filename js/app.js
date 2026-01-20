@@ -2050,16 +2050,15 @@ async function guardarEdicionEquipo() {
   // 1️⃣ actualizar equipo
   await editarEquipoSupabase(equipoActual.id, cambios);
 
-  // 2️⃣ borrar clasificación antigua
+  // 2️⃣ eliminar CUALQUIER clasificación previa del equipo
   await supabase
     .from("clasificacion")
     .delete()
     .eq("equipo_id", equipoActual.id)
     .eq("categoria", equipoAntes.categoria)
-    .eq("genero", equipoAntes.genero)
-    .eq("grupo", equipoAntes.grupo);
+    .eq("genero", equipoAntes.genero);
 
-  // 3️⃣ crear clasificación nueva (vacía)
+  // 3️⃣ crear clasificación SOLO en su grupo actual
   await asegurarEquipoEnClasificacion({
     id: equipoActual.id,
     ...cambios
@@ -2068,7 +2067,7 @@ async function guardarEdicionEquipo() {
   // 4️⃣ recargar equipos
   equipos = await obtenerEquiposSupabase();
 
-  // 5️⃣ refrescar vista
+  // 5️⃣ refrescar vistas
   mostrarCategorias();
   actualizarClasificacion();
 }

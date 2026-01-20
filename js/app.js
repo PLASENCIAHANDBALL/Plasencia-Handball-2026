@@ -775,14 +775,16 @@ function editarPartido(id) {
       <option ${partidoActual.genero==="Femenino"?"selected":""}>Femenino</option>
     </select>
 
+    const esFaseFinal = partidoActual.fase !== "grupos";
+    
     <label>Grupo</label>
-    <select id="grupo">
-      <option ${partidoActual.grupo==="Grupo A"?"selected":""}>Grupo A</option>
-      <option ${partidoActual.grupo==="Grupo B"?"selected":""}>Grupo B</option>
-      <option ${partidoActual.grupo==="Grupo C"?"selected":""}>Grupo C</option>
-      <option ${partidoActual.grupo==="Grupo D"?"selected":""}>Grupo D</option>
-      <option ${partidoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
-    </select>
+<select id="grupo" ${esFaseFinal ? "disabled" : ""}>
+  <option ${partidoActual.grupo==="Grupo A"?"selected":""}>Grupo A</option>
+  <option ${partidoActual.grupo==="Grupo B"?"selected":""}>Grupo B</option>
+  <option ${partidoActual.grupo==="Grupo C"?"selected":""}>Grupo C</option>
+  <option ${partidoActual.grupo==="Grupo D"?"selected":""}>Grupo D</option>
+  <option ${partidoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
+</select>
 
     <label>Fecha</label>
     <input type="date" id="fecha" value="${partidoActual.fecha || ""}">
@@ -806,13 +808,20 @@ function editarPartido(id) {
 
 async function guardarEdicionPartido() {
   const cambios = {
-    categoria: document.getElementById("categoria").value,
-    genero: document.getElementById("genero").value,
-    grupo: document.getElementById("grupo").value,
-    fecha: document.getElementById("fecha").value || null,
-    hora: document.getElementById("hora").value || null,
-    pabellon: document.getElementById("pabellon").value
-  };
+  categoria: document.getElementById("categoria").value,
+  genero: document.getElementById("genero").value,
+  fecha: document.getElementById("fecha").value || null,
+  hora: document.getElementById("hora").value || null,
+  pabellon: document.getElementById("pabellon").value
+};
+
+// 🔐 BLINDAJE DE FASE FINAL
+if (partidoActual.fase !== "grupos") {
+  cambios.fase = partidoActual.fase;
+  cambios.grupo = partidoActual.fase === "final" ? "Final" : "Semifinal";
+} else {
+  cambios.grupo = document.getElementById("grupo").value;
+}
 
   const { error } = await supabase
     .from("partidos")
@@ -884,6 +893,12 @@ const fechaBonita = partidoActual.fecha
   <div class="detalle-categoria">
     ${partidoActual.categoria} · ${partidoActual.genero}
   </div>
+
+${partidoActual.fase !== "grupos" ? `
+  <div class="badge-fase">
+    ${textoFase(partidoActual.fase)}
+  </div>
+` : ""}
 
   <div class="detalle-lugar">
     📍 ${partidoActual.pabellon || "-"}

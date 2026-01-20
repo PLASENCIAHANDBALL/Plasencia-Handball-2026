@@ -479,9 +479,9 @@ function mostrarPartidos() {
 
 if (adminActivo) {
   html += `
-  <button onclick="mostrarCuadroEliminatorioDesdeFiltro()">
-    🏆 Ver cuadro eliminatorio
-  </button>
+  <button onclick="mostrarCuadrosEliminatorios()">
+  🏆 Ver cuadros eliminatorios
+</button>
 `;
 }
 
@@ -636,6 +636,50 @@ function renderPartidoCuadro(p) {
       <div class="equipo">${visitante?.nombre || "—"}</div>
     </div>
   `;
+}
+
+async function mostrarCuadrosEliminatorios() {
+  equipos = await obtenerEquiposSupabase();
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+
+  setNavActivoPorVista("partidos");
+
+  // 1️⃣ detectar combinaciones con fases finales
+  const combinaciones = [
+    ...new Set(
+      partidos
+        .filter(p => p.fase !== "grupos")
+        .map(p => `${p.categoria}||${p.genero}`)
+    )
+  ].map(c => {
+    const [categoria, genero] = c.split("||");
+    return { categoria, genero };
+  });
+
+  if (combinaciones.length === 0) {
+    contenido.innerHTML = `
+      <h2>🏆 Cuadros eliminatorios</h2>
+      <p>No hay fases finales creadas aún.</p>
+      <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+    `;
+    return;
+  }
+
+  // 2️⃣ pintar todos los cuadros
+  let html = `<h2>🏆 Cuadros eliminatorios</h2>`;
+
+  combinaciones.forEach(({ categoria, genero }) => {
+    html += `
+      <section class="cuadro-categoria">
+        <h3>${categoria} · ${genero}</h3>
+        ${renderBracket(categoria, genero)}
+      </section>
+    `;
+  });
+
+  html += `<button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>`;
+
+  contenido.innerHTML = html;
 }
 
 function formatearFecha(fecha) {
@@ -2791,6 +2835,7 @@ window.formNuevoEquipoClub = formNuevoEquipoClub;
 window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
 window.generarFaseFinal = generarFaseFinal;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
+window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

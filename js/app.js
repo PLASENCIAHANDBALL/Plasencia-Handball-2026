@@ -1160,9 +1160,9 @@ async function generarFaseFinal() {
   genero,
   grupo: "Final",
   fase: "final",
-  fecha: null,        // 🔑
-  hora: "",
-  pabellon: "",
+  fecha: null,
+  hora: null,
+  pabellon: null,
   estado: "pendiente",
   goles_local: 0,
   goles_visitante: 0
@@ -1189,9 +1189,9 @@ async function generarFaseFinal() {
       genero,
       grupo: "Semifinal",
       fase: "semifinal",
-      fecha: "",
-      hora: "",
-      pabellon: "",
+      fecha: null,
+      hora: null,
+      pabellon: null,
       estado: "pendiente",
       goles_local: 0,
       goles_visitante: 0
@@ -1205,9 +1205,9 @@ async function generarFaseFinal() {
       genero,
       grupo: "Semifinal",
       fase: "semifinal",
-      fecha: "",
-      hora: "",
-      pabellon: "",
+      fecha: null,
+      hora: null,
+      pabellon: null,
       estado: "pendiente",
       goles_local: 0,
       goles_visitante: 0

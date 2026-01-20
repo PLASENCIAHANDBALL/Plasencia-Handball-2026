@@ -1752,3 +1752,42 @@ body.splash-activo #splash {
   margin: 6px 0;
   font-weight: bold;
 }
+
+/* =========================
+   BRACKET RESPONSIVE (MÓVIL)
+========================= */
+
+.bracket-scroll {
+  width: 100%;
+  overflow-x: auto;                 /* 🔑 permite deslizar */
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 0;
+}
+
+/* el bracket NO se aplasta */
+.bracket-scroll .bracket {
+  min-width: 620px;                 /* 🔑 ancho mínimo total */
+}
+
+@media (max-width: 480px) {
+
+  .bracket-scroll {
+    margin: 0 -16px;               /* aprovecha todo el ancho */
+    padding: 10px 16px;
+  }
+
+  .bracket {
+    justify-content: flex-start;   /* empieza desde la izquierda */
+    gap: 24px;                     /* menos separación */
+  }
+
+  .match {
+    min-width: 170px;              /* cabe mejor en móvil */
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .round h4 {
+    font-size: 14px;
+  }
+}

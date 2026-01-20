@@ -537,6 +537,9 @@ async function mostrarCuadroEliminatorio(categoria, genero) {
 }
 
 function renderBracket(categoria, genero) {
+  categoria = categoria.toLowerCase().trim();
+  genero = genero.toLowerCase().trim();
+  
   console.log(
   "BRACKET:",
   partidos.filter(p => p.fase !== "grupos").map(p => ({
@@ -1189,8 +1192,8 @@ function gruposFinalizados(categoria, genero) {
 }
 
 async function generarFaseFinal() {
-  const categoria = prompt("Categoría (Infantil / Cadete / Juvenil)");
-  const genero = prompt("Género (Masculino / Femenino)");
+  const categoria = clasificacionFiltro.categoria;
+const genero = clasificacionFiltro.genero;
 
   if (!gruposFinalizados(categoria, genero)) {
     alert("Aún no han terminado todos los partidos de grupo");
@@ -1212,8 +1215,8 @@ async function generarFaseFinal() {
     await crearPartidoSupabase({
   local_id: clas[1].equipo_id,
   visitante_id: clas[0].equipo_id,
-  categoria,
-  genero,
+  categoria: categoria.toLowerCase(),
+  genero: genero.toLowerCase(),
   grupo: "Final",
   fase: "final",
   fecha: null,
@@ -1954,6 +1957,8 @@ function mostrarCategorias() {
 function seleccionarCategoria(cat, boton) {
   window.categoriaSeleccionada = cat;
 
+  clasificacionFiltro.categoria = cat.toLowerCase(); // 🔑
+  
   document.querySelectorAll(".tab").forEach(t => {
     t.classList.remove("active");
   });
@@ -1966,6 +1971,9 @@ function filtrarCategorias() {
   const categoria = window.categoriaSeleccionada;
   const genero = document.getElementById("gen").value;
   const grupo = document.getElementById("grp").value;
+
+  clasificacionFiltro.categoria = categoria.toLowerCase(); // 🔑
+  clasificacionFiltro.genero = genero.toLowerCase();       // 🔑
 
   let html = "";
 

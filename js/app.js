@@ -516,11 +516,13 @@ async function mostrarCuadroEliminatorio(categoria, genero) {
 }
 
 function renderBracket(categoria, genero) {
-  const semis = partidos.filter(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    p.fase === "semifinal"
-  );
+  const semis = partidos
+    .filter(p =>
+      p.categoria === categoria &&
+      p.genero === genero &&
+      p.fase === "semifinal"
+    )
+    .sort((a, b) => a.id - b.id);
 
   const final = partidos.find(p =>
     p.categoria === categoria &&
@@ -528,13 +530,8 @@ function renderBracket(categoria, genero) {
     p.fase === "final"
   );
 
-  const semis = partidos
-  .filter(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    p.fase === "semifinal"
-  )
-  .sort((a, b) => a.id - b.id);
+  const semi1 = semis[0] || null;
+  const semi2 = semis[1] || null;
 
   return `
     <div class="bracket">
@@ -554,6 +551,7 @@ function renderBracket(categoria, genero) {
       <!-- SEMI DERECHA -->
       <div class="round">
         <h4>Semifinal</h4>
+        ${renderMatchI>
         ${renderMatchBracket(semi2)}
       </div>
 

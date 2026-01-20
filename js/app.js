@@ -565,6 +565,19 @@ function renderPartidoCuadro(p) {
   `;
 }
 
+function formatearFecha(fecha) {
+  if (!fecha) return "📅 Fecha por confirmar";
+
+  const d = new Date(fecha);
+  if (isNaN(d)) return "📅 Fecha por confirmar";
+
+  return d.toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long"
+  });
+}
+
 function renderPartidoCard(p) {
   const estadoReal = calcularEstadoPartido(p);
   const equipoLocal = equipos.find(e => e.id === p.local_id);
@@ -572,14 +585,8 @@ function renderPartidoCard(p) {
 
   const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
   const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
-
-  const fechaBonita = p.fecha
-  ? new Date(p.fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long"
-    })
-  : "📅 Fecha por confirmar";
+  
+  const fechaBonita = formatearFecha(p.fecha);
   
   return `
     <div class="card partido-card">
@@ -765,8 +772,8 @@ async function guardarEdicionPartido() {
     categoria: document.getElementById("categoria").value,
     genero: document.getElementById("genero").value,
     grupo: document.getElementById("grupo").value,
-    fecha: document.getElementById("fecha").value,
-    hora: document.getElementById("hora").value,
+    fecha: document.getElementById("fecha").value || null,
+    hora: document.getElementById("hora").value || null,
     pabellon: document.getElementById("pabellon").value
   };
 
@@ -776,12 +783,21 @@ async function guardarEdicionPartido() {
     .eq("id", partidoActual.id);
 
   if (error) {
-    console.error(error);
     alert("Error guardando cambios");
+    console.error(error);
     return;
   }
 
+  // 🔥 RECARGAR PARTIDOS
   partidos = await obtenerPartidosSupabase();
+
+  // 🔥 RECALCULAR CLASIFICACIÓN
+  await guardarClasificacionSupabase(
+    cambios.categoria,
+    cambios.genero,
+    cambios.grupo
+  );
+
   mostrarPartidos();
 }
 
@@ -1080,7 +1096,7 @@ async function generarFaseFinal() {
   genero,
   grupo: "Final",
   fase: "final",
-  fecha: "",        // 🔑
+  fecha: null,        // 🔑
   hora: "",
   pabellon: "",
   estado: "pendiente",
@@ -1246,7 +1262,7 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
   genero,
   grupo: "Final",
   fase: "final",
-  fecha: "",        // 🔑
+  fecha: null,        // 🔑
   hora: "",
   pabellon: "",
   estado: "pendiente",

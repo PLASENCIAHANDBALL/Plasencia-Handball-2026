@@ -119,8 +119,8 @@ const DIRECTOS_PABELLONES = {
 function normalizarPartidos(lista) {
   return lista.map(p => ({
     ...p,
-    categoria: p.categoria?.trim(),
-    genero: p.genero?.trim(),
+    categoria: p.categoria?.trim().toLowerCase(),
+    genero: p.genero?.trim().toLowerCase(),
     fase: p.fase?.toLowerCase().trim() || "grupos"
   }));
 }
@@ -515,8 +515,8 @@ if (adminActivo) {
 
 function mostrarCuadroEliminatorioDesdeFiltro() {
   mostrarCuadroEliminatorio(
-    clasificacionFiltro.categoria,
-    clasificacionFiltro.genero
+    clasificacionFiltro.categoria.toLowerCase().trim(),
+    clasificacionFiltro.genero.toLowerCase().trim()
   );
 }
 
@@ -537,6 +537,15 @@ async function mostrarCuadroEliminatorio(categoria, genero) {
 }
 
 function renderBracket(categoria, genero) {
+  console.log(
+  "BRACKET:",
+  partidos.filter(p => p.fase !== "grupos").map(p => ({
+    cat: p.categoria,
+    gen: p.genero,
+    fase: p.fase
+  }))
+);
+  
   const semis = partidos.filter(p =>
     p.categoria === categoria &&
     p.genero === genero &&

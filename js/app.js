@@ -960,6 +960,35 @@ if (partidoActual.fase === "semifinal") {
 mostrarPartidos();
 }
 
+async function asegurarEquipoEnClasificacion(equipo) {
+  const { data } = await supabase
+    .from("clasificacion")
+    .select("id")
+    .eq("equipo_id", equipo.id)
+    .eq("categoria", equipo.categoria)
+    .eq("genero", equipo.genero)
+    .eq("grupo", equipo.grupo)
+    .single();
+
+  // Ya existe → no hacer nada
+  if (data) return;
+
+  // No existe → crear fila vacía
+  await supabase.from("clasificacion").insert({
+    categoria: equipo.categoria,
+    genero: equipo.genero,
+    grupo: equipo.grupo,
+    equipo_id: equipo.id,
+    pj: 0,
+    pg: 0,
+    pe: 0,
+    pp: 0,
+    gf: 0,
+    gc: 0,
+    puntos: 0
+  });
+}
+
 function cambiarGol(equipo, cambio) {
   if (equipo === "local") {
     partidoActual.goles_local = Math.max(0, partidoActual.goles_local + cambio);
@@ -1868,7 +1897,7 @@ function togglePartidosEquipo(idEquipo) {
 
   return `
     <div class="card partido-card-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <strong>${new Date(p.fecha).toLocaleDateString("es-ES")}</strong>
+      <strong>${formatearFecha(p.fecha)}</strong>
       <div>${local?.nombre} vs ${visitante?.nombre}</div>
       <div class="mini-info">
         🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
@@ -1889,7 +1918,7 @@ function togglePartidosEquipo(idEquipo) {
 
   return `
     <div class="card partido-card-mini finalizado" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <strong>${new Date(p.fecha).toLocaleDateString("es-ES")}</strong>
+      <strong>${formatearFecha(p.fecha)}</strong>
       <div>
         ${local?.nombre} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre}
       </div>
@@ -1963,8 +1992,15 @@ async function guardarNuevoEquipo() {
   };
 
   await crearEquipoSupabase(equipo);
+
+  // 🔄 Recargar equipos
   equipos = await obtenerEquiposSupabase();
-  mostrarEquipos();
+
+  // 🟢 Asegurar fila en clasificación
+  const equipoCreado = equipos.at(-1);
+  await asegurarEquipoEnClasificacion(equipoCreado);
+
+  mostrarCategorias();
 }
 
 function editarEquipo(id) {

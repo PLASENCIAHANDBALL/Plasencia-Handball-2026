@@ -818,9 +818,10 @@ async function guardarEdicionPartido() {
 // 🔐 BLINDAJE DE FASE FINAL
 if (partidoActual.fase !== "grupos") {
   cambios.fase = partidoActual.fase;
-  cambios.grupo = partidoActual.fase === "final" ? "Final" : "Semifinal";
-} else {
-  cambios.grupo = document.getElementById("grupo").value;
+
+  if (partidoActual.fase === "final") cambios.grupo = "Final";
+  if (partidoActual.fase === "semifinal") cambios.grupo = "Semifinal";
+  if (partidoActual.fase === "tercer_puesto") cambios.grupo = "3º/4º Puesto";
 }
 
   const { error } = await supabase
@@ -850,6 +851,7 @@ if (partidoActual.fase !== "grupos") {
 function textoFase(fase) {
   if (fase === "final") return "🏆 FINAL";
   if (fase === "semifinal") return "🥈 SEMIFINAL";
+  if (fase === "tercer_puesto") return "🥉 3.º / 4.º PUESTO";
   if (fase === "playoff") return "⚔️ PLAYOFF";
   return "";
 }
@@ -1316,10 +1318,6 @@ function existeFinal(categoria, genero) {
 
 async function intentarCrearFinalDesdeSemis(categoria, genero) {
 
-  // ❌ Si ya hay final, no hacemos nada
-  if (existeFinal(categoria, genero)) return;
-
-  // 🔍 Buscar semifinales finalizadas
   const semis = partidos.filter(p =>
     p.categoria === categoria &&
     p.genero === genero &&
@@ -1327,34 +1325,74 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
     p.estado === "finalizado"
   );
 
-  // Necesitamos exactamente 2 semifinales
   if (semis.length !== 2) return;
 
   const ganador1 = obtenerGanador(semis[0]);
   const ganador2 = obtenerGanador(semis[1]);
 
-  if (!ganador1 || !ganador2) return;
+  const perdedor1 = obtenerPerdedor(semis[0]);
+  const perdedor2 = obtenerPerdedor(semis[1]);
 
-  // 🏆 Crear la final
+  if (!ganador1 || !ganador2 || !perdedor1 || !perdedor2) return;
+
   const hoy = new Date().toISOString().split("T")[0];
 
-await crearPartidoSupabase({
-  local_id: ganador1,
-  visitante_id: ganador2,
-  categoria,
-  genero,
-  grupo: "Final",
-  fase: "final",
-  fecha: hoy,       // ✅ CLAVE
-  hora: null,
-  pabellon: null,
-  estado: "pendiente",
-  goles_local: 0,
-  goles_visitante: 0
-});
+  // 🏆 FINAL
+  if (!existeFinal(categoria, genero)) {
+    await crearPartidoSupabase({
+      local_id: ganador1,
+      visitante_id: ganador2,
+      categoria,
+      genero,
+      grupo: "Final",
+      fase: "final",
+      fecha: hoy,
+      hora: null,
+      pabellon: null,
+      estado: "pendiente",
+      goles_local: 0,
+      goles_visitante: 0
+    });
+  }
+
+  // 🥉 3º / 4º PUESTO
+  if (!existeTercerPuesto(categoria, genero)) {
+    await crearPartidoSupabase({
+      local_id: perdedor1,
+      visitante_id: perdedor2,
+      categoria,
+      genero,
+      grupo: "3º/4º Puesto",
+      fase: "tercer_puesto",
+      fecha: hoy,
+      hora: null,
+      pabellon: null,
+      estado: "pendiente",
+      goles_local: 0,
+      goles_visitante: 0
+    });
+  }
 
   partidos = await obtenerPartidosSupabase();
-  alert(`🏆 Final creada automáticamente (${categoria} ${genero})`);
+  alert(`🏆 Final y 🥉 3.º/4.º puesto creados (${categoria} ${genero})`);
+}
+
+function obtenerPerdedor(partido) {
+  if (partido.goles_local > partido.goles_visitante) {
+    return partido.visitante_id;
+  }
+  if (partido.goles_visitante > partido.goles_local) {
+    return partido.local_id;
+  }
+  return null;
+}
+
+function existeTercerPuesto(categoria, genero) {
+  return partidos.some(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "tercer_puesto"
+  );
 }
 
 /* ================== ADMIN ================== */

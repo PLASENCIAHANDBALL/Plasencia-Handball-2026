@@ -1688,3 +1688,14 @@ body.splash-activo #splash {
   font-weight: bold;
   margin: 6px 0;
 }
+
+.badge-fase {
+  margin: 6px auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f4a261;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  width: fit-content;
+}

@@ -505,6 +505,17 @@ if (adminActivo) {
 function mostrarCuadroEliminatorio(categoria, genero) {
   setNavActivoPorVista("partidos");
 
+  contenido.innerHTML = `
+    <h2>🏆 Cuadro eliminatorio</h2>
+    <h3>${categoria} · ${genero}</h3>
+
+    ${renderBracket(categoria, genero)}
+
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+}
+
+function renderBracket(categoria, genero) {
   const semis = partidos.filter(p =>
     p.categoria === categoria &&
     p.genero === genero &&
@@ -517,31 +528,55 @@ function mostrarCuadroEliminatorio(categoria, genero) {
     p.fase === "final"
   );
 
-  let html = `
-    <h2>🏆 Cuadro eliminatorio</h2>
-    <h3>${categoria} · ${genero}</h3>
+  const semi1 = semis[0];
+  const semi2 = semis[1];
 
-    <div class="cuadro-eliminatorio">
-      <div class="columna">
+  return `
+    <div class="bracket">
+
+      <!-- SEMI IZQUIERDA -->
+      <div class="round">
         <h4>Semifinal</h4>
-        ${semis[0] ? renderPartidoCuadro(semis[0]) : "<p>—</p>"}
+        ${renderMatchBracket(semi1)}
       </div>
 
-      <div class="columna final">
+      <!-- FINAL -->
+      <div class="round final">
         <h4>Final</h4>
-        ${final ? renderPartidoCuadro(final) : "<p>Por definir</p>"}
+        ${renderMatchBracket(final, true)}
       </div>
 
-      <div class="columna">
+      <!-- SEMI DERECHA -->
+      <div class="round">
         <h4>Semifinal</h4>
-        ${semis[1] ? renderPartidoCuadro(semis[1]) : "<p>—</p>"}
+        ${renderMatchBracket(semi2)}
       </div>
+
     </div>
-
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
+}
 
-  contenido.innerHTML = html;
+function renderMatchBracket(partido, esFinal = false) {
+  if (!partido) {
+    return `<div class="match empty">Por definir</div>`;
+  }
+
+  const local = equipos.find(e => e.id === partido.local_id);
+  const visitante = equipos.find(e => e.id === partido.visitante_id);
+
+  const resultado =
+    partido.estado === "finalizado"
+      ? `<span class="score">${partido.goles_local} - ${partido.goles_visitante}</span>`
+      : `<span class="vs">vs</span>`;
+
+  return `
+    <div class="match ${esFinal ? "match-final" : ""}"
+         onclick="abrirPartido(${partido.id})">
+      <div class="team">${local?.nombre || "—"}</div>
+      ${resultado}
+      <div class="team">${visitante?.nombre || "—"}</div>
+    </div>
+  `;
 }
 
 function renderPartidoCuadro(p) {

@@ -502,15 +502,15 @@ if (adminActivo) {
   contenido.innerHTML = html;
 }
 
-function mostrarCuadroEliminatorio(categoria, genero) {
+async function mostrarCuadroEliminatorio(categoria, genero) {
+  partidos = await obtenerPartidosSupabase(); // 🔥 CLAVE
+
   setNavActivoPorVista("partidos");
 
   contenido.innerHTML = `
     <h2>🏆 Cuadro eliminatorio</h2>
     <h3>${categoria} · ${genero}</h3>
-
     ${renderBracket(categoria, genero)}
-
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
 }
@@ -528,8 +528,13 @@ function renderBracket(categoria, genero) {
     p.fase === "final"
   );
 
-  const semi1 = semis[0];
-  const semi2 = semis[1];
+  const semis = partidos
+  .filter(p =>
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.fase === "semifinal"
+  )
+  .sort((a, b) => a.id - b.id);
 
   return `
     <div class="bracket">
@@ -1319,16 +1324,18 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
   if (!ganador1 || !ganador2) return;
 
   // 🏆 Crear la final
-  await crearPartidoSupabase({
+  const hoy = new Date().toISOString().split("T")[0];
+
+await crearPartidoSupabase({
   local_id: ganador1,
   visitante_id: ganador2,
   categoria,
   genero,
   grupo: "Final",
   fase: "final",
-  fecha: null,        // 🔑
-  hora: "",
-  pabellon: "",
+  fecha: hoy,       // ✅ CLAVE
+  hora: null,
+  pabellon: null,
   estado: "pendiente",
   goles_local: 0,
   goles_visitante: 0

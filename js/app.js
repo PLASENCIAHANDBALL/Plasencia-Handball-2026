@@ -116,6 +116,15 @@ const DIRECTOS_PABELLONES = {
   "Universitario": "https://www.twitch.tv/swl_tv"
 };
 
+function normalizarPartidos(lista) {
+  return lista.map(p => ({
+    ...p,
+    categoria: p.categoria?.trim(),
+    genero: p.genero?.trim(),
+    fase: p.fase?.toLowerCase().trim() || "grupos"
+  }));
+}
+
 /* ================== supabase ================== */
 async function probarSupabase() {
   const { data, error } = await supabase
@@ -268,11 +277,7 @@ iniciarBarraSplash();
 
     clubes = await obtenerClubesSupabase();
     equipos = await obtenerEquiposSupabase();
-    partidos = await obtenerPartidosSupabase();
-    partidos = partidos.map(p => ({
-  ...p,
-  fase: p.fase?.toLowerCase() || "grupos"
-}));
+    partidos = normalizarPartidos(await obtenerPartidosSupabase());
     patrocinadores = await obtenerPatrocinadoresSupabase();
 
     mostrarHome();
@@ -518,12 +523,8 @@ function mostrarCuadroEliminatorioDesdeFiltro() {
 window.mostrarCuadroEliminatorioDesdeFiltro = mostrarCuadroEliminatorioDesdeFiltro;
 
 async function mostrarCuadroEliminatorio(categoria, genero) {
-  partidos = await obtenerPartidosSupabase(); // 🔥 CLAVE
-
-partidos = partidos.map(p => ({
-  ...p,
-  fase: p.fase?.toLowerCase() || "grupos"
-}));
+  equipos = await obtenerEquiposSupabase();   // 🔥 OBLIGATORIO
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
 
   setNavActivoPorVista("partidos");
 
@@ -1405,11 +1406,7 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
     });
   }
 
-  partidos = await obtenerPartidosSupabase();
-  partidos = partidos.map(p => ({
-  ...p,
-  fase: p.fase?.toLowerCase() || "grupos"
-}));
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
   
   alert(`🏆 Final y 🥉 3.º/4.º puesto creados (${categoria} ${genero})`);
 }

@@ -474,13 +474,10 @@ function mostrarPartidos() {
 
 if (adminActivo) {
   html += `
-    <button onclick="mostrarCuadroEliminatorio(
-  clasificacionFiltro.categoria,
-  clasificacionFiltro.genero
-)">
-  🏆 Ver cuadro eliminatorio
-</button>
-  `;
+  <button onclick="mostrarCuadroEliminatorioDesdeFiltro()">
+    🏆 Ver cuadro eliminatorio
+  </button>
+`;
 }
 
   if (adminActivo) {
@@ -510,6 +507,15 @@ if (adminActivo) {
 
   contenido.innerHTML = html;
 }
+
+function mostrarCuadroEliminatorioDesdeFiltro() {
+  mostrarCuadroEliminatorio(
+    clasificacionFiltro.categoria,
+    clasificacionFiltro.genero
+  );
+}
+
+window.mostrarCuadroEliminatorioDesdeFiltro = mostrarCuadroEliminatorioDesdeFiltro;
 
 async function mostrarCuadroEliminatorio(categoria, genero) {
   partidos = await obtenerPartidosSupabase(); // 🔥 CLAVE

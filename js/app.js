@@ -2036,15 +2036,41 @@ function editarEquipo(id) {
 }
 
 async function guardarEdicionEquipo() {
-  await editarEquipoSupabase(equipoActual.id, {
+  // 🔴 estado anterior
+  const equipoAntes = { ...equipoActual };
+
+  // 🟢 nuevos valores
+  const cambios = {
     nombre: document.getElementById("nombre").value,
     categoria: document.getElementById("categoria").value,
     genero: document.getElementById("genero").value,
     grupo: document.getElementById("grupo").value
+  };
+
+  // 1️⃣ actualizar equipo
+  await editarEquipoSupabase(equipoActual.id, cambios);
+
+  // 2️⃣ borrar clasificación antigua
+  await supabase
+    .from("clasificacion")
+    .delete()
+    .eq("equipo_id", equipoActual.id)
+    .eq("categoria", equipoAntes.categoria)
+    .eq("genero", equipoAntes.genero)
+    .eq("grupo", equipoAntes.grupo);
+
+  // 3️⃣ crear clasificación nueva (vacía)
+  await asegurarEquipoEnClasificacion({
+    id: equipoActual.id,
+    ...cambios
   });
 
+  // 4️⃣ recargar equipos
   equipos = await obtenerEquiposSupabase();
+
+  // 5️⃣ refrescar vista
   mostrarCategorias();
+  actualizarClasificacion();
 }
 
 async function borrarEquipo(id) {

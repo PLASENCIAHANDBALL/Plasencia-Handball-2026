@@ -534,29 +534,28 @@ function renderBracket(categoria, genero) {
   const semi2 = semis[1] || null;
 
   return `
-    <div class="bracket">
+  <div class="bracket">
 
-      <!-- SEMI IZQUIERDA -->
-      <div class="round">
-        <h4>Semifinal</h4>
-        ${renderMatchBracket(semi1)}
-      </div>
-
-      <!-- FINAL -->
-      <div class="round final">
-        <h4>Final</h4>
-        ${renderMatchBracket(final, true)}
-      </div>
-
-      <!-- SEMI DERECHA -->
-      <div class="round">
-        <h4>Semifinal</h4>
-        ${renderMatchI>
-        ${renderMatchBracket(semi2)}
-      </div>
-
+    <!-- SEMI IZQUIERDA -->
+    <div class="round">
+      <h4>Semifinal</h4>
+      ${renderMatchBracket(semi1)}
     </div>
-  `;
+
+    <!-- FINAL -->
+    <div class="round final">
+      <h4>Final</h4>
+      ${renderMatchBracket(final, true)}
+    </div>
+
+    <!-- SEMI DERECHA -->
+    <div class="round">
+      <h4>Semifinal</h4>
+      ${renderMatchBracket(semi2)}
+    </div>
+
+  </div>
+`;
 }
 
 function renderMatchBracket(partido, esFinal = false) {

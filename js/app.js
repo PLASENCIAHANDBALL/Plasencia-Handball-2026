@@ -267,6 +267,10 @@ iniciarBarraSplash();
     clubes = await obtenerClubesSupabase();
     equipos = await obtenerEquiposSupabase();
     partidos = await obtenerPartidosSupabase();
+    partidos = partidos.map(p => ({
+  ...p,
+  fase: p.fase?.toLowerCase() || "grupos"
+}));
     patrocinadores = await obtenerPatrocinadoresSupabase();
 
     mostrarHome();
@@ -468,9 +472,12 @@ function mostrarPartidos() {
 
 if (adminActivo) {
   html += `
-    <button onclick="mostrarCuadroEliminatorio('Infantil','Masculino')">
-      🏆 Ver cuadro eliminatorio
-    </button>
+    <button onclick="mostrarCuadroEliminatorio(
+  clasificacionFiltro.categoria,
+  clasificacionFiltro.genero
+)">
+  🏆 Ver cuadro eliminatorio
+</button>
   `;
 }
 
@@ -504,6 +511,11 @@ if (adminActivo) {
 
 async function mostrarCuadroEliminatorio(categoria, genero) {
   partidos = await obtenerPartidosSupabase(); // 🔥 CLAVE
+
+partidos = partidos.map(p => ({
+  ...p,
+  fase: p.fase?.toLowerCase() || "grupos"
+}));
 
   setNavActivoPorVista("partidos");
 
@@ -752,6 +764,8 @@ function formNuevoPartido() {
 
 function editarPartido(id) {
   partidoActual = partidos.find(p => p.id === id);
+  
+  const esFaseFinal = partidoActual.fase !== "grupos";
 
   contenido.innerHTML = `
     <h2>Editar partido</h2>
@@ -774,8 +788,6 @@ function editarPartido(id) {
       <option ${partidoActual.genero==="Masculino"?"selected":""}>Masculino</option>
       <option ${partidoActual.genero==="Femenino"?"selected":""}>Femenino</option>
     </select>
-
-    const esFaseFinal = partidoActual.fase !== "grupos";
     
     <label>Grupo</label>
 <select id="grupo" ${esFaseFinal ? "disabled" : ""}>
@@ -1236,6 +1248,11 @@ async function generarFaseFinal() {
   }
 
   partidos = await obtenerPartidosSupabase();
+  partidos = partidos.map(p => ({
+  ...p,
+  fase: p.fase?.toLowerCase() || "grupos"
+}));
+
   mostrarPartidos();
 }
 
@@ -1374,6 +1391,11 @@ async function intentarCrearFinalDesdeSemis(categoria, genero) {
   }
 
   partidos = await obtenerPartidosSupabase();
+  partidos = partidos.map(p => ({
+  ...p,
+  fase: p.fase?.toLowerCase() || "grupos"
+}));
+  
   alert(`🏆 Final y 🥉 3.º/4.º puesto creados (${categoria} ${genero})`);
 }
 

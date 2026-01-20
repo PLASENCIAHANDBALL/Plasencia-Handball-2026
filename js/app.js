@@ -2343,12 +2343,13 @@ async function guardarNuevoClub() {
   const nombre = document.getElementById("nombre").value;
   const file = document.getElementById("escudo").files[0];
 
-  if (!file) {
-    alert("Selecciona un escudo");
+  if (!nombre || !file) {
+    alert("Nombre y escudo son obligatorios");
     return;
   }
 
   const reader = new FileReader();
+
   reader.onload = async () => {
     const { error } = await supabase
       .from("clubes")
@@ -2363,7 +2364,9 @@ async function guardarNuevoClub() {
       return;
     }
 
-    await cargarClubes(); // 🔥 recarga desde Supabase
+    // 🔥 RECARGAR CLUBES CORRECTAMENTE
+    clubes = await obtenerClubesSupabase();
+
     mostrarEquipos();
   };
 
@@ -2416,7 +2419,7 @@ async function guardarEdicionClub(id) {
         return;
       }
 
-      await cargarClubes();
+      clubes = await obtenerClubesSupabase();
       mostrarEquipos();
     };
 
@@ -2435,7 +2438,7 @@ async function guardarEdicionClub(id) {
       return;
     }
 
-    await cargarClubes();
+    clubes = await obtenerClubesSupabase();
     mostrarEquipos();
   }
 }
@@ -2451,7 +2454,7 @@ async function borrarClub(id) {
     .delete()
     .eq("id", id);
 
-  await cargarClubes();
+  clubes = await obtenerClubesSupabase();
   mostrarEquipos();
 }
 

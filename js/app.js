@@ -477,14 +477,6 @@ function mostrarPartidos() {
   html += `<button onclick="generarFaseFinal()">🏆 Generar fase final</button>`;
 }
 
-if (adminActivo) {
-  html += `
-  <button onclick="mostrarCuadrosEliminatorios()">
-  🏆 Ver cuadros eliminatorios
-</button>
-`;
-}
-
   if (adminActivo) {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
@@ -2276,9 +2268,14 @@ function mostrarClasificacion() {
   setNavActivoPorVista("tabla");
 
   contenido.innerHTML = `
-    <h2>Clasificación</h2>
+  <h2>Clasificación</h2>
 
-    <div class="subfiltros">
+  <!-- 🏆 CUADROS ELIMINATORIOS (VISIBLE PARA TODOS) -->
+  <button onclick="mostrarCuadrosEliminatorios()">
+    🏆 Ver cuadros eliminatorios
+  </button>
+
+  <div class="subfiltros">
       <select id="clas-cat" onchange="actualizarClasificacion()">
         <option>Infantil</option>
         <option>Cadete</option>

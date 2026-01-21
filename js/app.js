@@ -673,7 +673,7 @@ async function mostrarCuadrosEliminatorios() {
     `;
   });
 
-  html += `<button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>`;
+  html += `<button class="volver" onclick="mostrarClasificacion()">⬅ Volver</button>`;
 
   contenido.innerHTML = html;
 }

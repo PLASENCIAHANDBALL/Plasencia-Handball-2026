@@ -20,6 +20,8 @@ document.body.classList.add("splash-activo");
 
 console.log("✅ app.js cargado");
 
+console.log("CLASIFICACIÓN GRUPOS:", grupos);
+
 const contenido = document.getElementById("contenido");
 
 /* ================== ESTADO GLOBAL ================== */
@@ -474,7 +476,7 @@ function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
   
   if (adminActivo) {
-  html += `<button onclick="generarFaseFinal()">🏆 Generar fase final</button>`;
+  html += `<button onclick="mostrarSelectorFaseFinal()">🏆 Generar fase final</button>`;
 }
 
   if (adminActivo) {
@@ -1232,15 +1234,20 @@ function gruposFinalizados(categoria, genero) {
 }
 
 async function generarFaseFinal() {
-  const categoria = clasificacionFiltro.categoria;
-const genero = clasificacionFiltro.genero;
+  const categoria = clasificacionFiltro.categoria.toLowerCase().trim();
+  const genero = clasificacionFiltro.genero.toLowerCase().trim();
+  
+    const categoriaDB =
+    categoria.charAt(0).toUpperCase() + categoria.slice(1);
+  const generoDB =
+    genero.charAt(0).toUpperCase() + genero.slice(1);
 
   if (!gruposFinalizados(categoria, genero)) {
     alert("Aún no han terminado todos los partidos de grupo");
     return;
   }
 
-  const grupos = await obtenerClasificadosPorGrupo(categoria, genero);
+  const grupos = await obtenerClasificadosPorGrupo(categoriaDB, generoDB);
   const nombresGrupos = Object.keys(grupos);
 
   // 🟢 CASO: GRUPO ÚNICO
@@ -1322,6 +1329,41 @@ const genero = clasificacionFiltro.genero;
 }));
 
   mostrarPartidos();
+}
+
+function mostrarSelectorFaseFinal() {
+  contenido.innerHTML = `
+    <h2>🏆 Generar fase final</h2>
+
+    <label>Categoría</label>
+    <select id="ff-categoria">
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="ff-genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <button onclick="generarFaseFinalDesdeSelector()">
+      🚀 Generar fase final
+    </button>
+
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+}
+
+async function generarFaseFinalDesdeSelector() {
+  clasificacionFiltro.categoria =
+    document.getElementById("ff-categoria").value.toLowerCase();
+
+  clasificacionFiltro.genero =
+    document.getElementById("ff-genero").value.toLowerCase();
+
+  await generarFaseFinal();
 }
 
 async function obtenerClasificadosPorGrupo(categoria, genero) {

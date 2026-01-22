@@ -20,8 +20,6 @@ document.body.classList.add("splash-activo");
 
 console.log("✅ app.js cargado");
 
-console.log("CLASIFICACIÓN GRUPOS:", grupos);
-
 const contenido = document.getElementById("contenido");
 
 /* ================== ESTADO GLOBAL ================== */

@@ -1816,16 +1816,65 @@ body.splash-activo #splash {
   margin-top: 8px;
 }
 
-.oculto {
-  display: none;
-}
-
 .categoria-header .flecha {
   transition: transform 0.25s ease;
 }
 
 /* opcional: rotar flecha cuando esté abierto */
 .categoria-partidos:not(.oculto) + .flecha {
+  transform: rotate(180deg);
+}
+
+/* =========================
+   CATEGORÍAS – ANIMACIÓN iOS
+========================= */
+
+.categoria-partidos {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 0.45s cubic-bezier(0.4, 0.0, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.35s ease;
+}
+
+/* Estado abierto */
+.categoria-partidos.abierto {
+  max-height: 2000px; /* suficiente para muchos partidos */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Header */
+.categoria-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-weight: 600;
+  padding: 10px 14px;
+
+  border-left: 4px solid #f59e0b;
+  background: #fff7ed;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+
+.categoria-header:active {
+  transform: scale(0.97);
+}
+
+/* Flecha */
+.categoria-header .flecha {
+  transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Flecha abierta */
+.categoria-header.abierto .flecha {
   transform: rotate(180deg);
 }
 

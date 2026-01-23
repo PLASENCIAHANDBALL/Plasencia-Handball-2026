@@ -3001,6 +3001,25 @@ html += finalizados.length
   contenido.innerHTML = html;
 };
 
+const footer = document.querySelector(".app-footer");
+
+window.addEventListener("scroll", () => {
+  if (!footer) return;
+
+  const scrollY = window.scrollY;
+  const viewport = window.innerHeight;
+  const fullHeight = document.body.scrollHeight;
+
+  // margen para que aparezca al "estirar"
+  const umbral = 40;
+
+  if (scrollY + viewport >= fullHeight - umbral) {
+    footer.classList.add("visible");
+  } else {
+    footer.classList.remove("visible");
+  }
+});
+
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {
   iniciarApp();

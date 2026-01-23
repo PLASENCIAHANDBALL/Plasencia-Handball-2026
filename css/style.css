@@ -1878,3 +1878,34 @@ body.splash-activo #splash {
   transform: rotate(180deg);
 }
 
+/* =========================
+   FOOTER SCROLL iOS STYLE
+========================= */
+
+.app-footer {
+  width: 100%;
+  padding: 28px 0 18px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* no molesta al scroll */
+}
+
+/* Texto */
+.footer-texto {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(31, 41, 51, 0.45);
+  letter-spacing: 0.3px;
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+/* Cuando se llega al final */
+.app-footer.visible .footer-texto {
+  opacity: 1;
+  transform: translateY(0);
+}

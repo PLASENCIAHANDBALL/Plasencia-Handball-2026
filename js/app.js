@@ -445,7 +445,7 @@ function agruparPorCategoriaGenero(lista) {
   }, {});
 }
 
-function renderBloquesCategoriaGenero(partidosDia) {
+function renderBloquesCategoriaGenero(partidosDia, fecha) {
   const grupos = agruparPorCategoriaGenero(partidosDia);
   let html = "";
 

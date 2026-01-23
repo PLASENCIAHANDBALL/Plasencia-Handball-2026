@@ -2878,6 +2878,7 @@ window.generarFaseFinal = generarFaseFinal;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
 window.mostrarSelectorFaseFinal = mostrarSelectorFaseFinal;
+window.generarFaseFinalDesdeSelector = generarFaseFinalDesdeSelector;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

@@ -447,20 +447,36 @@ function agruparPorCategoriaGenero(lista) {
 
 function renderBloquesCategoriaGenero(partidosDia) {
   const grupos = agruparPorCategoriaGenero(partidosDia);
-
   let html = "";
 
-  Object.entries(grupos).forEach(([titulo, lista]) => {
+  Object.entries(grupos).forEach(([titulo, lista], index) => {
+    const id = `cat-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
+
     html += `
       <div class="bloque-categoria-dia">
-        <h4 class="titulo-categoria-dia">${titulo}</h4>
+        
+        <div class="categoria-header"
+             onclick="toggleCategoriaDia('${id}')">
+          <span>${titulo}</span>
+          <span class="flecha">⌄</span>
+        </div>
 
-        ${lista.map(p => renderPartidoCard(p)).join("")}
+        <div id="${id}" class="categoria-partidos oculto">
+          ${lista.map(p => renderPartidoCard(p)).join("")}
+        </div>
+
       </div>
     `;
   });
 
   return html;
+}
+
+function toggleCategoriaDia(id) {
+  const contenedor = document.getElementById(id);
+  if (!contenedor) return;
+
+  contenedor.classList.toggle("oculto");
 }
 
 function refrescarPartidos() {
@@ -2876,6 +2892,7 @@ window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
 window.mostrarSelectorFaseFinal = mostrarSelectorFaseFinal;
 window.generarFaseFinalDesdeSelector = generarFaseFinalDesdeSelector;
+window.toggleCategoriaDia = toggleCategoriaDia;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

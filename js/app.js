@@ -455,14 +455,15 @@ function renderBloquesCategoriaGenero(partidosDia, fecha) {
     html += `
       <div class="bloque-categoria-dia">
         
-        <div class="categoria-header" onclick="toggleCategoriaDia('cat-id', this)">
-  <span>Cadete · Masculino</span>
-  <span class="flecha">⌄</span>
-</div>
-
-<div id="cat-id" class="categoria-partidos">
-  <!-- partidos -->
-</div>
+        <div class="categoria-header"
+             onclick="toggleCategoriaDia('${id}')">
+          <span>${titulo}</span>
+          <span class="flecha">⌄</span>
+        </div>
+        
+        <div id="${id}" class="categoria-partidos oculto">
+          ${lista.map(p => renderPartidoCard(p)).join("")}
+        </div>
 
       </div>
     `;

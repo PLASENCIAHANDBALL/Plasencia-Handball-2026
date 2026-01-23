@@ -2877,6 +2877,7 @@ window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
 window.generarFaseFinal = generarFaseFinal;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
+window.mostrarSelectorFaseFinal = mostrarSelectorFaseFinal;
 
 // grupos
 window.mostrarGrupos = mostrarGrupos;

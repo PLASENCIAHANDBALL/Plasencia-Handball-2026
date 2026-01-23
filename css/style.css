@@ -1791,3 +1791,41 @@ body.splash-activo #splash {
     font-size: 14px;
   }
 }
+
+.bloque-categoria-dia {
+  margin-bottom: 12px;
+}
+
+.categoria-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-left: 4px solid #f59e0b;
+  background: #fff7ed;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.categoria-header:active {
+  transform: scale(0.98);
+}
+
+.categoria-partidos {
+  margin-top: 8px;
+}
+
+.oculto {
+  display: none;
+}
+
+.categoria-header .flecha {
+  transition: transform 0.25s ease;
+}
+
+/* opcional: rotar flecha cuando esté abierto */
+.categoria-partidos:not(.oculto) + .flecha {
+  transform: rotate(180deg);
+}
+

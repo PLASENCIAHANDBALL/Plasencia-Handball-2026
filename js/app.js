@@ -841,17 +841,17 @@ function editarPartido(id) {
     <input id="visitante" value="${partidoActual.visitante}">
 
     <label>Categoría</label>
-    <select id="categoria">
-      <option ${partidoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
-      <option ${partidoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
-      <option ${partidoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
-    </select>
+<select id="categoria" ${esFaseFinal ? "disabled" : ""}>
+  <option ${partidoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
+  <option ${partidoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
+  <option ${partidoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
+</select>
 
-    <label>Género</label>
-    <select id="genero">
-      <option ${partidoActual.genero==="Masculino"?"selected":""}>Masculino</option>
-      <option ${partidoActual.genero==="Femenino"?"selected":""}>Femenino</option>
-    </select>
+<label>Género</label>
+<select id="genero" ${esFaseFinal ? "disabled" : ""}>
+  <option ${partidoActual.genero==="Masculino"?"selected":""}>Masculino</option>
+  <option ${partidoActual.genero==="Femenino"?"selected":""}>Femenino</option>
+</select>
     
     <label>Grupo</label>
 <select id="grupo" ${esFaseFinal ? "disabled" : ""}>
@@ -883,22 +883,30 @@ function editarPartido(id) {
 }
 
 async function guardarEdicionPartido() {
+
   const cambios = {
-  categoria: document.getElementById("categoria").value,
-  genero: document.getElementById("genero").value,
-  fecha: document.getElementById("fecha").value || null,
-  hora: document.getElementById("hora").value || null,
-  pabellon: document.getElementById("pabellon").value
-};
+    fecha: document.getElementById("fecha").value || null,
+    hora: document.getElementById("hora").value || null,
+    pabellon: document.getElementById("pabellon").value
+  };
 
-// 🔐 BLINDAJE DE FASE FINAL
-if (partidoActual.fase !== "grupos") {
-  cambios.fase = partidoActual.fase;
+  // 🟢 SOLO permitir cambiar categoría y género en fase de grupos
+  if (partidoActual.fase === "grupos") {
+    cambios.categoria = document.getElementById("categoria").value;
+    cambios.genero = document.getElementById("genero").value;
+    cambios.grupo = document.getElementById("grupo").value;
+  }
 
-  if (partidoActual.fase === "final") cambios.grupo = "Final";
-  if (partidoActual.fase === "semifinal") cambios.grupo = "Semifinal";
-  if (partidoActual.fase === "tercer_puesto") cambios.grupo = "3º/4º Puesto";
-}
+  // 🔐 BLINDAJE TOTAL DE FASE FINAL
+  if (partidoActual.fase !== "grupos") {
+    cambios.categoria = partidoActual.categoria;
+    cambios.genero = partidoActual.genero;
+    cambios.fase = partidoActual.fase;
+
+    if (partidoActual.fase === "final") cambios.grupo = "Final";
+    if (partidoActual.fase === "semifinal") cambios.grupo = "Semifinal";
+    if (partidoActual.fase === "tercer_puesto") cambios.grupo = "3º/4º Puesto";
+  }
 
   const { error } = await supabase
     .from("partidos")
@@ -911,18 +919,7 @@ if (partidoActual.fase !== "grupos") {
     return;
   }
 
-  // 🔥 RECARGAR PARTIDOS
-  partidos = await obtenerPartidosSupabase();
-
-  // 🔥 RECALCULAR CLASIFICACIÓN
-  if (partidoActual.fase === "grupos") {
-  await guardarClasificacionSupabase(
-    cambios.categoria,
-    cambios.genero,
-    cambios.grupo
-  );
-}
-
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
   mostrarPartidos();
 }
 

@@ -425,7 +425,7 @@ function renderBloquesPorFecha(lista) {
         </div>
 
         <div class="fecha-partidos">
-  ${renderBloquesCategoriaGenero(partidosDia)}
+  ${renderBloquesCategoriaGenero(partidosDia, fecha)}
 </div>
       </div>
     `;
@@ -450,7 +450,7 @@ function renderBloquesCategoriaGenero(partidosDia) {
   let html = "";
 
   Object.entries(grupos).forEach(([titulo, lista], index) => {
-    const id = `cat-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
+    const id = `cat-${fecha}-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
 
     html += `
       <div class="bloque-categoria-dia">

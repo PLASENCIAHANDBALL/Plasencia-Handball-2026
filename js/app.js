@@ -456,10 +456,10 @@ function renderBloquesCategoriaGenero(partidosDia, fecha) {
       <div class="bloque-categoria-dia">
         
         <div class="categoria-header"
-             onclick="toggleCategoriaDia('${id}')">
-          <span>${titulo}</span>
-          <span class="flecha">⌄</span>
-        </div>
+     onclick="toggleCategoriaDia('${id}', this)">
+  <span>${titulo}</span>
+  <span class="flecha">⌄</span>
+</div>
         
         <div id="${id}" class="categoria-partidos oculto">
           ${lista.map(p => renderPartidoCard(p)).join("")}
@@ -477,7 +477,10 @@ function toggleCategoriaDia(id, header) {
   if (!contenedor) return;
 
   const abierto = contenedor.classList.toggle("abierto");
-  header.classList.toggle("abierto", abierto);
+
+  if (header) {
+    header.classList.toggle("abierto", abierto);
+  }
 }
 
 function refrescarPartidos() {

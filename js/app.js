@@ -741,22 +741,36 @@ ${p.fase !== "grupos" ? `
 ` : ""}
 
       <div class="partido-equipos">
-        <div class="equipo-partido">
-          ${clubLocal?.escudo ? `<img src="${clubLocal.escudo}" class="escudo-partido">` : ""}
-          <span>${equipoLocal?.nombre || "-"}</span>
-        </div>
 
-        ${
-  p.estado === "finalizado"
-    ? `<span class="vs resultado-centro"><strong>${p.goles_local} - ${p.goles_visitante}</strong></span>`
-    : `<span class="vs">vs</span>`
-}
+  <div class="equipo-partido">
+    ${clubLocal?.escudo
+      ? `<img src="${clubLocal.escudo}" class="escudo-partido">`
+      : ""
+    }
+    <span class="nombre-equipo">
+      ${equipoLocal?.nombre || "-"}
+    </span>
+  </div>
 
-        <div class="equipo-partido">
-          ${clubVisitante?.escudo ? `<img src="${clubVisitante.escudo}" class="escudo-partido">` : ""}
-          <span>${equipoVisitante?.nombre || "-"}</span>
-        </div>
-      </div>
+  <div class="resultado-centro">
+    ${
+      p.estado === "finalizado"
+        ? `${p.goles_local} – ${p.goles_visitante}`
+        : "vs"
+    }
+  </div>
+
+  <div class="equipo-partido">
+    ${clubVisitante?.escudo
+      ? `<img src="${clubVisitante.escudo}" class="escudo-partido">`
+      : ""
+    }
+    <span class="nombre-equipo">
+      ${equipoVisitante?.nombre || "-"}
+    </span>
+  </div>
+
+</div>
 
       <div class="badge-estado ${estadoReal}">
   ${

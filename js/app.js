@@ -2165,10 +2165,13 @@ function togglePartidosEquipo(idEquipo) {
     return;
   }
 
-  const partidosEquipo = partidos.filter(p =>
+  const categoria = window.categoriaSeleccionada.toLowerCase();
+const genero = document.getElementById("gen").value.toLowerCase();
+
+const partidosEquipo = partidos.filter(p =>
   (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
-  p.categoria === window.categoriaSeleccionada &&
-  p.genero === document.getElementById("gen").value
+  p.categoria === categoria &&
+  p.genero === genero
 );
 
   const proximos = partidosEquipo.filter(p => p.estado !== "finalizado");

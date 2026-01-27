@@ -1065,29 +1065,35 @@ ${partidoActual.fase !== "grupos" ? `
 
 </div>
 
-  <div class="marcador-pro">
+  <div class="marcador-ios">
 
-  <div class="equipo-marcador local">
-  <img 
-    src="${clubLocal?.escudo || 'img/club-placeholder.png'}"
-    class="escudo-marcador"
-    alt="${equipoLocal?.nombre}"
-  >
-  <div class="nombre-equipo">${equipoLocal?.nombre || "Equipo local"}</div>
-  <div class="goles" id="golesLocal">${partidoActual.goles_local ?? 0}</div>
-</div>
+  <div class="equipo-ios local">
+    <img 
+      src="${clubLocal?.escudo || 'img/club-placeholder.png'}"
+      class="escudo-ios"
+      alt="${equipoLocal?.nombre}"
+    >
+    <div class="nombre-ios">${equipoLocal?.nombre || "Equipo local"}</div>
+    <div class="goles-ios local" id="golesLocal">
+      ${partidoActual.goles_local ?? 0}
+    </div>
+  </div>
 
-  <div class="separador">–</div>
+  <div class="vs-ios">
+    <span>–</span>
+  </div>
 
-  <div class="equipo-marcador visitante">
-  <img 
-    src="${clubVisitante?.escudo || 'img/club-placeholder.png'}"
-    class="escudo-marcador"
-    alt="${equipoVisitante?.nombre}"
-  >
-  <div class="nombre-equipo">${equipoVisitante?.nombre || "Equipo visitante"}</div>
-  <div class="goles" id="golesVisitante">${partidoActual.goles_visitante ?? 0}</div>
-</div>
+  <div class="equipo-ios visitante">
+    <img 
+      src="${clubVisitante?.escudo || 'img/club-placeholder.png'}"
+      class="escudo-ios"
+      alt="${equipoVisitante?.nombre}"
+    >
+    <div class="nombre-ios">${equipoVisitante?.nombre || "Equipo visitante"}</div>
+    <div class="goles-ios visitante" id="golesVisitante">
+      ${partidoActual.goles_visitante ?? 0}
+    </div>
+  </div>
 
 </div>
 

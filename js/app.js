@@ -2690,18 +2690,32 @@ async function verClub(id) {
   }
 
   equiposClub.forEach(e => {
-    html += `
-      <div class="card">
-        <strong>${e.nombre}</strong>
-        <div>${e.categoria} · ${e.genero} · ${e.grupo}</div>
-
-        ${adminActivo ? `
-          <button onclick="editarEquipo(${e.id})">✏️ Editar</button>
-          <button onclick="borrarEquipo(${e.id})">🗑️ Borrar</button>
-        ` : ""}
+  html += `
+    <div class="team-ios-card">
+      <div class="team-ios-header">
+        <span class="team-cat">${e.categoria}</span>
+        <span class="team-gen">${e.genero}</span>
       </div>
-    `;
-  });
+
+      <div class="team-name">
+        ${e.nombre}
+      </div>
+
+      <div class="team-group">
+        🏷️ ${e.grupo}
+      </div>
+
+      ${
+        adminActivo ? `
+          <div class="team-actions">
+            <button onclick="editarEquipo(${e.id})">✏️</button>
+            <button onclick="borrarEquipo(${e.id})">🗑️</button>
+          </div>
+        ` : ""
+      }
+    </div>
+  `;
+});
 
   html += `<button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>`;
 

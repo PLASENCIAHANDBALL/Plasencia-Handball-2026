@@ -2691,7 +2691,7 @@ async function verClub(id) {
 
   equiposClub.forEach(e => {
   html += `
-    <div class="team-ios-card">
+    <div class="team-ios-card" data-cat="${e.categoria}">
       <div class="team-ios-header">
         <span class="team-cat">${e.categoria}</span>
         <span class="team-gen">${e.genero}</span>

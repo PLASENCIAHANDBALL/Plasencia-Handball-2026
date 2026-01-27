@@ -854,14 +854,45 @@ function editarPartido(id) {
   const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
 const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
 
+// equipos válidos SOLO de esa categoría / género / grupo
+const equiposDisponibles = equipos.filter(e =>
+  e.categoria === partidoActual.categoria &&
+  e.genero === partidoActual.genero &&
+  e.grupo === partidoActual.grupo
+);
+
   contenido.innerHTML = `
     <h2>Editar partido</h2>
 
     <label>Equipo local</label>
-<input value="${equipoLocal?.nombre || '—'}" disabled>
+${
+  esFaseFinal
+    ? `<input value="${equipoLocal?.nombre || '—'}" disabled>`
+    : `
+      <select id="equipoLocal">
+        ${equiposDisponibles.map(e => `
+          <option value="${e.id}" ${e.id === partidoActual.local_id ? "selected" : ""}>
+            ${e.nombre}
+          </option>
+        `).join("")}
+      </select>
+    `
+}
 
 <label>Equipo visitante</label>
-<input value="${equipoVisitante?.nombre || '—'}" disabled>
+${
+  esFaseFinal
+    ? `<input value="${equipoVisitante?.nombre || '—'}" disabled>`
+    : `
+      <select id="equipoVisitante">
+        ${equiposDisponibles.map(e => `
+          <option value="${e.id}" ${e.id === partidoActual.visitante_id ? "selected" : ""}>
+            ${e.nombre}
+          </option>
+        `).join("")}
+      </select>
+    `
+}
 
     <label>Categoría</label>
 <select id="categoria" ${esFaseFinal ? "disabled" : ""}>
@@ -930,6 +961,20 @@ async function guardarEdicionPartido() {
     if (partidoActual.fase === "semifinal") cambios.grupo = "Semifinal";
     if (partidoActual.fase === "tercer_puesto") cambios.grupo = "3º/4º Puesto";
   }
+  
+  // 🟢 permitir cambiar equipos SOLO en fase de grupos
+if (partidoActual.fase === "grupos") {
+  const localId = Number(document.getElementById("equipoLocal")?.value);
+  const visitanteId = Number(document.getElementById("equipoVisitante")?.value);
+
+  if (localId === visitanteId) {
+    alert("El equipo local y visitante no pueden ser el mismo");
+    return;
+  }
+
+  cambios.local_id = localId;
+  cambios.visitante_id = visitanteId;
+}
 
   const { error } = await supabase
     .from("partidos")

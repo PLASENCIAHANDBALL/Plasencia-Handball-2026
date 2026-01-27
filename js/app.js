@@ -2118,8 +2118,10 @@ function togglePartidosEquipo(idEquipo) {
   }
 
   const partidosEquipo = partidos.filter(p =>
-    p.local_id === idEquipo || p.visitante_id === idEquipo
-  );
+  (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
+  p.categoria === window.categoriaSeleccionada &&
+  p.genero === document.getElementById("gen").value
+);
 
   const proximos = partidosEquipo.filter(p => p.estado !== "finalizado");
   const finalizados = partidosEquipo.filter(p => p.estado === "finalizado");

@@ -2174,8 +2174,13 @@ const partidosEquipo = partidos.filter(p =>
   p.genero === genero
 );
 
-  const proximos = partidosEquipo.filter(p => p.estado !== "finalizado");
-  const finalizados = partidosEquipo.filter(p => p.estado === "finalizado");
+  const proximos = partidosEquipo.filter(p =>
+  calcularEstadoPartido(p) !== "finalizado"
+);
+
+const finalizados = partidosEquipo.filter(p =>
+  calcularEstadoPartido(p) === "finalizado"
+);
 
   let html = "";
 

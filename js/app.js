@@ -850,15 +850,18 @@ function editarPartido(id) {
   partidoActual = partidos.find(p => p.id === id);
   
   const esFaseFinal = partidoActual.fase !== "grupos";
+  
+  const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
+const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
 
   contenido.innerHTML = `
     <h2>Editar partido</h2>
 
     <label>Equipo local</label>
-    <input id="local" value="${partidoActual.local}">
+<input value="${equipoLocal?.nombre || '—'}" disabled>
 
-    <label>Equipo visitante</label>
-    <input id="visitante" value="${partidoActual.visitante}">
+<label>Equipo visitante</label>
+<input value="${equipoVisitante?.nombre || '—'}" disabled>
 
     <label>Categoría</label>
 <select id="categoria" ${esFaseFinal ? "disabled" : ""}>

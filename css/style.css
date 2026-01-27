@@ -2056,3 +2056,59 @@ body.splash-activo #splash {
   font-weight: 700;
   opacity: 0.4;
 }
+
+.team-ios-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.team-ios-header {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff8a2b;
+  margin-bottom: 6px;
+}
+
+.team-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.team-group {
+  font-size: 14px;
+  color: #666;
+}
+
+.team-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.team-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 0;
+  background: #f2f2f7;
+  font-size: 14px;
+}
+
+.team-ios-card[data-cat="Infantil"] {
+  border-left: 4px solid #5ac8fa;
+}
+
+.team-ios-card[data-cat="Cadete"] {
+  border-left: 4px solid #ff9f0a;
+}
+
+.team-ios-card[data-cat="Juvenil"] {
+  border-left: 4px solid #34c759;
+}

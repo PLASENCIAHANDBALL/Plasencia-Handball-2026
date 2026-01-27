@@ -398,7 +398,7 @@ function agruparPorFecha(lista) {
   }, {});
 }
 
-function renderBloquesPorFecha(lista) {
+function renderBloquesPorFecha(lista, tipo) {
   if (lista.length === 0) return `<p>No hay partidos</p>`;
 
   const grupos = agruparPorFecha(lista);
@@ -425,7 +425,7 @@ function renderBloquesPorFecha(lista) {
         </div>
 
         <div class="fecha-partidos">
-  ${renderBloquesCategoriaGenero(partidosDia, fecha)}
+  ${renderBloquesCategoriaGenero(partidosDia, fecha, tipo)}
 </div>
       </div>
     `;
@@ -445,12 +445,12 @@ function agruparPorCategoriaGenero(lista) {
   }, {});
 }
 
-function renderBloquesCategoriaGenero(partidosDia, fecha) {
+function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
   const grupos = agruparPorCategoriaGenero(partidosDia);
   let html = "";
 
   Object.entries(grupos).forEach(([titulo, lista], index) => {
-    const id = `cat-${fecha}-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
+    const id = `cat-${tipo}-${fecha}-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
 
     html += `
       <div class="bloque-categoria-dia">
@@ -511,16 +511,16 @@ function mostrarPartidos() {
   const finalizados = ordenados.filter(p => p.estado === "finalizado").reverse();
 
   /* ===== PRÓXIMOS ===== */
-  html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
-  html += proximos.length
-    ? renderBloquesPorFecha(proximos)
-    : `<p>No hay próximos partidos</p>`;
+html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += proximos.length
+  ? renderBloquesPorFecha(proximos, "proximos")
+  : `<p>No hay próximos partidos</p>`;
 
-  /* ===== FINALIZADOS ===== */
-  html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
-  html += finalizados.length
-    ? renderBloquesPorFecha(finalizados)
-    : `<p>No hay partidos finalizados</p>`;
+/* ===== FINALIZADOS ===== */
+html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+html += finalizados.length
+  ? renderBloquesPorFecha(finalizados, "finalizados")
+  : `<p>No hay partidos finalizados</p>`;
 
   contenido.innerHTML = html;
 }

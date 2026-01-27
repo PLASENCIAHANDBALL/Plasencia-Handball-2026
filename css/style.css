@@ -1995,3 +1995,63 @@ body.splash-activo #splash {
     font-size: 12px;
   }
 }
+
+/* ====== MARCADOR iOS ====== */
+
+.marcador-ios {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.equipo-ios {
+  flex: 1;
+  background: rgba(255,255,255,0.9);
+  border-radius: 22px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  backdrop-filter: blur(12px);
+}
+
+.equipo-ios.local {
+  background: linear-gradient(135deg, #ffb26b, #ff9340);
+  color: white;
+}
+
+.equipo-ios.visitante {
+  background: linear-gradient(135deg, #5aa9ff, #3b82f6);
+  color: white;
+}
+
+.escudo-ios {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: white;
+  border-radius: 16px;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+.nombre-ios {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.goles-ios {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.vs-ios {
+  font-size: 40px;
+  font-weight: 700;
+  opacity: 0.4;
+}

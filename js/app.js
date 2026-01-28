@@ -2190,8 +2190,8 @@ const genero = document.getElementById("gen").value.toLowerCase();
 
 const partidosEquipo = partidos.filter(p =>
   (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
-  p.categoria === categoria &&
-  p.genero === genero
+  p.categoria?.toLowerCase() === categoria &&
+  p.genero?.toLowerCase() === genero
 );
 
   const proximos = partidosEquipo.filter(p =>

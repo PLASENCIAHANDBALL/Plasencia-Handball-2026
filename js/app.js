@@ -551,16 +551,7 @@ async function mostrarCuadroEliminatorio(categoria, genero) {
 function renderBracket(categoria, genero) {
   categoria = categoria.toLowerCase().trim();
   genero = genero.toLowerCase().trim();
-  
-  console.log(
-  "BRACKET:",
-  partidos.filter(p => p.fase !== "grupos").map(p => ({
-    cat: p.categoria,
-    gen: p.genero,
-    fase: p.fase
-  }))
-);
-  
+
   const semis = partidos.filter(p =>
     p.categoria === categoria &&
     p.genero === genero &&
@@ -581,32 +572,39 @@ function renderBracket(categoria, genero) {
 
   return `
     <div class="bracket-scroll">
-  <div class="bracket">
-    <!-- rounds -->
-  </div>
-</div>
+      <div class="bracket">
 
-      <div class="round">
-        <h4>Semifinal</h4>
-        ${renderMatchBracket(semis[0])}
+        <!-- SEMIFINAL IZQ -->
+        <div class="round">
+          <h4>Semifinal</h4>
+          ${renderMatchBracket(semis[0])}
+        </div>
+
+        <!-- FINAL -->
+        <div class="round final">
+          <h4>Final</h4>
+          ${renderMatchBracket(final, true)}
+        </div>
+
+        <!-- SEMIFINAL DER -->
+        <div class="round">
+          <h4>Semifinal</h4>
+          ${renderMatchBracket(semis[1])}
+        </div>
+
       </div>
-
-      <div class="round final">
-        <h4>Final</h4>
-        ${renderMatchBracket(final, true)}
-      </div>
-
-      <div class="round">
-        <h4>Semifinal</h4>
-        ${renderMatchBracket(semis[1])}
-      </div>
-
     </div>
 
-    <div class="bracket-tercer">
-      <h4>🥉 3.º / 4.º puesto</h4>
-      ${renderMatchBracket(tercer)}
-    </div>
+    ${
+      tercer
+        ? `
+        <div class="bracket-tercer">
+          <h4>🥉 3.º / 4.º puesto</h4>
+          ${renderMatchBracket(tercer)}
+        </div>
+        `
+        : ""
+    }
   `;
 }
 
@@ -620,8 +618,8 @@ function renderMatchBracket(partido, esFinal = false) {
 
   const resultado =
     partido.estado === "finalizado"
-      ? `<span class="score">${partido.goles_local} - ${partido.goles_visitante}</span>`
-      : `<span class="vs">vs</span>`;
+      ? `<div class="score">${partido.goles_local} - ${partido.goles_visitante}</div>`
+      : `<div class="vs">vs</div>`;
 
   return `
     <div class="match ${esFinal ? "match-final" : ""}"

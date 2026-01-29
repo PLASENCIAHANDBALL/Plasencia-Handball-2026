@@ -1683,25 +1683,6 @@ body.splash-activo #splash {
   width: fit-content;
 }
 
-.bracket {
-  display: flex;
-  gap: 20px;          /* ⬅ menos separación */
-  min-width: 100%;   /* ⬅ ocupa pantalla */
-  justify-content: space-between;
-}
-
-.round {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.round h4 {
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
 .match {
   background: rgba(255,255,255,0.95);
   border-radius: 16px;
@@ -1745,44 +1726,6 @@ body.splash-activo #splash {
 .vs, .score {
   margin: 6px 0;
   font-weight: bold;
-}
-
-/* =========================
-   BRACKET RESPONSIVE (MÓVIL)
-========================= */
-
-.bracket-scroll {
-  width: 100%;
-  overflow-x: hidden;   /* ❌ quita scroll */
-  padding: 10px 0 20px;
-}
-
-/* el bracket NO se aplasta */
-.bracket-scroll .bracket {
-  min-width: 620px;                 /* 🔑 ancho mínimo total */
-}
-
-@media (max-width: 480px) {
-
-  .bracket-scroll {
-    margin: 0 -16px;               /* aprovecha todo el ancho */
-    padding: 10px 16px;
-  }
-
-  .bracket {
-    justify-content: flex-start;   /* empieza desde la izquierda */
-    gap: 24px;                     /* menos separación */
-  }
-
-  .match {
-    min-width: 170px;              /* cabe mejor en móvil */
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .round h4 {
-    font-size: 14px;
-  }
 }
 
 .bloque-categoria-dia {
@@ -2123,38 +2066,6 @@ body.splash-activo #splash {
   border-left: 4px solid #34c759;
 }
 
-/* =========================
-   CUADRO ELIMINATORIO PRO
-========================= */
-
-.bracket-scroll {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 10px 0 20px;
-}
-
-.bracket {
-  display: flex;
-  gap: 36px;
-  min-width: 720px; /* clave para móvil */
-  justify-content: center;
-}
-
-/* Columna */
-.round {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.round h4 {
-  font-size: 14px;
-  font-weight: 700;
-  color: #f59e0b;
-}
-
 /* Partido */
 .match {
   background: rgba(255,255,255,0.95);
@@ -2208,146 +2119,94 @@ body.splash-activo #splash {
 }
 
 /* =========================
-   LÍNEAS CUADRO ELIMINATORIO
+   CUADRO ELIMINATORIO – FIX DEFINITIVO
 ========================= */
 
-.round {
-  position: relative;
-}
-
-/* Línea desde semifinal izquierda */
-.round:first-child::after {
-  content: "";
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  width: 10px;
-  height: 2px;
-  background: #f4a261;
-}
-
-/* Línea desde semifinal derecha */
-.round:last-child::before {
-  content: "";
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  width: 10px;
-  height: 2px;
-  background: #f4a261;
-}
-
-/* Líneas verticales de la final */
-.round.final::before {
-  content: "";
-  position: absolute;
-  left: -10px;
-  top: 20%;
-  width: 2px;
-  height: 60%;
-  background: #f4a261;
-}
-
-.round.final::after {
-  content: "";
-  position: absolute;
-  right: -10px;
-  top: 20%;
-  width: 2px;
-  height: 60%;
-  background: #f4a261;
-}
-
-@media (max-width: 360px) {
-  .match {
-    min-width: 140px;
-    padding: 8px 10px;
-  }
-
-  .match .team {
-    font-size: 11px;
-  }
-
-  .match .score {
-    font-size: 14px;
-  }
-}
-
-/* CONTENEDOR GENERAL */
 .bracket-scroll {
-  overflow-x: hidden; /* 🔥 elimina scroll horizontal */
+  width: 100%;
+  overflow-x: hidden;   /* ❌ nunca scroll lateral */
+  padding: 10px 0;
 }
 
 .bracket {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
 }
 
-/* CADA COLUMNA */
+/* columnas */
 .round {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 140px; /* 👈 más pequeño */
+  gap: 10px;
 }
 
-/* CUADRADOS DE PARTIDO */
-.match {
-  width: 140px;              /* 👈 clave */
-  padding: 8px 6px;          /* 👈 compacto */
+/* títulos */
+.round h4 {
   font-size: 13px;
-  border-radius: 12px;
+  font-weight: 700;
+  color: #f59e0b;
 }
 
+/* partidos */
+.match,
 .match-final {
-  width: 160px;
-  padding: 10px 8px;
-  font-weight: 600;
+  width: 100%;
+  max-width: 140px;
+  padding: 8px 6px;
+  text-align: center;
+
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
 }
 
-/* TEXTO */
+/* final destacada */
+.match-final {
+  border: 2px solid #f4a261;
+  background: #fff7ec;
+}
+
+/* texto */
 .match .team {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 .match .score,
 .match .vs {
   font-size: 13px;
+  font-weight: 700;
   margin: 4px 0;
 }
+
+/* =========================
+   MÓVIL REAL
+========================= */
 
 @media (max-width: 480px) {
 
   .bracket {
-    flex-direction: column;   /* 👈 CAMBIO CLAVE */
-    align-items: center;
-  }
-
-  .round {
-    min-width: unset;
-    width: 100%;
-  }
-
-  .round h4 {
-    font-size: 14px;
-    margin-bottom: 6px;
+    gap: 6px;
   }
 
   .match,
   .match-final {
-    width: 90%;
-    max-width: 280px;
+    max-width: 110px;   /* 🔑 aquí se arregla */
+    padding: 6px 4px;
   }
 
-}
+  .match .team {
+    font-size: 10px;
+  }
 
-.round:not(:last-child)::after {
-  content: "";
-  width: 2px;
-  height: 24px;
-  background: #f2a65a;
-  margin: 6px auto;
-  border-radius: 2px;
+  .match .score,
+  .match .vs {
+    font-size: 12px;
+  }
 }

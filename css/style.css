@@ -1683,16 +1683,6 @@ body.splash-activo #splash {
   width: fit-content;
 }
 
-.match {
-  background: rgba(255,255,255,0.95);
-  border-radius: 16px;
-  padding: 10px 12px;
-  min-width: 160px;      /* ⬅ MÁS PEQUEÑO */
-  text-align: center;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-  cursor: pointer;
-}
-
 .match .team {
   font-size: 12px;
 }

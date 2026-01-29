@@ -2173,10 +2173,18 @@ function filtrarCategorias() {
 }
 
 function togglePartidosEquipo(idEquipo) {
+  // 🔒 cerrar todos los demás
+  document.querySelectorAll(".partidos-equipo").forEach(el => {
+    if (el.id !== `partidos-equipo-${idEquipo}`) {
+      el.classList.add("oculto");
+      el.innerHTML = "";
+    }
+  });
+
   const contenedor = document.getElementById(`partidos-equipo-${idEquipo}`);
   if (!contenedor) return;
 
-  // cerrar si ya está abierto
+  // toggle del actual
   if (!contenedor.classList.contains("oculto")) {
     contenedor.classList.add("oculto");
     contenedor.innerHTML = "";
@@ -2184,67 +2192,60 @@ function togglePartidosEquipo(idEquipo) {
   }
 
   const categoria = window.categoriaSeleccionada.toLowerCase();
-const genero = document.getElementById("gen").value.toLowerCase();
+  const genero = document.getElementById("gen").value.toLowerCase();
 
-const partidosEquipo = partidos.filter(p =>
-  (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
-  p.categoria?.toLowerCase() === categoria &&
-  p.genero?.toLowerCase() === genero
-);
+  const partidosEquipo = partidos.filter(p =>
+    (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
+    p.categoria?.toLowerCase() === categoria &&
+    p.genero?.toLowerCase() === genero
+  );
 
   const proximos = partidosEquipo.filter(p =>
-  calcularEstadoPartido(p) !== "finalizado"
-);
+    calcularEstadoPartido(p) !== "finalizado"
+  );
 
-const finalizados = partidosEquipo.filter(p =>
-  calcularEstadoPartido(p) === "finalizado"
-);
+  const finalizados = partidosEquipo.filter(p =>
+    calcularEstadoPartido(p) === "finalizado"
+  );
 
   let html = "";
 
-  // 🔹 Próximos
   html += `<div class="bloque-partidos"><strong>⏳ Próximos partidos</strong></div>`;
-  if (proximos.length === 0) {
-    html += `<p class="partido-vacio">No hay próximos partidos</p>`;
-  } else {
-    html += proximos.map(p => {
-  const local = equipos.find(e => e.id === p.local_id);
-  const visitante = equipos.find(e => e.id === p.visitante_id);
+  html += proximos.length
+    ? proximos.map(p => renderMiniPartido(p)).join("")
+    : `<p class="partido-vacio">No hay próximos partidos</p>`;
 
-  return `
-    <div class="card partido-card-mini" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <strong>${formatearFecha(p.fecha)}</strong>
-      <div>${local?.nombre} vs ${visitante?.nombre}</div>
-      <div class="mini-info">
-        🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
-      </div>
-    </div>
-  `;
-}).join("");
-  }
-
-  // 🔹 Finalizados
   html += `<div class="bloque-partidos"><strong>🏁 Partidos finalizados</strong></div>`;
-  if (finalizados.length === 0) {
-    html += `<p class="partido-vacio">No hay partidos finalizados</p>`;
-  } else {
-    html += finalizados.map(p => {
-  const local = equipos.find(e => e.id === p.local_id);
-  const visitante = equipos.find(e => e.id === p.visitante_id);
-
-  return `
-    <div class="card partido-card-mini finalizado" onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <strong>${formatearFecha(p.fecha)}</strong>
-      <div>
-        ${local?.nombre} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre}
-      </div>
-    </div>
-  `;
-}).join("");
-  }
+  html += finalizados.length
+    ? finalizados.map(p => renderMiniPartido(p, true)).join("")
+    : `<p class="partido-vacio">No hay partidos finalizados</p>`;
 
   contenedor.innerHTML = html;
   contenedor.classList.remove("oculto");
+}
+
+function renderMiniPartido(p, finalizado = false) {
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+
+  return `
+    <div class="card partido-card-mini ${finalizado ? "finalizado" : ""}"
+         onclick="event.stopPropagation(); abrirPartido(${p.id})">
+      <strong>${formatearFecha(p.fecha)}</strong>
+      <div>
+        ${
+          finalizado
+            ? `${local?.nombre} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre}`
+            : `${local?.nombre} vs ${visitante?.nombre}`
+        }
+      </div>
+      ${!finalizado ? `
+        <div class="mini-info">
+          🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
+        </div>` : ""
+      }
+    </div>
+  `;
 }
 
 function volverCategoriasAnimado() {

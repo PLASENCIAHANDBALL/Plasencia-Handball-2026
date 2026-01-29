@@ -2195,10 +2195,10 @@ function togglePartidosEquipo(idEquipo) {
   const genero = document.getElementById("gen").value.toLowerCase();
 
   const partidosEquipo = partidos.filter(p =>
-    (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
-    p.categoria?.toLowerCase() === categoria &&
-    p.genero?.toLowerCase() === genero
-  );
+  (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
+  p.categoria?.toLowerCase().includes(categoria) &&
+  p.genero?.toLowerCase() === genero
+);
 
   const proximos = partidosEquipo.filter(p =>
     calcularEstadoPartido(p) !== "finalizado"

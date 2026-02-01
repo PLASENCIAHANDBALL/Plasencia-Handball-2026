@@ -1003,6 +1003,10 @@ if (partidoActual.fase === "grupos") {
   mostrarPartidos();
 }
 
+function esEliminatoria(partido) {
+  return partido.fase && partido.fase !== "grupos";
+}
+
 function textoFase(fase) {
   if (fase === "final") return "🏆 FINAL";
   if (fase === "semifinal") return "🥈 SEMIFINAL";
@@ -2194,11 +2198,25 @@ function togglePartidosEquipo(idEquipo) {
   const categoria = window.categoriaSeleccionada.toLowerCase();
   const genero = document.getElementById("gen").value.toLowerCase();
 
-  const partidosEquipo = partidos.filter(p =>
-  (p.local_id === idEquipo || p.visitante_id === idEquipo) &&
-  p.categoria?.toLowerCase().includes(categoria) &&
-  p.genero?.toLowerCase() === genero
-);
+ const partidosEquipo = partidos.filter(p => {
+  const esEquipo =
+    p.local_id === idEquipo || p.visitante_id === idEquipo;
+
+  const mismaCategoria =
+    p.categoria?.toLowerCase() === categoria;
+
+  const mismoGenero =
+    p.genero?.toLowerCase() === genero;
+
+  // 🔥 CLAVE: en eliminatorias NO filtramos por grupo
+  const grupoValido =
+    esEliminatoria(p) ||
+    !p.grupo ||
+    p.grupo === document.getElementById("grp")?.value ||
+    document.getElementById("grp")?.value === "";
+
+  return esEquipo && mismaCategoria && mismoGenero && grupoValido;
+});
 
   const proximos = partidosEquipo.filter(p =>
     calcularEstadoPartido(p) !== "finalizado"

@@ -1359,7 +1359,6 @@ if (formato.semifinales) {
 }
 
     alert("✅ Semifinales creadas");
-  }
 
   partidos = await obtenerPartidosSupabase();
   partidos = partidos.map(p => ({

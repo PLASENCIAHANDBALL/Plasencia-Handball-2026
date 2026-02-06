@@ -571,40 +571,36 @@ function renderBracket(categoria, genero) {
   );
 
   return `
-    <div class="bracket-scroll">
-      <div class="bracket">
+    <div class="bracket-vertical">
 
-        <!-- SEMIFINAL IZQ -->
-        <div class="round">
-          <h4>Semifinal</h4>
-          ${renderMatchBracket(semis[0])}
-        </div>
-
-        <!-- FINAL -->
-        <div class="round final">
-          <h4>Final</h4>
-          ${renderMatchBracket(final, true)}
-        </div>
-
-        <!-- SEMIFINAL DER -->
-        <div class="round">
-          <h4>Semifinal</h4>
-          ${renderMatchBracket(semis[1])}
-        </div>
-
+      <!-- SEMIFINALES -->
+      <div class="semifinales">
+        ${renderMatchBracket(semis[0])}
+        ${renderMatchBracket(semis[1])}
       </div>
-    </div>
 
-    ${
-      tercer
-        ? `
-        <div class="bracket-tercer">
-          <h4>🥉 3.º / 4.º puesto</h4>
-          ${renderMatchBracket(tercer)}
-        </div>
-        `
-        : ""
-    }
+      <!-- LÍNEAS -->
+      <div class="lineas-final">
+        <span></span>
+      </div>
+
+      <!-- FINAL -->
+      <div class="final">
+        ${renderMatchBracket(final, true)}
+      </div>
+
+      ${
+        tercer
+          ? `
+          <div class="bracket-tercer">
+            <h4>🥉 3.º / 4.º puesto</h4>
+            ${renderMatchBracket(tercer)}
+          </div>
+          `
+          : ""
+      }
+
+    </div>
   `;
 }
 
@@ -616,6 +612,17 @@ function renderMatchBracket(partido, esFinal = false) {
   const local = equipos.find(e => e.id === partido.local_id);
   const visitante = equipos.find(e => e.id === partido.visitante_id);
 
+  let claseLocal = "team";
+  let claseVisitante = "team";
+
+  if (partido.estado === "finalizado") {
+    if (partido.goles_local > partido.goles_visitante) {
+      claseVisitante += " perdedor";
+    } else if (partido.goles_visitante > partido.goles_local) {
+      claseLocal += " perdedor";
+    }
+  }
+
   const resultado =
     partido.estado === "finalizado"
       ? `<div class="score">${partido.goles_local} - ${partido.goles_visitante}</div>`
@@ -624,9 +631,9 @@ function renderMatchBracket(partido, esFinal = false) {
   return `
     <div class="match ${esFinal ? "match-final" : ""}"
          onclick="abrirPartido(${partido.id})">
-      <div class="team">${local?.nombre || "—"}</div>
+      <div class="${claseLocal}">${local?.nombre || "—"}</div>
       ${resultado}
-      <div class="team">${visitante?.nombre || "—"}</div>
+      <div class="${claseVisitante}">${visitante?.nombre || "—"}</div>
     </div>
   `;
 }

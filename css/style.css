@@ -2338,3 +2338,38 @@ body.splash-activo #splash {
   font-weight: 600;
   color: #16a34a;
 }
+
+/* =========================
+   ICONO CAMPEÓN
+========================= */
+
+.campeon {
+  position: relative;
+}
+
+.campeon::after {
+  content: "👑";
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  animation: coronaPop 0.4s ease-out;
+}
+
+@keyframes coronaPop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.team.perdedor,
+.equipo-actualizacion.perdedor {
+  opacity: 0.5;
+  filter: grayscale(60%);
+}

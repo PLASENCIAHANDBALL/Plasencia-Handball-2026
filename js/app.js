@@ -313,10 +313,14 @@ function renderActualizacionesHome() {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
-    const estado =
-      p.estado === "finalizado"
-        ? "🏁 Final"
-        : "🟢 En juego";
+    const estadoReal = calcularEstadoPartido(p);
+
+const estadoTexto =
+  estadoReal === "finalizado"
+    ? "🏁 Final"
+    : estadoReal === "en_juego"
+    ? "🟢 En juego"
+    : "🔴 Pendiente";
 
     html += `
       <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
@@ -327,7 +331,7 @@ function renderActualizacionesHome() {
           </span>
           <strong>${visitante?.nombre || "-"}</strong>
         </div>
-        <div class="actualizacion-estado">${estado}</div>
+        <div class="actualizacion-estado">${estadoTexto}</div>
       </div>
     `;
   });
@@ -3292,8 +3296,10 @@ window.addEventListener("scroll", () => {
 });
 
 setInterval(() => {
-  renderActualizacionesHome();
-}, 60000);
+  if (document.getElementById("bloque-actualizaciones")) {
+    renderActualizacionesHome();
+  }
+}, 30000); // cada 30s
 
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {

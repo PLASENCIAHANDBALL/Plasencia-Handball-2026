@@ -205,8 +205,10 @@ function mostrarHome() {
     html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
   }
 
-<!-- ACTUALIZACIONES EN VIVO -->
-<div id="bloque-actualizaciones"></div>
+// ACTUALIZACIONES EN VIVO
+html += `
+  <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
+`;
 
   // HISTORIA AL FINAL
   html += `

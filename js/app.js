@@ -2552,6 +2552,7 @@ function renderTablaClasificacion(data) {
         <th class="col-mini">PP</th>
         <th class="col-mini">GF</th>
         <th class="col-mini">GC</th>
+        <th class="col-mini">DG</th>
         <th class="col-puntos">Pts</th>
       </tr>
   `;
@@ -2582,6 +2583,7 @@ function renderTablaClasificacion(data) {
         <td class="col-mini">${fila.pp}</td>
         <td class="col-mini">${fila.gf}</td>
         <td class="col-mini">${fila.gc}</td>
+        <td class="col-mini">${fila.gf - fila.gc}</td>
         <td class="col-puntos"><strong>${fila.puntos}</strong></td>
       </tr>
     `;

@@ -1637,32 +1637,6 @@ body.splash-activo #splash {
   border-left: 4px solid #f4a261;
 }
 
-.cuadro-eliminatorio {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.columna {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.columna.final {
-  justify-content: center;
-}
-
-.partido-cuadro {
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  background: #fff;
-}
-
 .partido-cuadro:hover {
   transform: scale(1.03);
 }
@@ -2108,23 +2082,6 @@ body.splash-activo #splash {
   padding: 10px 0;
 }
 
-.bracket {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-}
-
-/* columnas */
-.round {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
 /* títulos */
 .round h4 {
   font-size: 13px;
@@ -2192,35 +2149,75 @@ body.splash-activo #splash {
 }
 
 /* =========================
-   LÍNEAS DEL CUADRO
+   CUADRO ELIMINATORIO PRO (VERTICAL)
 ========================= */
 
-/* línea horizontal desde semifinal */
-.round.semifinal .match::after {
-  content: "";
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  width: 10px;
-  height: 2px;
-  background: #f4a261;
+.bracket-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
 }
 
-/* línea vertical hacia la final */
-.round.final::before {
-  content: "";
-  position: absolute;
-  left: -10px;
-  top: 20%;
-  height: 60%;
-  width: 2px;
-  background: #f4a261;
+.semifinales {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
 }
 
-/* asegurar posicionamiento */
-.round,
 .match {
+  width: 130px;
+  padding: 10px 8px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  text-align: center;
   position: relative;
+}
+
+.match-final {
+  border: 2px solid var(--principal);
+  background: #fff7ed;
+}
+
+/* LÍNEAS */
+.lineas-final {
+  position: relative;
+  width: 100%;
+  height: 36px;
+}
+
+.lineas-final::before,
+.lineas-final::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 36px;
+  background: var(--principal);
+}
+
+.lineas-final::before {
+  left: 38%;
+}
+
+.lineas-final::after {
+  right: 38%;
+}
+
+.lineas-final span {
+  position: absolute;
+  bottom: 0;
+  left: 38%;
+  right: 38%;
+  height: 2px;
+  background: var(--principal);
+}
+
+.final {
+  display: flex;
+  justify-content: center;
 }
 
 /* =========================
@@ -2229,8 +2226,9 @@ body.splash-activo #splash {
 
 .team.perdedor {
   color: #c62828;
+  opacity: 0.55;
   text-decoration: line-through;
-  opacity: 0.6;
+  filter: grayscale(30%);
 }
 
 /* si es tarjeta completa */

@@ -313,25 +313,44 @@ function renderActualizacionesHome() {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
-    const estadoReal = calcularEstadoPartido(p);
+    const clubLocal = clubes.find(c => c.id === local?.club_id);
+    const clubVisitante = clubes.find(c => c.id === visitante?.club_id);
 
-const estadoTexto =
-  estadoReal === "finalizado"
-    ? "🏁 Final"
-    : estadoReal === "en_juego"
-    ? "🟢 En juego"
-    : "🔴 Pendiente";
+    const estadoTexto =
+      p.estado === "finalizado" ? "🏁 Final" : "🟢 En juego";
 
     html += `
       <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
-        <div class="actualizacion-equipos">
-          <strong>${local?.nombre || "-"}</strong>
-          <span class="marcador">
-            ${p.goles_local} – ${p.goles_visitante}
-          </span>
-          <strong>${visitante?.nombre || "-"}</strong>
+
+        <!-- CATEGORÍA -->
+        <div class="actualizacion-categoria">
+          ${p.categoria} · ${p.genero}
         </div>
-        <div class="actualizacion-estado">${estadoTexto}</div>
+
+        <!-- EQUIPOS + MARCADOR -->
+        <div class="actualizacion-contenido">
+
+          <div class="equipo-actualizacion">
+            <img src="${clubLocal?.escudo || 'img/club-placeholder.png'}">
+            <span>${local?.nombre || "-"}</span>
+          </div>
+
+          <div class="marcador-actualizacion">
+            ${p.goles_local} - ${p.goles_visitante}
+          </div>
+
+          <div class="equipo-actualizacion">
+            <img src="${clubVisitante?.escudo || 'img/club-placeholder.png'}">
+            <span>${visitante?.nombre || "-"}</span>
+          </div>
+
+        </div>
+
+        <!-- ESTADO -->
+        <div class="actualizacion-estado">
+          ${estadoTexto}
+        </div>
+
       </div>
     `;
   });

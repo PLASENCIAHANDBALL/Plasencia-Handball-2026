@@ -205,6 +205,9 @@ function mostrarHome() {
     html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
   }
 
+<!-- ACTUALIZACIONES EN VIVO -->
+<div id="bloque-actualizaciones"></div>
+
   // HISTORIA AL FINAL
   html += `
     <section class="historia">
@@ -241,6 +244,8 @@ function mostrarHome() {
   contenido.innerHTML = html;
 
   // cargar galería
+setTimeout(renderActualizacionesHome, 0);
+
   requestAnimationFrame(() => {
     cargarGaleria2025();
     cargarGaleria2026();
@@ -263,6 +268,70 @@ function formNuevoPatrocinador() {
     <button onclick="guardarNuevoPatrocinador()">💾 Guardar</button>
     <button class="volver" onclick="mostrarHome()">⬅ Volver</button>
   `;
+}
+
+function obtenerActualizacionesPartidos() {
+  const ahora = new Date();
+
+  return partidos.filter(p => {
+    if (!p.fecha || !p.hora) return false;
+
+    const inicio = new Date(`${p.fecha}T${p.hora}`);
+    const DURACION = 50; // minutos
+    const fin = new Date(inicio.getTime() + DURACION * 60000);
+    const limitePost = new Date(fin.getTime() + 10 * 60000); // +10 min
+
+    // En juego
+    if (ahora >= inicio && ahora <= fin) return true;
+
+    // Finalizado hace menos de 10 minutos
+    if (p.estado === "finalizado" && ahora <= limitePost) return true;
+
+    return false;
+  });
+}
+
+function renderActualizacionesHome() {
+  const contenedor = document.getElementById("bloque-actualizaciones");
+  if (!contenedor) return;
+
+  const destacados = obtenerActualizacionesPartidos();
+
+  if (destacados.length === 0) {
+    contenedor.innerHTML = "";
+    return;
+  }
+
+  let html = `
+    <section class="actualizaciones-home">
+      <h3>📢 Actualizaciones en vivo</h3>
+  `;
+
+  destacados.forEach(p => {
+    const local = equipos.find(e => e.id === p.local_id);
+    const visitante = equipos.find(e => e.id === p.visitante_id);
+
+    const estado =
+      p.estado === "finalizado"
+        ? "🏁 Final"
+        : "🟢 En juego";
+
+    html += `
+      <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
+        <div class="actualizacion-equipos">
+          <strong>${local?.nombre || "-"}</strong>
+          <span class="marcador">
+            ${p.goles_local} – ${p.goles_visitante}
+          </span>
+          <strong>${visitante?.nombre || "-"}</strong>
+        </div>
+        <div class="actualizacion-estado">${estado}</div>
+      </div>
+    `;
+  });
+
+  html += `</section>`;
+  contenedor.innerHTML = html;
 }
 
 function abrirWeb(url) {
@@ -1168,6 +1237,7 @@ async function finalizarPartido() {
   document.dispatchEvent(new Event("partido-finalizado"));
 
   alert("Partido finalizado");
+  renderActualizacionesHome();
 
   if (partidoActual.fase === "grupos") {
   await guardarClasificacionSupabase(
@@ -3218,6 +3288,10 @@ window.addEventListener("scroll", () => {
     footer.classList.remove("visible");
   }
 });
+
+setInterval(() => {
+  renderActualizacionesHome();
+}, 60000);
 
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {

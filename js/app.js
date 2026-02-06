@@ -1603,6 +1603,92 @@ function generarFormato8Equipos(grupos) {
   };
 }
 
+function generarFormato10Equipos(grupos) {
+  const A = grupos["Grupo A"];
+  const B = grupos["Grupo B"];
+
+  if (!A || !B || A.length < 4 || B.length < 4) {
+    throw new Error("Formato 10 equipos requiere 4 por grupo");
+  }
+
+  return {
+    cuartos: [
+      { local: A[0].equipo_id, visitante: B[3].equipo_id },
+      { local: B[1].equipo_id, visitante: A[2].equipo_id },
+      { local: B[0].equipo_id, visitante: A[3].equipo_id },
+      { local: A[1].equipo_id, visitante: B[2].equipo_id }
+    ],
+    semifinalesDesdeCuartos: true,
+    final: true,
+    tercerPuesto: true
+  };
+}
+
+function generarFormato12Equipos(grupos) {
+  const A = grupos["Grupo A"];
+  const B = grupos["Grupo B"];
+
+  if (!A || !B || A.length < 4 || B.length < 4) {
+    throw new Error("Formato 12 equipos requiere 4 por grupo");
+  }
+
+  return {
+    cuartos: [
+      { local: A[0].equipo_id, visitante: B[3].equipo_id },
+      { local: B[1].equipo_id, visitante: A[2].equipo_id },
+      { local: B[0].equipo_id, visitante: A[3].equipo_id },
+      { local: A[1].equipo_id, visitante: B[2].equipo_id }
+    ],
+    semifinalesDesdeCuartos: true,
+    final: true,
+    tercerPuesto: true
+  };
+}
+
+function generarFormato14Equipos(grupos) {
+  const A = grupos["Grupo A"];
+  const B = grupos["Grupo B"];
+
+  if (!A || !B || A.length < 4 || B.length < 4) {
+    throw new Error("Formato 14 equipos requiere 4 por grupo");
+  }
+
+  return {
+    cuartos: [
+      { local: A[0].equipo_id, visitante: B[3].equipo_id },
+      { local: B[1].equipo_id, visitante: A[2].equipo_id },
+      { local: B[0].equipo_id, visitante: A[3].equipo_id },
+      { local: A[1].equipo_id, visitante: B[2].equipo_id }
+    ],
+    semifinalesDesdeCuartos: true,
+    final: true,
+    tercerPuesto: true
+  };
+}
+
+function generarFormato16Equipos(grupos) {
+  const A = grupos["Grupo A"];
+  const B = grupos["Grupo B"];
+  const C = grupos["Grupo C"];
+  const D = grupos["Grupo D"];
+
+  if (![A, B, C, D].every(g => g && g.length >= 2)) {
+    throw new Error("Formato 16 equipos requiere 4 grupos de 2");
+  }
+
+  return {
+    cuartos: [
+      { local: A[0].equipo_id, visitante: B[1].equipo_id },
+      { local: C[0].equipo_id, visitante: D[1].equipo_id },
+      { local: B[0].equipo_id, visitante: A[1].equipo_id },
+      { local: D[0].equipo_id, visitante: C[1].equipo_id }
+    ],
+    semifinalesDesdeCuartos: true,
+    final: true,
+    tercerPuesto: true
+  };
+}
+
 /* ================== ADMIN ================== */
 async function validarPinSupabase(pin) {
   const { data, error } = await supabase

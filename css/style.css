@@ -2190,3 +2190,65 @@ body.splash-activo #splash {
     font-size: 12px;
   }
 }
+
+/* =========================
+   LÍNEAS DEL CUADRO
+========================= */
+
+/* línea horizontal desde semifinal */
+.round.semifinal .match::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  background: #f4a261;
+}
+
+/* línea vertical hacia la final */
+.round.final::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 20%;
+  height: 60%;
+  width: 2px;
+  background: #f4a261;
+}
+
+/* asegurar posicionamiento */
+.round,
+.match {
+  position: relative;
+}
+
+/* =========================
+   EQUIPO DERROTADO
+========================= */
+
+.team.perdedor {
+  color: #c62828;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* si es tarjeta completa */
+.match.perdido {
+  background: #ffecec;
+  border-color: #e57373;
+  opacity: 0.75;
+}
+
+.team.perdedor {
+  animation: fadeLoser 0.4s ease-out;
+}
+
+@keyframes fadeLoser {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.6;
+  }
+}

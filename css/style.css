@@ -2278,18 +2278,58 @@ body.splash-activo #splash {
   transform: scale(0.97);
 }
 
-.actualizacion-equipos {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
+/* ===== ACTUALIZACIONES HOME – PRO ===== */
+
+.actualizacion-categoria {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f59e0b;
+  margin-bottom: 8px;
 }
 
-.actualizacion-equipos .marcador {
+.actualizacion-contenido {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.equipo-actualizacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.equipo-actualizacion img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.equipo-actualizacion span {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.equipo-actualizacion.local {
+  justify-content: flex-start;
+}
+
+.equipo-actualizacion.visitante {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.marcador-actualizacion {
+  font-size: 16px;
   font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 12px;
   background: #f3f4f6;
+  padding: 6px 14px;
+  border-radius: 14px;
+  min-width: 64px;
+  text-align: center;
 }
 
 .actualizacion-estado {

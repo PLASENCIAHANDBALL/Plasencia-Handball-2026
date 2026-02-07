@@ -1784,10 +1784,35 @@ body.splash-activo #splash {
 
 .app-footer {
   width: 100%;
-  padding: 28px 0 18px;
+  padding: 20px 0 24px;
+
   display: flex;
-  justify-content: center;
-  pointer-events: none; /* no molesta al scroll */
+  flex-direction: column;   /* 🔑 CLAVE */
+  align-items: center;
+  gap: 6px;
+
+  text-align: center;
+  pointer-events: auto;     /* 🔑 permite clicar el mail */
+}
+
+.footer-email {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.footer-email a {
+  color: #ff8c1a;
+  text-decoration: none;
+}
+
+.footer-email a:active {
+  opacity: 0.7;
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: rgba(31, 41, 51, 0.45);
+  letter-spacing: 0.3px;
 }
 
 /* Texto */

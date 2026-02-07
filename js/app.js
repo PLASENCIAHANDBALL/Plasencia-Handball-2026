@@ -179,11 +179,6 @@ function mostrarHome() {
       </div>
     </section>
 
-// 🔴 ACTUALIZACIONES EN VIVO (PRIORIDAD)
-html += `
-  <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
-`;
-
     <!-- PATROCINADORES -->
     <h3>Patrocinadores</h3>
     <div class="patrocinadores-scroll">
@@ -209,6 +204,11 @@ html += `
   if (adminActivo) {
     html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
   }
+
+// 🔴 ACTUALIZACIONES EN VIVO (PRIORIDAD)
+html += `
+  <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
+`;
 
   // HISTORIA AL FINAL
   html += `

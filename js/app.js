@@ -306,7 +306,7 @@ function renderActualizacionesHome() {
 
   let html = `
     <section class="actualizaciones-home">
-      <h3>📢 Actualizaciones en vivo</h3>
+      <h3>📢 Partidos en juego</h3>
   `;
 
   destacados.forEach(p => {

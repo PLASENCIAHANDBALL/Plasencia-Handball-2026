@@ -319,10 +319,14 @@ function renderActualizacionesHome() {
     html += `
       <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
 
-        <!-- CATEGORÍA -->
-        <div class="actualizacion-categoria">
-          ${p.categoria} · ${p.genero}
-        </div>
+        <!-- CATEGORÍA + FASE/GRUPO -->
+<div class="actualizacion-categoria">
+  ${p.categoria} · ${p.genero}
+</div>
+
+<div class="actualizacion-fase">
+  ${textoGrupoOFase(p)}
+</div>
 
         <!-- EQUIPOS + MARCADOR -->
         <div class="actualizacion-contenido">
@@ -1110,6 +1114,18 @@ function textoFase(fase) {
   if (fase === "semifinal") return "🥈 SEMIFINAL";
   if (fase === "tercer_puesto") return "🥉 3.º / 4.º PUESTO";
   if (fase === "playoff") return "⚔️ PLAYOFF";
+  return "";
+}
+
+function textoGrupoOFase(partido) {
+  if (partido.fase && partido.fase !== "grupos") {
+    return textoFase(partido.fase); // 🏆 FINAL, 🥈 SEMIFINAL, etc.
+  }
+
+  if (partido.grupo) {
+    return `🏷️ ${partido.grupo}`;
+  }
+
   return "";
 }
 

@@ -2410,3 +2410,18 @@ body.splash-activo #splash {
 .actualizacion-fase:has(:contains("FINAL")) {
   color: #d4af37;
 }
+
+.btn-ver-mas-partidos {
+  background: transparent;
+  border: none;
+  margin: 10px auto 0;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f59e0b;
+  cursor: pointer;
+}
+
+.btn-ver-mas-partidos:active {
+  transform: scale(0.96);
+}

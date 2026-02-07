@@ -301,12 +301,17 @@ function renderActualizacionesHome() {
     return;
   }
 
+  const LIMITE = 2;
+  const hayMas = destacados.length > LIMITE;
+
   let html = `
     <section class="actualizaciones-home">
       <h3>📢 Partidos en juego</h3>
+
+      <div id="lista-actualizaciones">
   `;
 
-  destacados.forEach(p => {
+  destacados.forEach((p, index) => {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
@@ -316,19 +321,22 @@ function renderActualizacionesHome() {
     const estadoTexto =
       p.estado === "finalizado" ? "🏁 Final" : "🟢 En juego";
 
+    const oculto = hayMas && index >= LIMITE ? "style='display:none'" : "";
+
     html += `
-      <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
+      <div class="actualizacion-card" ${oculto} onclick="abrirPartido(${p.id})">
 
-        <!-- CATEGORÍA + FASE/GRUPO -->
-<div class="actualizacion-categoria">
-  ${p.categoria} · ${p.genero}
-</div>
+        <!-- CATEGORÍA -->
+        <div class="actualizacion-categoria">
+          ${p.categoria} · ${p.genero}
+        </div>
 
-<div class="actualizacion-fase">
-  ${textoGrupoOFase(p)}
-</div>
+        <!-- GRUPO / FASE -->
+        <div class="actualizacion-fase">
+          ${textoGrupoOFase(p)}
+        </div>
 
-        <!-- EQUIPOS + MARCADOR -->
+        <!-- EQUIPOS -->
         <div class="actualizacion-contenido">
 
           <div class="equipo-actualizacion">
@@ -356,8 +364,41 @@ function renderActualizacionesHome() {
     `;
   });
 
+  html += `
+      </div>
+  `;
+
+  // 🔽 BOTÓN SOLO SI HAY MÁS DE 2
+  if (hayMas) {
+    html += `
+      <button class="btn-ver-mas-partidos" onclick="toggleActualizacionesHome(this)">
+        Ver todos los partidos
+      </button>
+    `;
+  }
+
   html += `</section>`;
+
   contenedor.innerHTML = html;
+}
+
+function toggleActualizacionesHome(boton) {
+  const tarjetas = document.querySelectorAll(
+    "#lista-actualizaciones .actualizacion-card"
+  );
+
+  const desplegado = boton.dataset.open === "true";
+
+  tarjetas.forEach((card, index) => {
+    if (index >= 2) {
+      card.style.display = desplegado ? "none" : "block";
+    }
+  });
+
+  boton.dataset.open = (!desplegado).toString();
+  boton.textContent = desplegado
+    ? "Ver todos los partidos"
+    : "Ocultar partidos";
 }
 
 function abrirWeb(url) {

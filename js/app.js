@@ -166,25 +166,22 @@ function mostrarHome() {
 
   let html = `
     <h2>Inicio</h2>
-<section class="galeria2026">
-  <div id="galeria2026-scroll" class="galeria2026-scroll">
-    <div class="galeria2026-loading">Cargando imágenes…</div>
-  </div>
-</section>
-    
-    <!-- GALERÍA -->
+
+    <section class="galeria2026">
+      <div id="galeria2026-scroll" class="galeria2026-scroll">
+        <div class="galeria2026-loading">Cargando imágenes…</div>
+      </div>
+    </section>
+
     <section class="galeria">
       <div id="galeria-scroll" class="galeria-scroll">
         <div class="galeria-loading">Cargando imágenes…</div>
       </div>
     </section>
-    
-    // 🔴 ACTUALIZACIONES EN VIVO (ANTES DE PATROCINADORES)
-html += `
-  <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
-`;
 
-    <!-- PATROCINADORES -->
+    <!-- 🔴 ACTUALIZACIONES EN VIVO -->
+    <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
+
     <h3>Patrocinadores</h3>
     <div class="patrocinadores-scroll">
   `;

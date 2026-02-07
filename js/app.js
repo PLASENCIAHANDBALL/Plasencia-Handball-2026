@@ -293,6 +293,8 @@ function obtenerActualizacionesPartidos() {
 }
 
 function renderActualizacionesHome() {
+  if (!partidos.length || !equipos.length || !clubes.length) return;
+  
   const contenedor = document.getElementById("bloque-actualizaciones");
   if (!contenedor) return;
 
@@ -310,9 +312,6 @@ const partidosAMostrar = actualizacionesExpandido
     return;
   }
 
-  const LIMITE = 2;
-  const hayMas = destacados.length > LIMITE;
-
   let html = `
     <section class="actualizaciones-home">
       <h3>📢 Partidos en juego</h3>
@@ -320,7 +319,7 @@ const partidosAMostrar = actualizacionesExpandido
       <div id="lista-actualizaciones">
   `;
 
-  partidosAMostrar.forEach(p => {
+  partidosAMostrar.forEach((p, index) => {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
@@ -378,13 +377,6 @@ const partidosAMostrar = actualizacionesExpandido
   `;
 
   // 🔽 BOTÓN SOLO SI HAY MÁS DE 2
-  if (hayMas) {
-    html += `
-      <button class="btn-ver-mas-partidos" onclick="toggleActualizacionesHome(this)">
-        Ver todos los partidos
-      </button>
-    `;
-  }
 
 if (hayMasDeDos) {
   html += `
@@ -405,11 +397,6 @@ function toggleActualizacionesHome() {
 }
 
 window.toggleActualizacionesHome = toggleActualizacionesHome;
-
-function toggleActualizacionesHome(boton) {
-  const tarjetas = document.querySelectorAll(
-    "#lista-actualizaciones .actualizacion-card"
-  );
 
   const desplegado = boton.dataset.open === "true";
 

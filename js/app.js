@@ -24,6 +24,8 @@ const contenido = document.getElementById("contenido");
 
 /* ================== ESTADO GLOBAL ================== */
 
+let actualizacionesExpandido = false;
+
 let rolUsuario = localStorage.getItem("rol") || null;
 
 let adminActivo = rolUsuario === "admin";
@@ -295,6 +297,13 @@ function renderActualizacionesHome() {
   if (!contenedor) return;
 
   const destacados = obtenerActualizacionesPartidos();
+  
+  const MAX_VISIBLES = 2;
+const hayMasDeDos = destacados.length > MAX_VISIBLES;
+
+const partidosAMostrar = actualizacionesExpandido
+  ? destacados
+  : destacados.slice(0, MAX_VISIBLES);
 
   if (destacados.length === 0) {
     contenedor.innerHTML = "";
@@ -311,7 +320,7 @@ function renderActualizacionesHome() {
       <div id="lista-actualizaciones">
   `;
 
-  destacados.forEach((p, index) => {
+  partidosAMostrar.forEach(p => {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
@@ -377,10 +386,25 @@ function renderActualizacionesHome() {
     `;
   }
 
+if (hayMasDeDos) {
+  html += `
+    <button class="btn-ver-mas-partidos" onclick="toggleActualizacionesHome()">
+      ${actualizacionesExpandido ? "Ver menos partidos" : "Ver todos los partidos"}
+    </button>
+  `;
+}
+
   html += `</section>`;
 
   contenedor.innerHTML = html;
 }
+
+function toggleActualizacionesHome() {
+  actualizacionesExpandido = !actualizacionesExpandido;
+  renderActualizacionesHome();
+}
+
+window.toggleActualizacionesHome = toggleActualizacionesHome;
 
 function toggleActualizacionesHome(boton) {
   const tarjetas = document.querySelectorAll(

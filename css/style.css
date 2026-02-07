@@ -2373,3 +2373,15 @@ body.splash-activo #splash {
   opacity: 0.5;
   filter: grayscale(60%);
 }
+
+.actualizacion-fase {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ff8c1a;
+  text-align: center;
+}
+
+.actualizacion-fase:has(:contains("FINAL")) {
+  color: #d4af37;
+}

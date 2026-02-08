@@ -329,7 +329,6 @@ const partidosAMostrar = actualizacionesExpandido
     const estadoTexto =
       p.estado === "finalizado" ? "🏁 Final" : "🟢 En juego";
 
-    const oculto = hayMas && index >= LIMITE ? "style='display:none'" : "";
 
     html += `
       <div class="actualizacion-card" ${oculto} onclick="abrirPartido(${p.id})">
@@ -397,20 +396,6 @@ function toggleActualizacionesHome() {
 }
 
 window.toggleActualizacionesHome = toggleActualizacionesHome;
-
-  const desplegado = boton.dataset.open === "true";
-
-  tarjetas.forEach((card, index) => {
-    if (index >= 2) {
-      card.style.display = desplegado ? "none" : "block";
-    }
-  });
-
-  boton.dataset.open = (!desplegado).toString();
-  boton.textContent = desplegado
-    ? "Ver todos los partidos"
-    : "Ocultar partidos";
-}
 
 function abrirWeb(url) {
   if (!url) return;

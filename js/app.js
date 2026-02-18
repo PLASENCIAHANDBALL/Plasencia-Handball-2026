@@ -331,7 +331,7 @@ const partidosAMostrar = actualizacionesExpandido
 
 
     html += `
-      <div class="actualizacion-card" ${oculto} onclick="abrirPartido(${p.id})">
+      <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
 
         <!-- CATEGORÍA -->
         <div class="actualizacion-categoria">
@@ -1718,6 +1718,10 @@ function generarFormatoCompeticion({
   genero,
   equiposPorGrupo // { "Grupo A": [...], "Grupo B": [...] }
 }) {
+  
+  console.log("Equipos por grupo:", equiposPorGrupo);
+console.log("Total equipos:", totalEquipos);
+  
   const totalEquipos = Object.values(equiposPorGrupo)
     .reduce((acc, g) => acc + g.length, 0);
 

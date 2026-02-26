@@ -492,7 +492,7 @@ function setNavActivoPorVista(vista) {
 async function obtenerPatrocinadoresSupabase() {
   const { data, error } = await supabase
     .from("patrocinadores")
-    .select("id,nombre,web,imagen")
+    .select("id,nombre,web")
     .order("created_at", { ascending: true })
     .limit(30); // 🔥 evita timeout
 

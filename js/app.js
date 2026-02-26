@@ -1504,6 +1504,9 @@ if (formato.semifinales) {
       grupo: "Semifinal",
       fase: "semifinal",
       estado: "pendiente",
+      fecha: new Date().toISOString().split("T")[0],
+      hora: null,
+      pabellon: null,
       goles_local: 0,
       goles_visitante: 0
     });
@@ -2191,14 +2194,21 @@ async function cargarDatos() {
 }
 
 async function crearPartidoSupabase(partido) {
-  const { error } = await supabase
+
+  console.log("CREANDO PARTIDO:", partido);
+
+  const { data, error } = await supabase
     .from("partidos")
-    .insert([partido]);
+    .insert([partido])
+    .select();
 
   if (error) {
-    alert("Error creando partido");
-    console.error(error);
+    console.error("❌ ERROR SUPABASE:", error);
+    alert("ERROR REAL: " + error.message);
+    throw error; // 🔥 IMPORTANTE
   }
+
+  console.log("✅ PARTIDO CREADO:", data);
 }
 
 async function editarPartidoSupabase(id, cambios) {

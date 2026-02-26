@@ -1504,7 +1504,7 @@ if (formato.semifinales) {
       grupo: "Semifinal",
       fase: "semifinal",
       estado: "pendiente",
-      fecha: new Date().toISOString().split("T")[0],
+      fecha: null,
       hora: null,
       pabellon: null,
       goles_local: 0,

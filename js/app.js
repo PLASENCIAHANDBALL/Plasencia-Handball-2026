@@ -487,15 +487,16 @@ function setNavActivoPorVista(vista) {
 async function obtenerPatrocinadoresSupabase() {
   const { data, error } = await supabase
     .from("patrocinadores")
-    .select("*")
-    .order("created_at", { ascending: true });
+    .select("id,nombre,web,imagen")
+    .order("created_at", { ascending: true })
+    .limit(30); // 🔥 evita timeout
 
   if (error) {
     console.error("Error cargando patrocinadores:", error);
     return [];
   }
 
-  return data;
+  return data || [];
 }
 
 async function crearPatrocinadorSupabase(patrocinador) {

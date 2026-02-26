@@ -1499,8 +1499,8 @@ if (formato.semifinales) {
     await crearPartidoSupabase({
       local_id: sf.local,
       visitante_id: sf.visitante,
-      categoria,
-      genero,
+      categoria: categoriaDB,
+      genero: generoDB,
       grupo: "Semifinal",
       fase: "semifinal",
       estado: "pendiente",
@@ -1512,7 +1512,7 @@ if (formato.semifinales) {
 
     alert("✅ Semifinales creadas");
 
-  partidos = await obtenerPartidosSupabase();
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
   partidos = partidos.map(p => ({
   ...p,
   fase: p.fase?.toLowerCase() || "grupos"

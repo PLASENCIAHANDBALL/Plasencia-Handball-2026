@@ -489,7 +489,6 @@ async function obtenerPatrocinadoresSupabase() {
     .from("patrocinadores")
     .select("id,nombre,web,imagen")
     .order("created_at", { ascending: true })
-    .limit(30); // 🔥 evita timeout
 
   if (error) {
     console.error("Error cargando patrocinadores:", error);

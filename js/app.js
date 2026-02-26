@@ -1580,12 +1580,12 @@ async function generarFaseFinalDesdeSelector() {
 }
 
 async function obtenerClasificadosPorGrupo(categoria, genero) {
+
   const { data, error } = await supabase
     .from("clasificacion")
     .select("*")
     .eq("categoria", categoria)
-    .eq("genero", genero)
-    .order("puntos", { ascending: false });
+    .eq("genero", genero);
 
   if (error) {
     console.error(error);
@@ -1593,9 +1593,32 @@ async function obtenerClasificadosPorGrupo(categoria, genero) {
   }
 
   const grupos = {};
+
   data.forEach(f => {
     if (!grupos[f.grupo]) grupos[f.grupo] = [];
     grupos[f.grupo].push(f);
+  });
+
+  // 🔥 ORDEN REAL (PUNTOS + AVERAGE)
+  Object.keys(grupos).forEach(g => {
+    grupos[g].sort((a, b) => {
+
+      // puntos
+      if (b.puntos !== a.puntos) {
+        return b.puntos - a.puntos;
+      }
+
+      // average
+      const dgA = a.gf - a.gc;
+      const dgB = b.gf - b.gc;
+
+      if (dgB !== dgA) {
+        return dgB - dgA;
+      }
+
+      // goles a favor
+      return b.gf - a.gf;
+    });
   });
 
   return grupos;

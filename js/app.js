@@ -1716,14 +1716,14 @@ function existeTercerPuesto(categoria, genero) {
 function generarFormatoCompeticion({
   categoria,
   genero,
-  equiposPorGrupo // { "Grupo A": [...], "Grupo B": [...] }
+  equiposPorGrupo
 }) {
-  
-  console.log("Equipos por grupo:", equiposPorGrupo);
-console.log("Total equipos:", totalEquipos);
-  
+
   const totalEquipos = Object.values(equiposPorGrupo)
     .reduce((acc, g) => acc + g.length, 0);
+
+  console.log("Equipos por grupo:", equiposPorGrupo);
+  console.log("Total equipos:", totalEquipos);
 
   switch (totalEquipos) {
     case 8:

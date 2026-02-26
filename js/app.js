@@ -1493,7 +1493,27 @@ const formato = generarFormatoCompeticion({
   equiposPorGrupo: grupos
 });
 
-// crear semifinales
+// 🏆 CUARTOS
+if (formato.cuartos) {
+  for (const qf of formato.cuartos) {
+    await crearPartidoSupabase({
+      local_id: qf.local,
+      visitante_id: qf.visitante,
+      categoria: categoriaDB,
+      genero: generoDB,
+      grupo: "Cuartos",
+      fase: "playoff",
+      estado: "pendiente",
+      fecha: null,
+      hora: null,
+      pabellon: null,
+      goles_local: 0,
+      goles_visitante: 0
+    });
+  }
+}
+
+// 🥈 SEMIFINALES
 if (formato.semifinales) {
   for (const sf of formato.semifinales) {
     await crearPartidoSupabase({

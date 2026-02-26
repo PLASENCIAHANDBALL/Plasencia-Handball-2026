@@ -197,12 +197,7 @@ function mostrarHome() {
             ✖
           </button>
         ` : ""}
-        <img
-  src="${p.imagen}"
-  loading="lazy"
-  style="max-width:100%;max-height:100%;object-fit:contain"
-  onerror="this.style.display='none'"
->
+        <img src="${p.imagen}">
         <div class="patrocinador-nombre">${p.nombre}</div>
       </div>
     `;

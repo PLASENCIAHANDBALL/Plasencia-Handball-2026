@@ -1916,28 +1916,46 @@ async function guardarNuevoPatrocinador() {
     return;
   }
 
-  const reader = new FileReader();
+  // nombre único
+  const fileName = `${Date.now()}-${file.name}`;
 
-  reader.onload = async () => {
-    const { error } = await supabase
-      .from("patrocinadores")
-      .insert({
-        nombre,
-        web,
-        imagen: reader.result
-      });
+  // 1️⃣ SUBIR AL STORAGE
+  const { error: uploadError } = await supabase
+    .storage
+    .from("patrocinadores")
+    .upload(fileName, file);
 
-    if (error) {
-      console.error(error);
-      alert("Error guardando patrocinador");
-      return;
-    }
+  if (uploadError) {
+    console.error(uploadError);
+    alert("Error subiendo imagen");
+    return;
+  }
 
-    patrocinadores = await obtenerPatrocinadoresSupabase();
-    mostrarHome();
-  };
+  // 2️⃣ OBTENER URL PÚBLICA
+  const { data } = supabase
+    .storage
+    .from("patrocinadores")
+    .getPublicUrl(fileName);
 
-  reader.readAsDataURL(file);
+  const urlImagen = data.publicUrl;
+
+  // 3️⃣ GUARDAR EN TABLA
+  const { error } = await supabase
+    .from("patrocinadores")
+    .insert({
+      nombre,
+      web,
+      imagen: urlImagen
+    });
+
+  if (error) {
+    console.error(error);
+    alert("Error guardando patrocinador");
+    return;
+  }
+
+  patrocinadores = await obtenerPatrocinadoresSupabase();
+  mostrarHome();
 }
 
 async function borrarPatrocinador(id) {

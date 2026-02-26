@@ -1961,6 +1961,39 @@ async function guardarNuevoPatrocinador() {
 async function borrarPatrocinador(id) {
   if (!confirm("¿Eliminar este patrocinador?")) return;
 
+  // 1️⃣ obtener patrocinador
+  const { data: patrocinador, error: fetchError } = await supabase
+    .from("patrocinadores")
+    .select("imagen")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) {
+    console.error(fetchError);
+    alert("Error obteniendo patrocinador");
+    return;
+  }
+
+  // 2️⃣ sacar nombre del archivo desde la URL
+  let nombreArchivo = null;
+
+  if (patrocinador?.imagen) {
+    nombreArchivo = patrocinador.imagen.split("/").pop();
+  }
+
+  // 3️⃣ borrar imagen del storage
+  if (nombreArchivo) {
+    const { error: deleteStorageError } = await supabase
+      .storage
+      .from("patrocinadores")
+      .remove([nombreArchivo]);
+
+    if (deleteStorageError) {
+      console.warn("No se pudo borrar imagen:", deleteStorageError);
+    }
+  }
+
+  // 4️⃣ borrar registro tabla
   const { error } = await supabase
     .from("patrocinadores")
     .delete()
@@ -1972,6 +2005,7 @@ async function borrarPatrocinador(id) {
     return;
   }
 
+  // 5️⃣ refrescar
   patrocinadores = await obtenerPatrocinadoresSupabase();
   mostrarHome();
 }

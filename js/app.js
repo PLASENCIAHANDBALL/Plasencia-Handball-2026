@@ -121,9 +121,9 @@ const DIRECTOS_PABELLONES = {
 function normalizarPartidos(lista) {
   return lista.map(p => ({
     ...p,
-    categoria: p.categoria?.trim().toLowerCase(),
-    genero: p.genero?.trim().toLowerCase(),
-    fase: p.fase?.toLowerCase().trim() || "grupos"
+    categoria: p.categoria?.trim(),
+    genero: p.genero?.trim(),
+    fase: p.fase?.trim() || "grupos"
   }));
 }
 
@@ -685,19 +685,19 @@ function renderBracket(categoria, genero) {
   genero = genero.toLowerCase().trim();
 
   const semis = partidos.filter(p =>
-    p.categoria === categoria &&
+    p.categoria?.toLowerCase() === categoria?.toLowerCase()
     p.genero === genero &&
     p.fase === "semifinal"
   );
 
   const final = partidos.find(p =>
-    p.categoria === categoria &&
+    p.categoria?.toLowerCase() === categoria?.toLowerCase()
     p.genero === genero &&
     p.fase === "final"
   );
 
   const tercer = partidos.find(p =>
-    p.categoria === categoria &&
+    p.categoria?.toLowerCase() === categoria?.toLowerCase()
     p.genero === genero &&
     p.fase === "tercer_puesto"
   );
@@ -1524,7 +1524,7 @@ async function borrarPartido(id) {
 
   await borrarPartidoSupabase(id);
 
-  partidos = await obtenerPartidosSupabase();
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
 
   // 🔥 recalcular clasificación SI estaba finalizado
   if (partido?.estado === "finalizado" && partido.fase === "grupos") {
@@ -1962,7 +1962,7 @@ async function obtenerPartidosSupabase() {
 async function cargarDatos() {
   clubes = await obtenerClubesSupabase();
   equipos = await obtenerEquiposSupabase();
-  partidos = await obtenerPartidosSupabase();
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
   patrocinadores = await obtenerPatrocinadoresSupabase();
   mostrarHome();
 }
@@ -2035,7 +2035,7 @@ async function guardarNuevoPartido() {
     return;
   }
 
-  partidos = await obtenerPartidosSupabase();
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
   mostrarPartidos();
 }
 
@@ -2695,7 +2695,7 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
   return equiposGrupo.map(eq => {
     const partidosEq = partidos.filter(p =>
       p.estado === "finalizado" &&
-      p.categoria === categoria &&
+      p.categoria?.toLowerCase() === categoria?.toLowerCase()
       p.genero === genero &&
       p.grupo === grupo &&
       (p.local_id === eq.id || p.visitante_id === eq.id)

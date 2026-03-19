@@ -626,7 +626,7 @@ function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
   
   if (adminActivo) {
-  html += `<button onclick="mostrarSelectorFaseFinal()">🏆 Generar fase final</button>`;
+  html += `<button onclick="formCrearFaseFinal()">🏆 Crear partido de fase final</button>`;
 }
 
   if (adminActivo) {
@@ -639,7 +639,7 @@ function mostrarPartidos() {
     return fa - fb;
   });
 
-  const proximos = ordenados.filter(p => p.estado !== "finalizado");
+  const proximos = ordenados.filter(p => p.estado !== "finalizado" || !p.estado);
   const finalizados = ordenados.filter(p => p.estado === "finalizado").reverse();
 
   /* ===== PRÓXIMOS ===== */
@@ -789,6 +789,115 @@ function renderPartidoCuadro(p) {
       <div class="equipo">${visitante?.nombre || "—"}</div>
     </div>
   `;
+}
+
+function formCrearFaseFinal() {
+  contenido.innerHTML = `
+    <h2>🏆 Crear partido fase final</h2>
+
+    <label>Equipo local</label>
+    <select id="equipoLocal"></select>
+
+    <label>Equipo visitante</label>
+    <select id="equipoVisitante"></select>
+
+    <label>Categoría</label>
+    <select id="categoria">
+      <option>Infantil</option>
+      <option>Cadete</option>
+      <option>Juvenil</option>
+    </select>
+
+    <label>Género</label>
+    <select id="genero">
+      <option>Masculino</option>
+      <option>Femenino</option>
+    </select>
+
+    <label>Fase</label>
+    <select id="fase">
+      <option value="playoff">Playoff</option>
+      <option value="semifinal">Semifinal</option>
+      <option value="final">Final</option>
+      <option value="tercer_puesto">3º / 4º</option>
+    </select>
+
+    <label>Fecha</label>
+    <input type="date" id="fecha">
+
+    <label>Hora</label>
+    <input type="time" id="hora">
+
+    <label>Pabellón</label>
+    <select id="pabellon">
+      ${LISTA_PABELLONES.map(p => `<option>${p}</option>`).join("")}
+    </select>
+
+    <button onclick="guardarFaseFinal()">💾 Crear partido</button>
+    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  `;
+
+  cargarTodosEquipos();
+}
+
+async function cargarTodosEquipos() {
+  const lista = await obtenerEquiposSupabase();
+
+  const local = document.getElementById("equipoLocal");
+  const visitante = document.getElementById("equipoVisitante");
+
+  local.innerHTML = "";
+  visitante.innerHTML = "";
+
+  lista.forEach(e => {
+    const opt1 = document.createElement("option");
+    opt1.value = e.id;
+    opt1.textContent = `${e.nombre} (${e.categoria} ${e.genero})`;
+
+    const opt2 = opt1.cloneNode(true);
+
+    local.appendChild(opt1);
+    visitante.appendChild(opt2);
+  });
+}
+
+async function guardarFaseFinal() {
+  const fase = document.getElementById("fase").value;
+
+  const nuevoPartido = {
+    local_id: Number(document.getElementById("equipoLocal").value),
+    visitante_id: Number(document.getElementById("equipoVisitante").value),
+    categoria: document.getElementById("categoria").value,
+    genero: document.getElementById("genero").value,
+    grupo:
+      fase === "final"
+        ? "Final"
+        : fase === "semifinal"
+        ? "Semifinal"
+        : fase === "tercer_puesto"
+        ? "3º/4º Puesto"
+        : "Playoff",
+    fase,
+    fecha: document.getElementById("fecha").value,
+    hora: document.getElementById("hora").value,
+    pabellon: document.getElementById("pabellon").value,
+    goles_local: 0,
+    goles_visitante: 0,
+    estado: "pendiente"
+  };
+
+  const { error } = await supabase
+    .from("partidos")
+    .insert([nuevoPartido]);
+
+  if (error) {
+    console.error(error);
+    alert("Error creando partido");
+    return;
+  }
+
+  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  mostrarPartidos();
 }
 
 async function mostrarCuadrosEliminatorios() {
@@ -1322,14 +1431,6 @@ async function finalizarPartido() {
   );
 }
 
-// 👇 AQUÍ
-if (partidoActual.fase === "semifinal") {
-  await intentarCrearFinalDesdeSemis(
-    partidoActual.categoria,
-    partidoActual.genero
-  );
-}
-
 mostrarPartidos();
 }
 
@@ -1460,90 +1561,6 @@ function calcularEstadoPartido(partido) {
   return "pendiente";
 }
 
-function gruposFinalizados(categoria, genero) {
-  return partidos
-    .filter(p =>
-      p.categoria === categoria &&
-      p.genero === genero &&
-      p.fase === "grupos"
-    )
-    .every(p => p.estado === "finalizado");
-}
-
-async function generarFaseFinal() {
-  const categoria = clasificacionFiltro.categoria.toLowerCase().trim();
-  const genero = clasificacionFiltro.genero.toLowerCase().trim();
-  
-    const categoriaDB =
-    categoria.charAt(0).toUpperCase() + categoria.slice(1);
-  const generoDB =
-    genero.charAt(0).toUpperCase() + genero.slice(1);
-
-  if (!gruposFinalizados(categoria, genero)) {
-    alert("Aún no han terminado todos los partidos de grupo");
-    return;
-  }
-
-  const grupos = await obtenerClasificadosPorGrupo(categoriaDB, generoDB);
-  const nombresGrupos = Object.keys(grupos);
-
-const formato = generarFormatoCompeticion({
-  categoria: categoriaDB,
-  genero: generoDB,
-  equiposPorGrupo: grupos
-});
-
-// 🏆 CUARTOS
-if (formato.cuartos) {
-  for (const qf of formato.cuartos) {
-    await crearPartidoSupabase({
-      local_id: qf.local,
-      visitante_id: qf.visitante,
-      categoria: categoriaDB,
-      genero: generoDB,
-      grupo: "Cuartos",
-      fase: "playoff",
-      estado: "pendiente",
-      fecha: null,
-      hora: null,
-      pabellon: null,
-      goles_local: 0,
-      goles_visitante: 0
-    });
-  }
-}
-
-// 🥈 SEMIFINALES
-if (formato.semifinales) {
-  for (const sf of formato.semifinales) {
-    await crearPartidoSupabase({
-      local_id: sf.local,
-      visitante_id: sf.visitante,
-      categoria: categoriaDB,
-      genero: generoDB,
-      grupo: "Semifinal",
-      fase: "semifinal",
-      estado: "pendiente",
-      fecha: null,
-      hora: null,
-      pabellon: null,
-      goles_local: 0,
-      goles_visitante: 0
-    });
-  }
-}
-
-    alert("✅ Semifinales creadas");
-
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
-  partidos = partidos.map(p => ({
-  ...p,
-  fase: p.fase?.toLowerCase() || "grupos"
-}));
-
-  mostrarPartidos();
-}
-
 function mostrarSelectorFaseFinal() {
   contenido.innerHTML = `
     <h2>🏆 Generar fase final</h2>
@@ -1567,61 +1584,6 @@ function mostrarSelectorFaseFinal() {
 
     <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
   `;
-}
-
-async function generarFaseFinalDesdeSelector() {
-  clasificacionFiltro.categoria =
-    document.getElementById("ff-categoria").value.toLowerCase();
-
-  clasificacionFiltro.genero =
-    document.getElementById("ff-genero").value.toLowerCase();
-
-  await generarFaseFinal();
-}
-
-async function obtenerClasificadosPorGrupo(categoria, genero) {
-
-  const { data, error } = await supabase
-    .from("clasificacion")
-    .select("*")
-    .eq("categoria", categoria)
-    .eq("genero", genero);
-
-  if (error) {
-    console.error(error);
-    return {};
-  }
-
-  const grupos = {};
-
-  data.forEach(f => {
-    if (!grupos[f.grupo]) grupos[f.grupo] = [];
-    grupos[f.grupo].push(f);
-  });
-
-  // 🔥 ORDEN REAL (PUNTOS + AVERAGE)
-  Object.keys(grupos).forEach(g => {
-    grupos[g].sort((a, b) => {
-
-      // puntos
-      if (b.puntos !== a.puntos) {
-        return b.puntos - a.puntos;
-      }
-
-      // average
-      const dgA = a.gf - a.gc;
-      const dgB = b.gf - b.gc;
-
-      if (dgB !== dgA) {
-        return dgB - dgA;
-      }
-
-      // goles a favor
-      return b.gf - a.gf;
-    });
-  });
-
-  return grupos;
 }
 
 async function guardarResultado() {
@@ -1659,236 +1621,6 @@ async function guardarResultado() {
   }
 
   abrirPartido(partidoActual.id);
-}
-
-function obtenerGanador(partido) {
-  if (partido.goles_local > partido.goles_visitante) {
-    return partido.local_id;
-  }
-  if (partido.goles_visitante > partido.goles_local) {
-    return partido.visitante_id;
-  }
-  return null; // empate (no debería pasar en semis)
-}
-
-function existeFinal(categoria, genero) {
-  return partidos.some(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    p.fase === "final"
-  );
-}
-
-async function intentarCrearFinalDesdeSemis(categoria, genero) {
-
-  const semis = partidos.filter(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    p.fase === "semifinal" &&
-    p.estado === "finalizado"
-  );
-
-  if (semis.length !== 2) return;
-
-  const ganador1 = obtenerGanador(semis[0]);
-  const ganador2 = obtenerGanador(semis[1]);
-
-  const perdedor1 = obtenerPerdedor(semis[0]);
-  const perdedor2 = obtenerPerdedor(semis[1]);
-
-  if (!ganador1 || !ganador2 || !perdedor1 || !perdedor2) return;
-
-  const hoy = new Date().toISOString().split("T")[0];
-
-  // 🏆 FINAL
-  if (!existeFinal(categoria, genero)) {
-    await crearPartidoSupabase({
-      local_id: ganador1,
-      visitante_id: ganador2,
-      categoria,
-      genero,
-      grupo: "Final",
-      fase: "final",
-      fecha: hoy,
-      hora: null,
-      pabellon: null,
-      estado: "pendiente",
-      goles_local: 0,
-      goles_visitante: 0
-    });
-  }
-
-  // 🥉 3º / 4º PUESTO
-  if (!existeTercerPuesto(categoria, genero)) {
-    await crearPartidoSupabase({
-      local_id: perdedor1,
-      visitante_id: perdedor2,
-      categoria,
-      genero,
-      grupo: "3º/4º Puesto",
-      fase: "tercer_puesto",
-      fecha: hoy,
-      hora: null,
-      pabellon: null,
-      estado: "pendiente",
-      goles_local: 0,
-      goles_visitante: 0
-    });
-  }
-
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
-  
-  alert(`🏆 Final y 🥉 3.º/4.º puesto creados (${categoria} ${genero})`);
-}
-
-function obtenerPerdedor(partido) {
-  if (partido.goles_local > partido.goles_visitante) {
-    return partido.visitante_id;
-  }
-  if (partido.goles_visitante > partido.goles_local) {
-    return partido.local_id;
-  }
-  return null;
-}
-
-function existeTercerPuesto(categoria, genero) {
-  return partidos.some(p =>
-    p.categoria === categoria &&
-    p.genero === genero &&
-    p.fase === "tercer_puesto"
-  );
-}
-
-function generarFormatoCompeticion({
-  categoria,
-  genero,
-  equiposPorGrupo
-}) {
-
-  const totalEquipos = Object.values(equiposPorGrupo)
-    .reduce((acc, g) => acc + g.length, 0);
-
-  console.log("Equipos por grupo:", equiposPorGrupo);
-  console.log("Total equipos:", totalEquipos);
-
-  switch (totalEquipos) {
-    case 8:
-      return generarFormato8Equipos(equiposPorGrupo);
-    case 10:
-      return generarFormato10Equipos(equiposPorGrupo);
-    case 12:
-      return generarFormato12Equipos(equiposPorGrupo);
-    case 14:
-      return generarFormato14Equipos(equiposPorGrupo);
-    case 16:
-      return generarFormato16Equipos(equiposPorGrupo);
-    default:
-      throw new Error("Formato no soportado");
-  }
-}
-
-function generarFormato8Equipos(grupos) {
-  const A = grupos["Grupo A"];
-  const B = grupos["Grupo B"];
-
-  if (!A || !B || A.length < 2 || B.length < 2) {
-    throw new Error("Faltan equipos para formato 8");
-  }
-
-  return {
-    semifinales: [
-      { local: A[0].equipo_id, visitante: B[1].equipo_id },
-      { local: B[0].equipo_id, visitante: A[1].equipo_id }
-    ],
-    final: true,
-    tercerPuesto: true
-  };
-}
-
-function generarFormato10Equipos(grupos) {
-  const A = grupos["Grupo A"];
-  const B = grupos["Grupo B"];
-
-  if (!A || !B || A.length < 4 || B.length < 4) {
-    throw new Error("Formato 10 equipos requiere 4 por grupo");
-  }
-
-  return {
-    cuartos: [
-      { local: A[0].equipo_id, visitante: B[3].equipo_id },
-      { local: B[1].equipo_id, visitante: A[2].equipo_id },
-      { local: B[0].equipo_id, visitante: A[3].equipo_id },
-      { local: A[1].equipo_id, visitante: B[2].equipo_id }
-    ],
-    semifinalesDesdeCuartos: true,
-    final: true,
-    tercerPuesto: true
-  };
-}
-
-function generarFormato12Equipos(grupos) {
-  const A = grupos["Grupo A"];
-  const B = grupos["Grupo B"];
-
-  if (!A || !B || A.length < 4 || B.length < 4) {
-    throw new Error("Formato 12 equipos requiere 4 por grupo");
-  }
-
-  return {
-    cuartos: [
-      { local: A[0].equipo_id, visitante: B[3].equipo_id },
-      { local: B[1].equipo_id, visitante: A[2].equipo_id },
-      { local: B[0].equipo_id, visitante: A[3].equipo_id },
-      { local: A[1].equipo_id, visitante: B[2].equipo_id }
-    ],
-    semifinalesDesdeCuartos: true,
-    final: true,
-    tercerPuesto: true
-  };
-}
-
-function generarFormato14Equipos(grupos) {
-  const A = grupos["Grupo A"];
-  const B = grupos["Grupo B"];
-
-  if (!A || !B || A.length < 4 || B.length < 4) {
-    throw new Error("Formato 14 equipos requiere 4 por grupo");
-  }
-
-  return {
-    cuartos: [
-      { local: A[0].equipo_id, visitante: B[3].equipo_id },
-      { local: B[1].equipo_id, visitante: A[2].equipo_id },
-      { local: B[0].equipo_id, visitante: A[3].equipo_id },
-      { local: A[1].equipo_id, visitante: B[2].equipo_id }
-    ],
-    semifinalesDesdeCuartos: true,
-    final: true,
-    tercerPuesto: true
-  };
-}
-
-function generarFormato16Equipos(grupos) {
-  const A = grupos["Grupo A"];
-  const B = grupos["Grupo B"];
-  const C = grupos["Grupo C"];
-  const D = grupos["Grupo D"];
-
-  if (![A, B, C, D].every(g => g && g.length >= 2)) {
-    throw new Error("Formato 16 equipos requiere 4 grupos de 2");
-  }
-
-  return {
-    cuartos: [
-      { local: A[0].equipo_id, visitante: B[1].equipo_id },
-      { local: C[0].equipo_id, visitante: D[1].equipo_id },
-      { local: B[0].equipo_id, visitante: A[1].equipo_id },
-      { local: D[0].equipo_id, visitante: C[1].equipo_id }
-    ],
-    semifinalesDesdeCuartos: true,
-    final: true,
-    tercerPuesto: true
-  };
 }
 
 /* ================== ADMIN ================== */
@@ -2217,8 +1949,7 @@ async function obtenerEquiposPorClub(clubId) {
 async function obtenerPartidosSupabase() {
   const { data, error } = await supabase
     .from("partidos")
-    .select("*")
-    .order("fecha", { ascending: true });
+    .select("*");
 
   if (error) {
     console.error("Error cargando partidos:", error);
@@ -3344,11 +3075,9 @@ window.editarClub = editarClub;
 window.borrarClub = borrarClub;
 window.formNuevoEquipoClub = formNuevoEquipoClub;
 window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
-window.generarFaseFinal = generarFaseFinal;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
 window.mostrarSelectorFaseFinal = mostrarSelectorFaseFinal;
-window.generarFaseFinalDesdeSelector = generarFaseFinalDesdeSelector;
 window.toggleCategoriaDia = toggleCategoriaDia;
 
 // grupos

@@ -685,10 +685,10 @@ function renderBracket(categoria, genero) {
   genero = genero.toLowerCase().trim();
 
   const semis = partidos.filter(p =>
-    p.categoria?.toLowerCase() === categoria?.toLowerCase()
-    p.genero === genero &&
-    p.fase === "semifinal"
-  );
+  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
+  p.genero === genero &&
+  p.fase === "semifinal"
+);
 
   const final = partidos.find(p =>
     p.categoria?.toLowerCase() === categoria?.toLowerCase()
@@ -2694,12 +2694,12 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
 
   return equiposGrupo.map(eq => {
     const partidosEq = partidos.filter(p =>
-      p.estado === "finalizado" &&
-      p.categoria?.toLowerCase() === categoria?.toLowerCase()
-      p.genero === genero &&
-      p.grupo === grupo &&
-      (p.local_id === eq.id || p.visitante_id === eq.id)
-    );
+  p.estado === "finalizado" &&
+  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
+  p.genero === genero &&
+  p.grupo === grupo &&
+  (p.local_id === eq.id || p.visitante_id === eq.id)
+);
 
     let pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, puntos = 0;
 

@@ -691,16 +691,16 @@ function renderBracket(categoria, genero) {
 );
 
   const final = partidos.find(p =>
-    p.categoria?.toLowerCase() === categoria?.toLowerCase()
-    p.genero === genero &&
-    p.fase === "final"
-  );
+  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
+  p.genero === genero &&
+  p.fase === "final"
+);
 
   const tercer = partidos.find(p =>
-    p.categoria?.toLowerCase() === categoria?.toLowerCase()
-    p.genero === genero &&
-    p.fase === "tercer_puesto"
-  );
+  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
+  p.genero === genero &&
+  p.fase === "tercer_puesto"
+);
 
   return `
     <div class="bracket-vertical">

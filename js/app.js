@@ -3058,6 +3058,8 @@ window.finalizarPartido = finalizarPartido;
 window.cambiarGol = cambiarGol;
 window.guardarResultado = guardarResultado;
 window.guardarDatosPartido = guardarDatosPartido;
+window.formCrearFaseFinal = formCrearFaseFinal;
+window.guardarFaseFinal = guardarFaseFinal;
 
 // categorías / equipos
 window.seleccionarCategoria = seleccionarCategoria;

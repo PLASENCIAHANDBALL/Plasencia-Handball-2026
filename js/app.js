@@ -629,12 +629,16 @@ function renderBloquesPorFecha(lista, tipo) {
 
 function agruparPorCategoriaGenero(lista) {
   return lista.reduce((acc, p) => {
-    const clave = `${p.categoria} · ${p.genero}`;
+
+    const grupoTexto = p.grupo ? ` · ${p.grupo}` : "";
+
+    const clave = `${p.categoria} · ${p.genero}${grupoTexto}`;
 
     if (!acc[clave]) acc[clave] = [];
     acc[clave].push(p);
 
     return acc;
+
   }, {});
 }
 

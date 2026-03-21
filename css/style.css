@@ -2482,20 +2482,19 @@ body.splash-activo #splash {
 
 .acciones-admin {
   position: absolute;
-
-  top: 6px;
-  left: 6px;     /* 🔴 antes estaba a la derecha */
+  top: -8px;
+  right: -8px;
 
   display: flex;
-  flex-direction: row;   /* 🔴 ahora en horizontal */
+  flex-direction: column;
   gap: 4px;
 
-  z-index: 20;
+  z-index: 10;
 }
 
 .acciones-admin button {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 
   border-radius: 50%;
   border: none;

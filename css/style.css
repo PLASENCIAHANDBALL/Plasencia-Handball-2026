@@ -2432,3 +2432,45 @@ body.splash-activo #splash {
 .btn-ver-mas-partidos:active {
   transform: scale(0.96);
 }
+
+/* =========================
+   FIX VISUAL PATROCINADORES + HISTORIA
+========================= */
+
+/* Contenedor patrocinadores */
+.patrocinadores-scroll {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+
+  padding: 14px;          /* 🔑 margen lateral real */
+  margin-top: 10px;
+  margin-bottom: 26px;    /* 🔑 separación con historia */
+
+  width: 100%;
+}
+
+/* Tarjetas */
+.patrocinador-card {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Historia */
+.historia {
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  padding: 0 14px;        /* 🔑 alineación con patrocinadores */
+}
+
+/* Tarjeta historia */
+.historia-card {
+  margin-top: 6px;
+}

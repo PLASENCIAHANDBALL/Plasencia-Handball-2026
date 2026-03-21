@@ -2474,3 +2474,55 @@ body.splash-activo #splash {
 .historia-card {
   margin-top: 6px;
 }
+
+/* =========================
+   BOTONES ADMIN PATROCINADORES
+========================= */
+
+.acciones-admin {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  z-index: 10;
+}
+
+.acciones-admin button {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: #ff5c5c;
+  color: white;
+
+  font-size: 14px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.acciones-admin button:nth-child(1) {
+  background: #3b82f6; /* subir */
+}
+
+.acciones-admin button:nth-child(2) {
+  background: #10b981; /* bajar */
+}
+
+.acciones-admin button:nth-child(3) {
+  background: #ef4444; /* borrar */
+}
+
+.acciones-admin button:active {
+  transform: scale(0.9);
+}

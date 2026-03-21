@@ -192,7 +192,23 @@ function mostrarHome() {
     html += `
       <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
         ${adminActivo ? `
-          <button class="btn-borrar-patrocinador"
+  <div class="acciones-admin">
+
+    <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)">
+      ⬆️
+    </button>
+
+    <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)">
+      ⬇️
+    </button>
+
+    <button class="btn-borrar-patrocinador"
+      onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
+      ✖
+    </button>
+
+  </div>
+` : ""}
             onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
             ✖
           </button>
@@ -251,6 +267,38 @@ setTimeout(renderActualizacionesHome, 0);
     cargarGaleria2025();
     cargarGaleria2026();
   });
+}
+
+async function moverPatrocinador(id, direccion) {
+
+  const index = patrocinadores.findIndex(p => p.id === id);
+
+  if (index === -1) return;
+
+  const nuevoIndex = index + direccion;
+
+  if (nuevoIndex < 0 || nuevoIndex >= patrocinadores.length) return;
+
+  const actual = patrocinadores[index];
+  const destino = patrocinadores[nuevoIndex];
+
+  // intercambiar orden
+  const ordenActual = actual.orden;
+  const ordenDestino = destino.orden;
+
+  await supabase
+    .from("patrocinadores")
+    .update({ orden: ordenDestino })
+    .eq("id", actual.id);
+
+  await supabase
+    .from("patrocinadores")
+    .update({ orden: ordenActual })
+    .eq("id", destino.id);
+
+  patrocinadores = await obtenerPatrocinadoresSupabase();
+
+  mostrarHome();
 }
 
 function formNuevoPatrocinador() {
@@ -488,7 +536,7 @@ async function obtenerPatrocinadoresSupabase() {
   const { data, error } = await supabase
     .from("patrocinadores")
     .select("id,nombre,web,imagen")
-    .order("created_at", { ascending: true })
+    .order("orden", { ascending: true })
 
   if (error) {
     console.error("Error cargando patrocinadores:", error);
@@ -1712,13 +1760,16 @@ async function guardarNuevoPatrocinador() {
   const urlImagen = data.publicUrl;
 
   // 3️⃣ GUARDAR EN TABLA
-  const { error } = await supabase
-    .from("patrocinadores")
-    .insert({
-      nombre,
-      web,
-      imagen: urlImagen
-    });
+  const orden = patrocinadores.length + 1;
+
+const { error } = await supabase
+  .from("patrocinadores")
+  .insert({
+    nombre,
+    web,
+    imagen: urlImagen,
+    orden
+  });
 
   if (error) {
     console.error(error);
@@ -3092,6 +3143,7 @@ window.guardarEdicionGrupo = guardarEdicionGrupo;
 // patrocinadores
 window.guardarNuevoPatrocinador = guardarNuevoPatrocinador;
 window.borrarPatrocinador = borrarPatrocinador;
+window.moverPatrocinador = moverPatrocinador;
 
 // patrocinadores
 window.formNuevoPatrocinador = formNuevoPatrocinador;

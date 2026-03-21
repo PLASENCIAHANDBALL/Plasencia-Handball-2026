@@ -122,7 +122,7 @@ const IMAGENES_PABELLONES = {
   "Universitario": "img/pabellones/universitario.png",
   "Miralvalle": "img/pabellones/miralvalle.png",
   "San Calixto": "img/pabellones/san-calixto.png",
-  "Multipista": "img/pabellones/la-data.png"
+  "Multipista": "img/pabellones/la-data.png",
   "San Miguel": "img/pabellones/san-miguel.png"
 };
 

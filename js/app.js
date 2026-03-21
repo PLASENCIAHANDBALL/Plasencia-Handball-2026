@@ -189,35 +189,34 @@ function mostrarHome() {
   `;
 
   patrocinadores.forEach(p => {
-    html += `
-      <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
-        ${adminActivo ? `
-  <div class="acciones-admin">
+  html += `
+    <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
 
-    <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)">
-      ⬆️
-    </button>
+      ${adminActivo ? `
+        <div class="acciones-admin">
 
-    <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)">
-      ⬇️
-    </button>
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)">
+            ⬆️
+          </button>
 
-    <button class="btn-borrar-patrocinador"
-      onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
-      ✖
-    </button>
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)">
+            ⬇️
+          </button>
 
-  </div>
-` : ""}
+          <button class="btn-borrar-patrocinador"
             onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
             ✖
           </button>
-        ` : ""}
-        <img src="${p.imagen}">
-        <div class="patrocinador-nombre">${p.nombre}</div>
-      </div>
-    `;
-  });
+
+        </div>
+      ` : ""}
+
+      <img src="${p.imagen}">
+      <div class="patrocinador-nombre">${p.nombre}</div>
+
+    </div>
+  `;
+});
 
   html += `</div>`;
 

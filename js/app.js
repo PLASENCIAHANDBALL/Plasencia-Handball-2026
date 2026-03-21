@@ -112,7 +112,8 @@ const LISTA_PABELLONES = [
   "Universitario",
   "Miralvalle",
   "San Calixto",
-  "Multipista"
+  "Multipista",
+  "San Miguel"
 ];
 
 const IMAGENES_PABELLONES = {
@@ -122,13 +123,13 @@ const IMAGENES_PABELLONES = {
   "Miralvalle": "img/pabellones/miralvalle.png",
   "San Calixto": "img/pabellones/san-calixto.png",
   "Multipista": "img/pabellones/la-data.png"
+  "San Miguel": "img/pabellones/san-miguel.png"
 };
 
 // 🔴 DIRECTOS POR PABELLÓN
 const DIRECTOS_PABELLONES = {
   "Municipal": "https://www.twitch.tv/swl_tv",
   "Escuela": "https://www.twitch.tv/swl_tv",
-  "Universitario": "https://www.twitch.tv/swl_tv"
 };
 
 function normalizarPartidos(lista) {
@@ -3075,13 +3076,14 @@ function mostrarPabellones() {
   setNavActivoPorVista("pabellones");
 
   const pabellones = [
-    "Municipal",
-    "Escuela",
-    "Universitario",
-    "Miralvalle",
-    "San Calixto",
-    "Multipista"
-  ];
+  "Municipal",
+  "Escuela",
+  "Universitario",
+  "Miralvalle",
+  "San Calixto",
+  "Multipista",
+  "San Miguel"
+];
 
   const contarPartidos = pabellon =>
     partidos.filter(p => p.pabellon === pabellon).length;
@@ -3210,6 +3212,7 @@ const UBICACIONES_PABELLONES = {
   "Miralvalle": "https://maps.app.goo.gl/JxhyUgo4sH8FadMEA?g_st=ic",
   "San Calixto": "https://maps.app.goo.gl/yjwJzYRLtLHZ9xxh7?g_st=ic",
   "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic"
+  "San Miguel": "https://maps.app.goo.gl/Z3c3yBWxjLXsSE3M6?g_st=ic"
 };
 
 let html = `

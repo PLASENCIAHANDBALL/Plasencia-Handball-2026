@@ -136,6 +136,7 @@ function normalizarPartidos(lista) {
     ...p,
     categoria: p.categoria?.trim(),
     genero: p.genero?.trim(),
+    grupo: p.grupo?.trim(),   // 🔴 AÑADIR ESTA LÍNEA
     fase: p.fase?.trim() || "grupos"
   }));
 }
@@ -1018,6 +1019,11 @@ function formatearFecha(fecha) {
 }
 
 function renderPartidoCard(p) {
+  
+  if (!p.categoria || !p.genero || !p.grupo) {
+  console.warn("PARTIDO MAL FORMADO:", p);
+}
+
   const estadoReal = calcularEstadoPartido(p);
   const equipoLocal = equipos.find(e => e.id === p.local_id);
   const equipoVisitante = equipos.find(e => e.id === p.visitante_id);

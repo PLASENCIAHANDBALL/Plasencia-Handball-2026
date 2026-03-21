@@ -3211,7 +3211,7 @@ const UBICACIONES_PABELLONES = {
   "Universitario": "https://maps.app.goo.gl/bG1utwiJEu78Efxm7?g_st=ic",
   "Miralvalle": "https://maps.app.goo.gl/JxhyUgo4sH8FadMEA?g_st=ic",
   "San Calixto": "https://maps.app.goo.gl/yjwJzYRLtLHZ9xxh7?g_st=ic",
-  "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic"
+  "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic",
   "San Miguel": "https://maps.app.goo.gl/Z3c3yBWxjLXsSE3M6?g_st=ic"
 };
 

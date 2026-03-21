@@ -638,6 +638,7 @@ button:active {
   padding: 10px;
   text-align: center;
   position: relative;
+  overflow: visible;
   width: 100%;
 
   aspect-ratio: 1 / 1;      /* 🔑 CUADRADO */
@@ -2481,27 +2482,26 @@ body.splash-activo #splash {
 
 .acciones-admin {
   position: absolute;
-  top: -8px;
-  right: -8px;
+
+  top: 6px;
+  left: 6px;     /* 🔴 antes estaba a la derecha */
 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;   /* 🔴 ahora en horizontal */
   gap: 4px;
 
-  z-index: 10;
+  z-index: 20;
 }
 
 .acciones-admin button {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 
   border-radius: 50%;
   border: none;
 
-  background: #ff5c5c;
   color: white;
-
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
 
   display: flex;
@@ -2509,6 +2509,7 @@ body.splash-activo #splash {
   justify-content: center;
 
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  padding: 0;
 }
 
 .acciones-admin button:nth-child(1) {

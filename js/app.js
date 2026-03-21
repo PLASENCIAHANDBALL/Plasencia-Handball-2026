@@ -61,16 +61,29 @@ let equipoActual = null;
 let patrocinadores = [];
 
 function refrescarVistaActual() {
-  // Detecta qué vista estás usando y la vuelve a pintar
-  if (document.querySelector("h2")?.textContent.includes("Partidos")) {
+
+  const titulo = document.querySelector("h2")?.textContent || "";
+
+  if (titulo.includes("Inicio")) {
+    mostrarHome();
+  }
+
+  else if (titulo.includes("Partidos")) {
     mostrarPartidos();
-  } else if (document.querySelector("h2")?.textContent.includes("Editar partido")) {
+  }
+
+  else if (titulo.includes("Editar partido")) {
     editarPartido(partidoActual.id);
-  } else if (document.querySelector("h2")?.textContent.includes("vs")) {
+  }
+
+  else if (titulo.includes("vs")) {
     abrirPartido(partidoActual.id);
-  } else if (document.querySelector("h2")?.textContent.includes("Categorías")) {
+  }
+
+  else if (titulo.includes("Categorías")) {
     mostrarCategorias();
   }
+
 }
 
 function cambiarVistaConAnimacion(html, tipo = "slide") {

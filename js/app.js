@@ -3125,6 +3125,7 @@ window.formCrearFaseFinal = formCrearFaseFinal;
 window.guardarFaseFinal = guardarFaseFinal;
 
 // categorías / equipos
+window.guardarEdicionClub = guardarEdicionClub;
 window.seleccionarCategoria = seleccionarCategoria;
 window.filtrarCategorias = filtrarCategorias;
 window.togglePartidosEquipo = togglePartidosEquipo;

@@ -2554,3 +2554,23 @@ body.splash-activo #splash {
   background: #CE93D8;
   color: #4A148C;
 }
+
+.badge-genero {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Masculino */
+.badge-masculino {
+  background: #64B5F6;
+  color: #0D47A1;
+}
+
+/* Femenino */
+.badge-femenino {
+  background: #F48FB1;
+  color: #880E4F;
+}

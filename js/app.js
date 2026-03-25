@@ -135,8 +135,14 @@ const DIRECTOS_PABELLONES = {
 function normalizarPartidos(lista) {
   return lista.map(p => ({
     ...p,
-    categoria: p.categoria?.trim(),
-    genero: p.genero?.trim(),
+
+    categoria: p.categoria
+      ? p.categoria.trim().toLowerCase()
+      : "sin categoria",
+
+    genero: p.genero
+      ? p.genero.trim().toLowerCase()
+      : "sin genero",
 
     grupo: p.grupo
       ? p.grupo.trim().replace(/\s+/g, " ")
@@ -717,7 +723,7 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
   Object.entries(categorias).forEach(([categoria, listaCategoria]) => {
 
-    const idCategoria = `categoria-${tipo}-${fecha}-${categoria}`;
+    const idCategoria = `categoria-${tipo}-${fecha}-${capitalizar(categoria)}`;
 
     html += `
   <div class="bloque-categoria-principal">
@@ -743,6 +749,11 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
   });
 
   return html;
+}
+
+function capitalizar(texto) {
+  if (!texto) return "";
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {

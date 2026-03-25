@@ -669,6 +669,19 @@ function obtenerClaseCategoria(categoria) {
   return "";
 }
 
+function obtenerClaseGenero(genero) {
+
+  if (!genero) return "";
+
+  const gen = genero.toLowerCase();
+
+  if (gen.includes("masculino")) return "badge-masculino";
+
+  if (gen.includes("femenino")) return "badge-femenino";
+
+  return "";
+}
+
 function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
   const categorias = agruparPorCategoria(partidosDia);
@@ -707,14 +720,71 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
 function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 
-  const grupos = agruparPorCategoriaGenero(listaCategoria);
+  const generos = listaCategoria.reduce((acc, p) => {
+
+    const genero = p.genero || "Sin género";
+
+    if (!acc[genero]) acc[genero] = [];
+
+    acc[genero].push(p);
+
+    return acc;
+
+  }, {});
 
   let html = "";
 
-  Object.entries(grupos).forEach(([titulo, lista], index) => {
+  Object.entries(generos).forEach(([genero, listaGenero]) => {
 
-    const id = `subcat-${tipo}-${fecha}-${titulo
-      .replace(/\s|·/g, "")
+    const idGenero = `genero-${tipo}-${fecha}-${genero}`;
+
+    html += `
+      <div class="bloque-genero">
+
+        <div class="genero-header"
+             onclick="toggleCategoriaDia('${idGenero}', this)">
+
+          <span class="badge-genero ${obtenerClaseGenero(genero)}">
+            ${genero}
+          </span>
+
+          <span class="flecha">⌄</span>
+
+        </div>
+
+        <div id="${idGenero}" class="categoria-partidos oculto">
+
+          ${renderGruposDentroGenero(listaGenero, fecha, tipo)}
+
+        </div>
+
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+function renderGruposDentroGenero(listaGenero, fecha, tipo) {
+
+  const grupos = listaGenero.reduce((acc, p) => {
+
+    const grupo = p.grupo || "Sin grupo";
+
+    if (!acc[grupo]) acc[grupo] = [];
+
+    acc[grupo].push(p);
+
+    return acc;
+
+  }, {});
+
+  let html = "";
+
+  Object.entries(grupos).forEach(([grupo, lista], index) => {
+
+    const id = `grupo-${tipo}-${fecha}-${grupo
+      .replace(/\s/g, "")
       .toLowerCase()}`;
 
     html += `
@@ -722,17 +792,21 @@ function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 
         <div class="categoria-header"
              onclick="toggleCategoriaDia('${id}', this)">
-          <span>${titulo}</span>
+
+          <span>${grupo}</span>
+
           <span class="flecha">⌄</span>
+
         </div>
 
         <div id="${id}" class="categoria-partidos oculto">
+
           ${lista.map(p => renderPartidoCard(p)).join("")}
+
         </div>
 
       </div>
     `;
-
   });
 
   return html;

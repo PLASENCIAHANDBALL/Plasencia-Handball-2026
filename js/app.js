@@ -819,31 +819,33 @@ function renderGruposDentroGenero(listaGenero, fecha, tipo) {
 
   let html = "";
 
-  Object.entries(grupos).forEach(([grupo, lista], index) => {
+  Object.entries(grupos).forEach(([grupo, lista]) => {
 
-  const id = `grupo-${tipo}-${index}`;
+    const id = `grupo-${tipo}-${fecha}-${lista[0].categoria}-${lista[0].genero}-${grupo}`
+      .replace(/\s+/g, "-")
+      .toLowerCase();
 
-  html += `
-    <div class="bloque-categoria-dia">
+    html += `
+      <div class="bloque-categoria-dia">
 
-      <div class="categoria-header"
-           onclick="toggleCategoriaDia('${id}', this)">
+        <div class="categoria-header"
+             onclick="toggleCategoriaDia('${id}', this)">
 
-        <span>${grupo}</span>
+          <span>${grupo}</span>
 
-        <span class="flecha">⌄</span>
+          <span class="flecha">⌄</span>
+
+        </div>
+
+        <div id="${id}" class="categoria-partidos oculto">
+
+          ${lista.map(p => renderPartidoCard(p)).join("")}
+
+        </div>
 
       </div>
-
-      <div id="${id}" class="categoria-partidos oculto">
-
-        ${lista.map(p => renderPartidoCard(p)).join("")}
-
-      </div>
-
-    </div>
-  `;
-});
+    `;
+  });
 
   return html;
 }

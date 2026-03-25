@@ -137,7 +137,11 @@ function normalizarPartidos(lista) {
     ...p,
     categoria: p.categoria?.trim(),
     genero: p.genero?.trim(),
-    grupo: p.grupo?.trim(),   // 🔴 AÑADIR ESTA LÍNEA
+
+    grupo: p.grupo
+      ? p.grupo.trim().replace(/\s+/g, " ")
+      : "Sin grupo",
+
     fase: p.fase?.trim() || "grupos"
   }));
 }

@@ -2540,19 +2540,19 @@ body.splash-activo #splash {
 /* Infantil */
 .badge-infantil {
   background: #FFE082;
-  color: #5D4037;
+  color: #ff7514;
 }
 
 /* Cadete */
 .badge-cadete {
   background: #90CAF9;
-  color: #0D47A1;
+  color: #ff7514;
 }
 
 /* Juvenil */
 .badge-juvenil {
   background: #CE93D8;
-  color: #4A148C;
+  color: #ff7514;
 }
 
 .badge-genero {

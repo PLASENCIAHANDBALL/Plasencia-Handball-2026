@@ -759,7 +759,7 @@ function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 
   Object.entries(generos).forEach(([genero, listaGenero]) => {
 
-    const idGenero = `genero-${tipo}-${fecha}-${genero}`;
+    const idGenero = `genero-${tipo}-${fecha}-${listaGenero[0].categoria}-${genero}`;
 
     html += `
       <div class="bloque-genero">
@@ -806,9 +806,9 @@ function renderGruposDentroGenero(listaGenero, fecha, tipo) {
 
   Object.entries(grupos).forEach(([grupo, lista], index) => {
 
-    const id = `grupo-${tipo}-${fecha}-${grupo
-      .replace(/\s/g, "")
-      .toLowerCase()}`;
+    const id = `grupo-${tipo}-${fecha}-${lista[0].categoria}-${grupo
+  .replace(/\s/g, "")
+  .toLowerCase()}`;
 
     html += `
       <div class="bloque-categoria-dia">

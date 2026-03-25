@@ -643,28 +643,76 @@ function agruparPorCategoriaGenero(lista) {
   }, {});
 }
 
+function agruparPorCategoria(lista) {
+  return lista.reduce((acc, p) => {
+    const categoria = p.categoria || "Sin categoría";
+
+    if (!acc[categoria]) acc[categoria] = [];
+    acc[categoria].push(p);
+
+    return acc;
+  }, {});
+}
+
 function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
-  const grupos = agruparPorCategoriaGenero(partidosDia);
+
+  const categorias = agruparPorCategoria(partidosDia);
+
+  let html = "";
+
+  Object.entries(categorias).forEach(([categoria, listaCategoria]) => {
+
+    const idCategoria = `categoria-${tipo}-${fecha}-${categoria}`;
+
+    html += `
+      <div class="bloque-categoria-principal">
+
+        <div class="categoria-principal-header"
+             onclick="toggleCategoriaDia('${idCategoria}', this)">
+          <span>🏷️ ${categoria}</span>
+          <span class="flecha">⌄</span>
+        </div>
+
+        <div id="${idCategoria}" class="categoria-partidos oculto">
+          ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  return html;
+}
+
+function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
+
+  const grupos = agruparPorCategoriaGenero(listaCategoria);
+
   let html = "";
 
   Object.entries(grupos).forEach(([titulo, lista], index) => {
-    const id = `cat-${tipo}-${fecha}-${titulo.replace(/\s|·/g, "").toLowerCase()}`;
+
+    const id = `subcat-${tipo}-${fecha}-${titulo
+      .replace(/\s|·/g, "")
+      .toLowerCase()}`;
 
     html += `
       <div class="bloque-categoria-dia">
-        
+
         <div class="categoria-header"
-     onclick="toggleCategoriaDia('${id}', this)">
-  <span>${titulo}</span>
-  <span class="flecha">⌄</span>
-</div>
-        
+             onclick="toggleCategoriaDia('${id}', this)">
+          <span>${titulo}</span>
+          <span class="flecha">⌄</span>
+        </div>
+
         <div id="${id}" class="categoria-partidos oculto">
           ${lista.map(p => renderPartidoCard(p)).join("")}
         </div>
 
       </div>
     `;
+
   });
 
   return html;

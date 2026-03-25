@@ -137,12 +137,12 @@ function normalizarPartidos(lista) {
     ...p,
 
     categoria: p.categoria
-      ? p.categoria.trim().toLowerCase()
-      : "sin categoria",
+      ? p.categoria.trim()
+      : "Sin categoría",
 
     genero: p.genero
-      ? p.genero.trim().toLowerCase()
-      : "sin genero",
+      ? p.genero.trim()
+      : "Sin género",
 
     grupo: p.grupo
       ? p.grupo.trim().replace(/\s+/g, " ")

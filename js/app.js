@@ -682,6 +682,19 @@ function obtenerClaseGenero(genero) {
   return "";
 }
 
+function obtenerIconoGenero(genero) {
+
+  if (!genero) return "";
+
+  const gen = genero.toLowerCase();
+
+  if (gen.includes("masculino")) return "♂";
+
+  if (gen.includes("femenino")) return "♀";
+
+  return "";
+}
+
 function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
   const categorias = agruparPorCategoria(partidosDia);
@@ -745,8 +758,8 @@ function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
              onclick="toggleCategoriaDia('${idGenero}', this)">
 
           <span class="badge-genero ${obtenerClaseGenero(genero)}">
-            ${genero}
-          </span>
+            ${obtenerIconoGenero(genero)} ${genero}
+           </span>
 
           <span class="flecha">⌄</span>
 

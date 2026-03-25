@@ -1047,11 +1047,14 @@ function formCrearFaseFinal() {
 
     <label>Fase</label>
     <select id="fase">
-      <option value="playoff">Playoff</option>
-      <option value="semifinal">Semifinal</option>
-      <option value="final">Final</option>
-      <option value="tercer_puesto">3º / 4º</option>
-    </select>
+  <option value="playoff">Playoff</option>
+  <option value="semifinal">Semifinal</option>
+  <option value="final">Final</option>
+  <option value="tercer_puesto">3º / 4º</option>
+  <option value="quinto_puesto">5º / 6º</option>
+  <option value="septimo_puesto">7º / 8º</option>
+  <option value="noveno_puesto">9º / 10º</option>
+</select>
 
     <label>Fecha</label>
     <input type="date" id="fecha">
@@ -1095,27 +1098,29 @@ async function cargarTodosEquipos() {
 async function guardarFaseFinal() {
   const fase = document.getElementById("fase").value;
 
-  const nuevoPartido = {
-    local_id: Number(document.getElementById("equipoLocal").value),
-    visitante_id: Number(document.getElementById("equipoVisitante").value),
-    categoria: document.getElementById("categoria").value,
-    genero: document.getElementById("genero").value,
-    grupo:
-      fase === "final"
-        ? "Final"
-        : fase === "semifinal"
-        ? "Semifinal"
-        : fase === "tercer_puesto"
-        ? "3º/4º Puesto"
-        : "Playoff",
-    fase,
-    fecha: document.getElementById("fecha").value,
-    hora: document.getElementById("hora").value,
-    pabellon: document.getElementById("pabellon").value,
-    goles_local: 0,
-    goles_visitante: 0,
-    estado: "pendiente"
-  };
+let grupoTexto = "Playoff";
+
+if (fase === "final") grupoTexto = "Final";
+if (fase === "semifinal") grupoTexto = "Semifinal";
+if (fase === "tercer_puesto") grupoTexto = "3º/4º Puesto";
+if (fase === "quinto_puesto") grupoTexto = "5º/6º Puesto";
+if (fase === "septimo_puesto") grupoTexto = "7º/8º Puesto";
+if (fase === "noveno_puesto") grupoTexto = "9º/10º Puesto";
+
+const nuevoPartido = {
+  local_id: Number(document.getElementById("equipoLocal").value),
+  visitante_id: Number(document.getElementById("equipoVisitante").value),
+  categoria: document.getElementById("categoria").value,
+  genero: document.getElementById("genero").value,
+  grupo: grupoTexto,
+  fase,
+  fecha: document.getElementById("fecha").value,
+  hora: document.getElementById("hora").value,
+  pabellon: document.getElementById("pabellon").value,
+  goles_local: 0,
+  goles_visitante: 0,
+  estado: "pendiente"
+};
 
   const { error } = await supabase
     .from("partidos")
@@ -1492,11 +1497,30 @@ function esEliminatoria(partido) {
 }
 
 function textoFase(fase) {
-  if (fase === "final") return "🏆 FINAL";
-  if (fase === "semifinal") return "🥈 SEMIFINAL";
-  if (fase === "tercer_puesto") return "🥉 3.º / 4.º PUESTO";
-  if (fase === "playoff") return "⚔️ PLAYOFF";
+
+  if (fase === "final")
+    return "🏆 FINAL";
+
+  if (fase === "semifinal")
+    return "🥈 SEMIFINAL";
+
+  if (fase === "tercer_puesto")
+    return "🥉 3.º / 4.º PUESTO";
+
+  if (fase === "quinto_puesto")
+    return "5️⃣ 5.º / 6.º PUESTO";
+
+  if (fase === "septimo_puesto")
+    return "7️⃣ 7.º / 8.º PUESTO";
+
+  if (fase === "noveno_puesto")
+    return "9️⃣ 9.º / 10.º PUESTO";
+
+  if (fase === "playoff")
+    return "⚔️ PLAYOFF";
+
   return "";
+
 }
 
 function textoGrupoOFase(partido) {

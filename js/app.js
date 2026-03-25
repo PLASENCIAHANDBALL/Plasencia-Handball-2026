@@ -839,10 +839,18 @@ function toggleCategoriaDia(id, header) {
   const contenedor = document.getElementById(id);
   if (!contenedor) return;
 
-  const abierto = contenedor.classList.toggle("abierto");
+  const estaOculto = contenedor.classList.contains("oculto");
+
+  if (estaOculto) {
+    contenedor.classList.remove("oculto");
+    contenedor.classList.add("abierto");
+  } else {
+    contenedor.classList.add("oculto");
+    contenedor.classList.remove("abierto");
+  }
 
   if (header) {
-    header.classList.toggle("abierto", abierto);
+    header.classList.toggle("abierto", estaOculto);
   }
 }
 

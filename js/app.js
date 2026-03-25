@@ -821,11 +821,7 @@ function renderGruposDentroGenero(listaGenero, fecha, tipo) {
 
   Object.entries(grupos).forEach(([grupo, lista], index) => {
 
-  const id = `grupo-${tipo}-${fecha}-${lista[0].categoria}-${grupo}`
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "")
-    .toLowerCase();
+  const id = `grupo-${tipo}-${index}`;
 
   html += `
     <div class="bloque-categoria-dia">

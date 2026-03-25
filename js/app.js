@@ -654,6 +654,21 @@ function agruparPorCategoria(lista) {
   }, {});
 }
 
+function obtenerClaseCategoria(categoria) {
+
+  if (!categoria) return "";
+
+  const cat = categoria.toLowerCase();
+
+  if (cat.includes("infantil")) return "badge-infantil";
+
+  if (cat.includes("cadete")) return "badge-cadete";
+
+  if (cat.includes("juvenil")) return "badge-juvenil";
+
+  return "";
+}
+
 function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
   const categorias = agruparPorCategoria(partidosDia);
@@ -665,20 +680,25 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
     const idCategoria = `categoria-${tipo}-${fecha}-${categoria}`;
 
     html += `
-      <div class="bloque-categoria-principal">
+  <div class="bloque-categoria-principal">
 
-        <div class="categoria-principal-header"
-             onclick="toggleCategoriaDia('${idCategoria}', this)">
-          <span>🏷️ ${categoria}</span>
-          <span class="flecha">⌄</span>
-        </div>
+    <div class="categoria-principal-header"
+         onclick="toggleCategoriaDia('${idCategoria}', this)">
 
-        <div id="${idCategoria}" class="categoria-partidos oculto">
-          ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
-        </div>
+      <span class="badge-categoria ${obtenerClaseCategoria(categoria)}">
+        ${categoria}
+      </span>
 
-      </div>
-    `;
+      <span class="flecha">⌄</span>
+
+    </div>
+
+    <div id="${idCategoria}" class="categoria-partidos oculto">
+      ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
+    </div>
+
+  </div>
+`;
 
   });
 

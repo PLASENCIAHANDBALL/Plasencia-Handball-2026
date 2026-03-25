@@ -334,24 +334,34 @@ function formNuevoPatrocinador() {
 }
 
 function obtenerActualizacionesPartidos() {
+
   const ahora = new Date();
 
   return partidos.filter(p => {
+
     if (!p.fecha || !p.hora) return false;
 
     const inicio = new Date(`${p.fecha}T${p.hora}`);
+
     const DURACION = 50; // minutos
-    const fin = new Date(inicio.getTime() + DURACION * 60000);
-    const limitePost = new Date(fin.getTime() + 10 * 60000); // +10 min
 
-    // En juego
-    if (ahora >= inicio && ahora <= fin) return true;
+    const fin = new Date(
+      inicio.getTime() + DURACION * 60000
+    );
 
-    // Finalizado hace menos de 10 minutos
-    if (p.estado === "finalizado" && ahora <= limitePost) return true;
+    // SOLO mostrar si está en juego
+    if (
+      p.estado !== "finalizado" &&
+      ahora >= inicio &&
+      ahora <= fin
+    ) {
+      return true;
+    }
 
     return false;
+
   });
+
 }
 
 function renderActualizacionesHome() {

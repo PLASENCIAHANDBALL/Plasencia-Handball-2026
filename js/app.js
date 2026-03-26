@@ -200,7 +200,7 @@ function mostrarHome() {
 
     <section class="cancion-torneo">
 
-  <div class="galeria-badge" onclick="toggleCancionTorneo()">
+  <div class="galeria-badge reproductor-cancion">
 
     <div class="badge-icon">
       <img src="img/iconos/musica.png" alt="Canción del torneo">
@@ -208,14 +208,32 @@ function mostrarHome() {
 
     <div class="badge-texto">
       <strong>Canción del torneo</strong>
-      <span>Pulsar para reproducir</span>
+      <span id="tiempo-cancion">0:00 / 0:00</span>
     </div>
 
-    <div class="badge-play">
-      ▶️
+    <div class="controles-cancion">
+
+      <button onclick="reiniciarCancion()" class="btn-control">
+        ⏮️
+      </button>
+
+      <button onclick="toggleCancionTorneo()" id="btn-play" class="btn-control">
+        ▶️
+      </button>
+
     </div>
 
   </div>
+
+  <input
+    type="range"
+    id="barra-cancion"
+    value="0"
+    min="0"
+    max="100"
+    step="1"
+    oninput="moverBarraCancion()"
+  >
 
   <audio id="audio-torneo" src="audio/cancion-torneo.mp3"></audio>
 
@@ -513,17 +531,93 @@ function abrirWeb(url) {
 
 function toggleCancionTorneo() {
   const audio = document.getElementById("audio-torneo");
+  const boton = document.getElementById("btn-play");
 
   if (!audio) return;
 
   if (audio.paused) {
     audio.play();
+    if (boton) boton.textContent = "⏸️";
   } else {
     audio.pause();
+    if (boton) boton.textContent = "▶️";
   }
 }
 
 window.toggleCancionTorneo = toggleCancionTorneo;
+
+function reiniciarCancion() {
+  const audio = document.getElementById("audio-torneo");
+  const barra = document.getElementById("barra-cancion");
+
+  if (!audio) return;
+
+  audio.currentTime = 0;
+
+  if (barra) barra.value = 0;
+}
+
+function moverBarraCancion() {
+  const audio = document.getElementById("audio-torneo");
+  const barra = document.getElementById("barra-cancion");
+
+  if (!audio || !barra) return;
+
+  const tiempo =
+    (barra.value / 100) * audio.duration;
+
+  audio.currentTime = tiempo;
+}
+
+function formatearTiempo(segundos) {
+  if (!segundos) return "0:00";
+
+  const min = Math.floor(segundos / 60);
+  const seg = Math.floor(segundos % 60);
+
+  return `${min}:${seg.toString().padStart(2, "0")}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const audio = document.getElementById("audio-torneo");
+
+  if (!audio) return;
+
+  audio.addEventListener("timeupdate", () => {
+
+    const barra =
+      document.getElementById("barra-cancion");
+
+    const tiempo =
+      document.getElementById("tiempo-cancion");
+
+    if (!barra || !tiempo) return;
+
+    if (audio.duration) {
+
+      barra.value =
+        (audio.currentTime / audio.duration) * 100;
+
+      tiempo.textContent =
+        formatearTiempo(audio.currentTime) +
+        " / " +
+        formatearTiempo(audio.duration);
+
+    }
+
+  });
+
+  audio.addEventListener("ended", () => {
+
+    const boton =
+      document.getElementById("btn-play");
+
+    if (boton) boton.textContent = "▶️";
+
+  });
+
+});
 
 async function iniciarApp() {
   try {

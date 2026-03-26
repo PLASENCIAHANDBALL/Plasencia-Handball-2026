@@ -2574,3 +2574,28 @@ body.splash-activo #splash {
   background: #F48FB1;
   color: #FFFFFF;
 }
+
+.reproductor-cancion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.controles-cancion {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-control {
+  background: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+#barra-cancion {
+  width: 100%;
+  margin-top: 10px;
+}

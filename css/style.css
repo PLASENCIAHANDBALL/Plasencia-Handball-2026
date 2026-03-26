@@ -2589,7 +2589,7 @@ body.splash-activo #splash {
 }
 
 .btn-control {
-  background: white;
+  background: #ff7514;
   border: none;
   border-radius: 10px;
   font-size: 18px;
@@ -2598,6 +2598,10 @@ body.splash-activo #splash {
 }
 
 #barra-cancion {
+
   width: 100%;
+  max-width: 320px;
+
   margin-top: 10px;
+
 }

@@ -64,6 +64,11 @@ let equipoActual = null;
 
 let patrocinadores = [];
 
+/* ================== AUDIO GLOBAL ================== */
+
+let audioTorneo = new Audio("audio/cancion-torneo.mp3");
+audioTorneo.loop = true;
+
 function refrescarVistaActual() {
 
   const titulo = document.querySelector("h2")?.textContent || "";
@@ -208,7 +213,6 @@ function mostrarHome() {
 
     <div class="badge-texto">
       <strong>Canción del torneo</strong>
-      <span id="tiempo-cancion">0:00 / 0:00</span>
     </div>
 
     <div class="controles-cancion">
@@ -234,8 +238,6 @@ function mostrarHome() {
     step="1"
     oninput="moverBarraCancion()"
   >
-
-  <audio id="audio-torneo" src="audio/cancion-torneo.mp3"></audio>
 
 </section>
     
@@ -530,43 +532,50 @@ function abrirWeb(url) {
 }
 
 function toggleCancionTorneo() {
-  const audio = document.getElementById("audio-torneo");
+
   const boton = document.getElementById("btn-play");
 
-  if (!audio) return;
+  if (audioTorneo.paused) {
 
-  if (audio.paused) {
-    audio.play();
+    audioTorneo.play();
+
     if (boton) boton.textContent = "⏸️";
+
   } else {
-    audio.pause();
+
+    audioTorneo.pause();
+
     if (boton) boton.textContent = "▶️";
+
   }
+
 }
 
 window.toggleCancionTorneo = toggleCancionTorneo;
 
 function reiniciarCancion() {
-  const audio = document.getElementById("audio-torneo");
-  const barra = document.getElementById("barra-cancion");
 
-  if (!audio) return;
+  const barra =
+    document.getElementById("barra-cancion");
 
-  audio.currentTime = 0;
+  audioTorneo.currentTime = 0;
 
   if (barra) barra.value = 0;
+
 }
 
 function moverBarraCancion() {
-  const audio = document.getElementById("audio-torneo");
-  const barra = document.getElementById("barra-cancion");
 
-  if (!audio || !barra) return;
+  const barra =
+    document.getElementById("barra-cancion");
+
+  if (!barra) return;
 
   const tiempo =
-    (barra.value / 100) * audio.duration;
+    (barra.value / 100) * audioTorneo.duration;
 
-  audio.currentTime = tiempo;
+  audioTorneo.currentTime = tiempo;
+
 }
 
 function formatearTiempo(segundos) {

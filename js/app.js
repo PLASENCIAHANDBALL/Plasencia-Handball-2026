@@ -584,6 +584,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!audio) return;
 
+  audio.addEventListener("loadedmetadata", () => {
+
+    const barra =
+      document.getElementById("barra-cancion");
+
+    if (barra) {
+      barra.max = 100;
+    }
+
+  });
+
   audio.addEventListener("timeupdate", () => {
 
     const barra =
@@ -3579,6 +3590,8 @@ window.guardarEdicionEquipo = guardarEdicionEquipo;
 window.actualizarClasificacion = actualizarClasificacion;
 window.setNavActivoPorVista = setNavActivoPorVista;
 // utilidades usadas en HTML
+window.reiniciarCancion = reiniciarCancion;
+window.moverBarraCancion = moverBarraCancion;
 window.abrirWeb = abrirWeb;
 
 window.mostrarPartidosPorPabellon = function(pabellon) {

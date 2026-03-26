@@ -4,17 +4,17 @@ window.onerror = function (msg, url, line, col, error) {
   alert("Error en la app:\n" + msg);
 };
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(reg => reg.unregister());
-  });
-}
+//if ("serviceWorker" in navigator) {
+  //navigator.serviceWorker.getRegistrations().then(registrations => {
+    //registrations.forEach(reg => reg.unregister());
+  //});
+//}
 
-if ("caches" in window) {
-  caches.keys().then(keys => {
-    keys.forEach(key => caches.delete(key));
-  });
-}
+//if ("caches" in window) {
+  //caches.keys().then(keys => {
+   // keys.forEach(key => caches.delete(key));
+  //});
+//}
 
 document.body.classList.add("splash-activo");
 
@@ -35,6 +35,10 @@ let progresoSplash = 0;
 let intervaloSplash = null;
 
 let clubes = [];
+let cacheClubes = null;
+let cacheEquipos = null;
+let cachePartidos = null;
+let cachePatrocinadores = null;
 
 let clasificacionFiltro = {
   categoria: "Infantil",
@@ -2110,18 +2114,41 @@ async function actualizarClasificacionSupabase(partido) {
 }
 
 /* ================== CLUBES SUPABASE ================== */
-async function obtenerClubesSupabase() {
-  const { data, error } = await supabase
-    .from("clubes")
-    .select("*")
-    .order("id");
+async function obtenerClubesSupabase(intentos = 3) {
 
-  if (error) {
-    console.error("Error cargando clubes:", error);
+  try {
+
+    const { data, error } = await supabase
+      .from("clubes")
+      .select("*")
+      .order("id");
+
+    if (error) throw error;
+
+    return data || [];
+
+  } catch (error) {
+
+    console.warn("Error cargando clubes:", error);
+
+    if (intentos > 0) {
+
+      console.log("Reintentando clubes...");
+
+      await new Promise(r =>
+        setTimeout(r, 1000)
+      );
+
+      return obtenerClubesSupabase(
+        intentos - 1
+      );
+
+    }
+
     return [];
+
   }
 
-  return data;
 }
 
 /* ================== EQUIPOS (SUPABASE) ================== */

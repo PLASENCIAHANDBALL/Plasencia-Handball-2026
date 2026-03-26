@@ -1073,16 +1073,33 @@ function formCrearFaseFinal() {
     </select>
 
     <label>Fase</label>
-    <select id="fase">
+<select id="fase">
   <option value="playoff">Playoff</option>
+  <option value="cuartos">Cuartos de final</option>
   <option value="semifinal">Semifinal</option>
   <option value="final">Final</option>
-  <option value="tercer_puesto">3º / 4º</option>
-  <option value="quinto_puesto">5º / 6º</option>
-  <option value="septimo_puesto">7º / 8º</option>
-  <option value="noveno_puesto">9º / 10º</option>
 </select>
 
+    <label>Posición</label>
+<select id="posicion">
+  <option value="">-- Seleccionar posición --</option>
+
+  <option>Serie 1</option>
+  <option>Serie 2</option>
+
+  <option>1º / 2º</option>
+  <option>3º / 4º</option>
+  <option>5º / 6º</option>
+  <option>7º / 8º</option>
+  <option>9º / 10º</option>
+  <option>11º / 12º</option>
+  <option>13º / 14º</option>
+
+  <option>1º / 8º</option>
+  <option>5º / 8º</option>
+  <option>1º / 4º</option>
+</select>
+    
     <label>Fecha</label>
     <input type="date" id="fecha">
 
@@ -1125,14 +1142,17 @@ async function cargarTodosEquipos() {
 async function guardarFaseFinal() {
   const fase = document.getElementById("fase").value;
 
+const posicion = document.getElementById("posicion").value;
+
 let grupoTexto = "Playoff";
 
-if (fase === "final") grupoTexto = "Final";
+if (fase === "cuartos") grupoTexto = "Cuartos de final";
 if (fase === "semifinal") grupoTexto = "Semifinal";
-if (fase === "tercer_puesto") grupoTexto = "3º/4º Puesto";
-if (fase === "quinto_puesto") grupoTexto = "5º/6º Puesto";
-if (fase === "septimo_puesto") grupoTexto = "7º/8º Puesto";
-if (fase === "noveno_puesto") grupoTexto = "9º/10º Puesto";
+if (fase === "final") grupoTexto = "Final";
+
+if (posicion) {
+  grupoTexto = posicion;
+}
 
 const nuevoPartido = {
   local_id: Number(document.getElementById("equipoLocal").value),
@@ -1531,6 +1551,9 @@ function textoFase(fase) {
   if (fase === "semifinal")
     return "🥈 SEMIFINAL";
 
+  if (fase === "cuartos")
+  return "🕔 CUARTOS DE FINAL";
+  
   if (fase === "tercer_puesto")
     return "🥉 3.º / 4.º PUESTO";
 

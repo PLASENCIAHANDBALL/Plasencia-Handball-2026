@@ -1072,12 +1072,14 @@ function formCrearFaseFinal() {
       <option>Femenino</option>
     </select>
 
-    <label>Fase</label>
-<select id="fase">
+    <select id="fase">
   <option value="playoff">Playoff</option>
   <option value="cuartos">Cuartos de final</option>
   <option value="semifinal">Semifinal</option>
   <option value="final">Final</option>
+
+  <option value="serie1">Serie 1</option>
+  <option value="serie2">Serie 2</option>
 </select>
 
     <label>Posición</label>
@@ -1150,7 +1152,10 @@ if (fase === "cuartos") grupoTexto = "Cuartos de final";
 if (fase === "semifinal") grupoTexto = "Semifinal";
 if (fase === "final") grupoTexto = "Final";
 
-if (posicion) {
+if (fase === "serie1") grupoTexto = "Serie 1";
+if (fase === "serie2") grupoTexto = "Serie 2";
+
+if (posicion && fase !== "serie1" && fase !== "serie2") {
   grupoTexto = posicion;
 }
 
@@ -1566,6 +1571,12 @@ function textoFase(fase) {
   if (fase === "noveno_puesto")
     return "9️⃣ 9.º / 10.º PUESTO";
 
+  if (fase === "serie1")
+  return "🔵 SERIE 1";
+
+if (fase === "serie2")
+  return "🟣 SERIE 2";
+  
   if (fase === "playoff")
     return "⚔️ PLAYOFF";
 

@@ -198,6 +198,29 @@ function mostrarHome() {
   let html = `
     <h2>Inicio</h2>
 
+    <section class="cancion-torneo">
+
+  <div class="galeria-badge" onclick="toggleCancionTorneo()">
+
+    <div class="badge-icon">
+      <img src="img/iconos/musica.png" alt="Canción del torneo">
+    </div>
+
+    <div class="badge-texto">
+      <strong>Canción del torneo</strong>
+      <span>Pulsar para reproducir</span>
+    </div>
+
+    <div class="badge-play">
+      ▶️
+    </div>
+
+  </div>
+
+  <audio id="audio-torneo" src="audio/cancion-torneo.mp3"></audio>
+
+</section>
+    
     <section class="galeria2026">
       <div id="galeria2026-scroll" class="galeria2026-scroll">
         <div class="galeria2026-loading">Cargando imágenes…</div>
@@ -487,6 +510,20 @@ function abrirWeb(url) {
   if (!url) return;
   window.open(url, "_blank");
 }
+
+function toggleCancionTorneo() {
+  const audio = document.getElementById("audio-torneo");
+
+  if (!audio) return;
+
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+
+window.toggleCancionTorneo = toggleCancionTorneo;
 
 async function iniciarApp() {
   try {

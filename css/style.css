@@ -2539,19 +2539,19 @@ body.splash-activo #splash {
 
 /* Infantil */
 .badge-infantil {
-  background: #ff7514;
+  background: #f5a25d;
   color: #FFFFFF;
 }
 
 /* Cadete */
 .badge-cadete {
-  background: #ff7514;
+  background: #f5a25d;
   color: #FFFFFF;
 }
 
 /* Juvenil */
 .badge-juvenil {
-  background: #ff7514;
+  background: #f5a25d;
   color: #FFFFFF;
 }
 
@@ -2589,7 +2589,7 @@ body.splash-activo #splash {
 }
 
 .btn-control {
-  background: #ff7514;
+  background: #f5a25d;
   border: none;
   border-radius: 10px;
   font-size: 18px;

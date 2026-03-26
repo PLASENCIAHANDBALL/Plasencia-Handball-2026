@@ -2842,11 +2842,6 @@ function mostrarClasificacion() {
   contenido.innerHTML = `
   <h2>Clasificación</h2>
 
-  <!-- 🏆 CUADROS ELIMINATORIOS (VISIBLE PARA TODOS) -->
-  <button onclick="mostrarCuadrosEliminatorios()">
-    🏆 Ver cuadros eliminatorios
-  </button>
-
   <div class="subfiltros">
       <select id="clas-cat" onchange="actualizarClasificacion()">
         <option>Infantil</option>

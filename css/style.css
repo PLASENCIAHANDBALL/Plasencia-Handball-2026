@@ -2589,7 +2589,7 @@ body.splash-activo #splash {
 }
 
 .btn-control {
-  background: #f5a25d;
+  background: transparent;
   border: none;
   border-radius: 10px;
   font-size: 18px;

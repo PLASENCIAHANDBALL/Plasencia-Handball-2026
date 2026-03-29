@@ -3544,6 +3544,7 @@ function resolverEmpateMultiple(
 
   });
 
+  // ORDENAR POR CRITERIOS
   miniTabla.sort((a, b) => {
 
     if (
@@ -3582,7 +3583,10 @@ function resolverEmpateMultiple(
         (a.gf - a.gc)
       );
 
-    return b.gf - a.gf;
+    if (b.gf !== a.gf)
+      return b.gf - a.gf;
+
+    return 0;
 
   });
 

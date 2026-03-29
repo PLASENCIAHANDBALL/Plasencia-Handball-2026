@@ -3232,6 +3232,51 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
   }
 }
 
+async function recalcularTodasLasClasificaciones() {
+
+  console.log("🔄 Recalculando clasificaciones...");
+
+  try {
+
+    const combinaciones = [
+      ...new Set(
+        equipos.map(e =>
+          `${e.categoria}|${e.genero}|${e.grupo}`
+        )
+      )
+    ];
+
+    for (const combo of combinaciones) {
+
+      const [categoria, genero, grupo] =
+        combo.split("|");
+
+      await guardarClasificacionSupabase(
+        categoria,
+        genero,
+        grupo
+      );
+
+    }
+
+    console.log("✅ Clasificaciones actualizadas");
+
+    // refrescar vista si está abierta
+    if (document.getElementById("tablaClasificacion")) {
+      actualizarClasificacion();
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Error recalculando clasificación:",
+      error
+    );
+
+  }
+
+}
+
 function compararEquipos(a, b, categoria, genero, grupo, partidos) {
 
   // 1️⃣ PUNTOS
@@ -4033,6 +4078,13 @@ setInterval(() => {
     renderActualizacionesHome();
   }
 }, 30000); // cada 30s
+
+// 🔄 RECALCULAR CLASIFICACIÓN AUTOMÁTICAMENTE
+setInterval(() => {
+
+  recalcularTodasLasClasificaciones();
+
+}, 5 * 60 * 1000); // cada 5 minutos
 
 /* ================== ARRANQUE ================== */
 window.addEventListener("load", () => {

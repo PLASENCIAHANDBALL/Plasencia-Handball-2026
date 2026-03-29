@@ -3178,6 +3178,95 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
   }
 }
 
+function compararEquipos(a, b, categoria, genero, grupo, partidos) {
+
+  // 1️⃣ PUNTOS
+  if (b.puntos !== a.puntos) {
+    return b.puntos - a.puntos;
+  }
+
+  // PARTIDOS ENTRE ELLOS
+  const partidosEntreEllos = partidos.filter(p =>
+    p.estado === "finalizado" &&
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.grupo === grupo &&
+    (
+      (p.local_id === a.id && p.visitante_id === b.id) ||
+      (p.local_id === b.id && p.visitante_id === a.id)
+    )
+  );
+
+  let puntosA = 0;
+  let puntosB = 0;
+
+  let golesA = 0;
+  let golesB = 0;
+
+  let golesContraA = 0;
+  let golesContraB = 0;
+
+  partidosEntreEllos.forEach(p => {
+
+    const esALocal = p.local_id === a.id;
+
+    const golesAF = esALocal ? p.goles_local : p.goles_visitante;
+    const golesAC = esALocal ? p.goles_visitante : p.goles_local;
+
+    const esBLocal = p.local_id === b.id;
+
+    const golesBF = esBLocal ? p.goles_local : p.goles_visitante;
+    const golesBC = esBLocal ? p.goles_visitante : p.goles_local;
+
+    golesA += golesAF;
+    golesB += golesBF;
+
+    golesContraA += golesAC;
+    golesContraB += golesBC;
+
+    if (golesAF > golesAC) puntosA += 2;
+    else if (golesAF === golesAC) puntosA += 1;
+
+    if (golesBF > golesBC) puntosB += 2;
+    else if (golesBF === golesBC) puntosB += 1;
+
+  });
+
+  // 2️⃣ PUNTOS ENTRE ELLOS
+  if (puntosB !== puntosA) {
+    return puntosB - puntosA;
+  }
+
+  // 3️⃣ DIFERENCIA ENTRE ELLOS
+  const diffA = golesA - golesContraA;
+  const diffB = golesB - golesContraB;
+
+  if (diffB !== diffA) {
+    return diffB - diffA;
+  }
+
+  // 4️⃣ GOLES ENTRE ELLOS
+  if (golesB !== golesA) {
+    return golesB - golesA;
+  }
+
+  // 5️⃣ DIFERENCIA TOTAL
+  const diffTotalA = a.gf - a.gc;
+  const diffTotalB = b.gf - b.gc;
+
+  if (diffTotalB !== diffTotalA) {
+    return diffTotalB - diffTotalA;
+  }
+
+  // 6️⃣ GOLES TOTALES
+  if (b.gf !== a.gf) {
+    return b.gf - a.gf;
+  }
+
+  // 7️⃣ SI TODO IGUAL → NO CAMBIA
+  return 0;
+}
+
 function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
   const equiposGrupo = equipos.filter(e =>
     e.categoria === categoria &&
@@ -3216,8 +3305,15 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
 
     return { nombre: eq.nombre, pj, pg, pe, pp, gf, gc, puntos };
   }).sort((a, b) =>
-    b.puntos - a.puntos || (b.gf - b.gc) - (a.gf - a.gc)
-  );
+  compararEquipos(
+    a,
+    b,
+    categoria,
+    genero,
+    grupo,
+    partidos
+  )
+);
 }
 
 /* ================== EQUIPOS GRUPO ================== */

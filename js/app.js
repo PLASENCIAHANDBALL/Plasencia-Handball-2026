@@ -138,7 +138,7 @@ const IMAGENES_PABELLONES = {
 // 🔴 DIRECTOS POR PABELLÓN
 const DIRECTOS_PABELLONES = {
   "Municipal": "https://www.twitch.tv/swl_tv",
-  "Escuela": "https://www.twitch.tv/swl_tv",
+  "Escuela": "https://www.twitch.tv/zonetv_es",
 };
 
 function normalizarPartidos(lista) {

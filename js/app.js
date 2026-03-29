@@ -3102,6 +3102,33 @@ async function actualizarClasificacion() {
 
   const { data, error } = await query;
 
+  data.sort((a, b) => {
+
+  if (b.puntos !== a.puntos) {
+    return b.puntos - a.puntos;
+  }
+
+  return compararEquipos(
+    {
+      id: a.equipo_id,
+      gf: a.gf,
+      gc: a.gc,
+      puntos: a.puntos
+    },
+    {
+      id: b.equipo_id,
+      gf: b.gf,
+      gc: b.gc,
+      puntos: b.puntos
+    },
+    categoria,
+    genero,
+    grupoSeleccionado,
+    partidos
+  );
+
+});
+  
   if (error) {
     console.error(error);
     return;
@@ -3116,6 +3143,33 @@ async function actualizarClasificacion() {
     grupos.forEach(nombreGrupo => {
       const datosGrupo = data.filter(d => d.grupo === nombreGrupo);
 
+      datosGrupo.sort((a, b) => {
+
+  if (b.puntos !== a.puntos) {
+    return b.puntos - a.puntos;
+  }
+
+  return compararEquipos(
+    {
+      id: a.equipo_id,
+      gf: a.gf,
+      gc: a.gc,
+      puntos: a.puntos
+    },
+    {
+      id: b.equipo_id,
+      gf: b.gf,
+      gc: b.gc,
+      puntos: b.puntos
+    },
+    categoria,
+    genero,
+    nombreGrupo,
+    partidos
+  );
+
+});
+      
       htmlFinal += `
         <h3 class="titulo-grupo">🏷️ ${nombreGrupo}</h3>
         ${renderTablaClasificacion(datosGrupo)}

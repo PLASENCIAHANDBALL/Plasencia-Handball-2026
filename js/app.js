@@ -3268,26 +3268,32 @@ function compararEquipos(a, b, categoria, genero, grupo, partidos) {
 }
 
 function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
+
   const equiposGrupo = equipos.filter(e =>
     e.categoria === categoria &&
     e.genero === genero &&
     e.grupo === grupo
   );
 
-  return equiposGrupo.map(eq => {
+  // 1️⃣ calcular estadísticas base
+  let tabla = equiposGrupo.map(eq => {
+
     const partidosEq = partidos.filter(p =>
-  p.estado === "finalizado" &&
-  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
-  p.genero === genero &&
-  p.grupo === grupo &&
-  (p.local_id === eq.id || p.visitante_id === eq.id)
-);
+      p.estado === "finalizado" &&
+      p.categoria === categoria &&
+      p.genero === genero &&
+      p.grupo === grupo &&
+      (p.local_id === eq.id || p.visitante_id === eq.id)
+    );
 
     let pj = 0, pg = 0, pe = 0, pp = 0, gf = 0, gc = 0, puntos = 0;
 
     partidosEq.forEach(p => {
+
       pj++;
+
       const esLocal = p.local_id === eq.id;
+
       const golesF = esLocal ? p.goles_local : p.goles_visitante;
       const golesC = esLocal ? p.goles_visitante : p.goles_local;
 
@@ -3295,25 +3301,194 @@ function calcularClasificacion(categoria, genero, grupo, equipos, partidos) {
       gc += golesC;
 
       if (golesF > golesC) {
-        pg++; puntos += 2;
-      } else if (golesF === golesC) {
-        pe++; puntos += 1;
-      } else {
+        pg++;
+        puntos += 2;
+      }
+
+      else if (golesF === golesC) {
+        pe++;
+        puntos += 1;
+      }
+
+      else {
         pp++;
       }
+
     });
 
-    return { nombre: eq.nombre, pj, pg, pe, pp, gf, gc, puntos };
-  }).sort((a, b) =>
-  compararEquipos(
-    a,
-    b,
-    categoria,
-    genero,
-    grupo,
-    partidos
-  )
-);
+    return {
+      id: eq.id,
+      nombre: eq.nombre,
+      pj,
+      pg,
+      pe,
+      pp,
+      gf,
+      gc,
+      puntos
+    };
+
+  });
+
+  // 2️⃣ ordenar por puntos
+  tabla.sort((a, b) => b.puntos - a.puntos);
+
+  // 3️⃣ resolver empates por bloques
+  let resultadoFinal = [];
+
+  let i = 0;
+
+  while (i < tabla.length) {
+
+    let empatados = [tabla[i]];
+
+    let j = i + 1;
+
+    while (
+      j < tabla.length &&
+      tabla[j].puntos === tabla[i].puntos
+    ) {
+      empatados.push(tabla[j]);
+      j++;
+    }
+
+    if (empatados.length === 1) {
+
+      resultadoFinal.push(empatados[0]);
+
+    } else {
+
+      const resueltos =
+        resolverEmpateMultiple(
+          empatados,
+          categoria,
+          genero,
+          grupo,
+          partidos
+        );
+
+      resultadoFinal.push(...resueltos);
+
+    }
+
+    i = j;
+
+  }
+
+  return resultadoFinal;
+
+}
+
+function resolverEmpateMultiple(
+  equiposEmpatados,
+  categoria,
+  genero,
+  grupo,
+  partidos
+) {
+
+  const ids = equiposEmpatados.map(e => e.id);
+
+  const partidosEntreEllos = partidos.filter(p =>
+    p.estado === "finalizado" &&
+    p.categoria === categoria &&
+    p.genero === genero &&
+    p.grupo === grupo &&
+    ids.includes(p.local_id) &&
+    ids.includes(p.visitante_id)
+  );
+
+  let miniTabla = equiposEmpatados.map(eq => {
+
+    let puntos = 0;
+    let gf = 0;
+    let gc = 0;
+
+    partidosEntreEllos.forEach(p => {
+
+      const esLocal = p.local_id === eq.id;
+
+      const golesF =
+        esLocal
+          ? p.goles_local
+          : p.goles_visitante;
+
+      const golesC =
+        esLocal
+          ? p.goles_visitante
+          : p.goles_local;
+
+      if (
+        p.local_id === eq.id ||
+        p.visitante_id === eq.id
+      ) {
+
+        gf += golesF;
+        gc += golesC;
+
+        if (golesF > golesC)
+          puntos += 2;
+
+        else if (golesF === golesC)
+          puntos += 1;
+
+      }
+
+    });
+
+    return {
+      ...eq,
+      puntosEnfrentamientos: puntos,
+      diffEnfrentamientos: gf - gc,
+      golesEnfrentamientos: gf
+    };
+
+  });
+
+  miniTabla.sort((a, b) => {
+
+    if (
+      b.puntosEnfrentamientos !==
+      a.puntosEnfrentamientos
+    )
+      return (
+        b.puntosEnfrentamientos -
+        a.puntosEnfrentamientos
+      );
+
+    if (
+      b.diffEnfrentamientos !==
+      a.diffEnfrentamientos
+    )
+      return (
+        b.diffEnfrentamientos -
+        a.diffEnfrentamientos
+      );
+
+    if (
+      b.golesEnfrentamientos !==
+      a.golesEnfrentamientos
+    )
+      return (
+        b.golesEnfrentamientos -
+        a.golesEnfrentamientos
+      );
+
+    if (
+      (b.gf - b.gc) !==
+      (a.gf - a.gc)
+    )
+      return (
+        (b.gf - b.gc) -
+        (a.gf - a.gc)
+      );
+
+    return b.gf - a.gf;
+
+  });
+
+  return miniTabla;
+
 }
 
 /* ================== EQUIPOS GRUPO ================== */

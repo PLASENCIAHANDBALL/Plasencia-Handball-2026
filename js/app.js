@@ -3544,9 +3544,10 @@ function resolverEmpateMultiple(
 
   });
 
-  // ORDENAR POR CRITERIOS
+  // ORDENAR POR CRITERIOS DEL REGLAMENTO
   miniTabla.sort((a, b) => {
 
+    // 1️⃣ puntos entre ellos
     if (
       b.puntosEnfrentamientos !==
       a.puntosEnfrentamientos
@@ -3556,6 +3557,7 @@ function resolverEmpateMultiple(
         a.puntosEnfrentamientos
       );
 
+    // 2️⃣ diferencia entre ellos
     if (
       b.diffEnfrentamientos !==
       a.diffEnfrentamientos
@@ -3565,6 +3567,7 @@ function resolverEmpateMultiple(
         a.diffEnfrentamientos
       );
 
+    // 3️⃣ goles entre ellos
     if (
       b.golesEnfrentamientos !==
       a.golesEnfrentamientos
@@ -3574,15 +3577,22 @@ function resolverEmpateMultiple(
         a.golesEnfrentamientos
       );
 
+    // 4️⃣ diferencia total
+    const diffTotalA =
+      a.gf - a.gc;
+
+    const diffTotalB =
+      b.gf - b.gc;
+
     if (
-      (b.gf - b.gc) !==
-      (a.gf - a.gc)
+      diffTotalB !== diffTotalA
     )
       return (
-        (b.gf - b.gc) -
-        (a.gf - a.gc)
+        diffTotalB -
+        diffTotalA
       );
 
+    // 5️⃣ goles totales
     if (b.gf !== a.gf)
       return b.gf - a.gf;
 

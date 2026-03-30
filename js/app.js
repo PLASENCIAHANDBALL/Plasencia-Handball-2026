@@ -1224,13 +1224,33 @@ function formCrearFaseFinal() {
     </select>
 
     <select id="fase">
-  <option value="playoff">Playoff</option>
-  <option value="cuartos">Cuartos de final</option>
-  <option value="semifinal">Semifinal</option>
-  <option value="final">Final</option>
 
-  <option value="serie1">Serie 1</option>
-  <option value="serie2">Serie 2</option>
+  <option value="playoff">Playoff</option>
+
+  <option value="grupo_unico">
+    Grupo único
+  </option>
+
+  <option value="cuartos">
+    Cuartos de final
+  </option>
+
+  <option value="semifinal">
+    Semifinal
+  </option>
+
+  <option value="final">
+    Final
+  </option>
+
+  <option value="serie1">
+    Serie 1
+  </option>
+
+  <option value="serie2">
+    Serie 2
+  </option>
+
 </select>
 
     <label>Posición</label>
@@ -1248,6 +1268,8 @@ function formCrearFaseFinal() {
   <option>11º / 12º</option>
   <option>13º / 14º</option>
 
+  <option>7º / 9º</option>
+  <option>9º / 12º</option>
   <option>1º / 8º</option>
   <option>5º / 8º</option>
   <option>1º / 4º</option>
@@ -1302,7 +1324,7 @@ let grupoTexto = "Playoff";
 if (fase === "cuartos") grupoTexto = "Cuartos de final";
 if (fase === "semifinal") grupoTexto = "Semifinal";
 if (fase === "final") grupoTexto = "Final";
-
+if (fase === "grupo_unico") grupoTexto = "Grupo Único";
 if (fase === "serie1") grupoTexto = "Serie 1";
 if (fase === "serie2") grupoTexto = "Serie 2";
 
@@ -1722,6 +1744,9 @@ function textoFase(fase) {
   if (fase === "noveno_puesto")
     return "9️⃣ 9.º / 10.º PUESTO";
 
+  if (fase === "grupo_unico")
+  return "📋 GRUPO ÚNICO";
+  
   if (fase === "serie1")
   return "🔵 SERIE 1";
 

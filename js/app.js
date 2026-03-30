@@ -4084,13 +4084,13 @@ let html = `
   /* ===== PRÓXIMOS ===== */
 html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
 html += proximos.length
-  ? renderBloquesPorFecha(proximos)
+  ? renderBloquesPorFecha(proximos, "proximos")
   : `<p>No hay próximos partidos.</p>`;
 
 /* ===== FINALIZADOS ===== */
 html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
 html += finalizados.length
-  ? renderBloquesPorFecha(finalizados)
+  ? renderBloquesPorFecha(finalizados, "finalizados")
   : `<p>No hay partidos finalizados.</p>`;
 
   /* ===== BOTÓN ÚNICO DE VOLVER ===== */

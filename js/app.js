@@ -1048,8 +1048,13 @@ function mostrarPartidos() {
     return fa - fb;
   });
 
-  const proximos = ordenados.filter(p => p.estado !== "finalizado" || !p.estado);
-  const finalizados = ordenados.filter(p => p.estado === "finalizado").reverse();
+  const proximos = ordenados.filter(
+  p => calcularEstadoPartido(p) !== "finalizado"
+);
+
+const finalizados = ordenados
+  .filter(p => calcularEstadoPartido(p) === "finalizado")
+  .reverse();
 
   /* ===== PRÓXIMOS ===== */
 html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
@@ -4024,10 +4029,13 @@ window.mostrarPartidosPorPabellon = function(pabellon) {
     return fa - fb;
   });
 
-  const proximos = ordenados.filter(p => p.estado !== "finalizado");
-  const finalizados = ordenados
-    .filter(p => p.estado === "finalizado")
-    .reverse(); // más recientes arriba
+  const proximos = ordenados.filter(
+  p => calcularEstadoPartido(p) !== "finalizado"
+);
+
+const finalizados = ordenados
+  .filter(p => calcularEstadoPartido(p) === "finalizado")
+  .reverse();
 
   // 🔹 detectar si hay partido en juego en este pabellón
 const hayDirecto = partidosPabellon.some(

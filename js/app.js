@@ -675,7 +675,7 @@ function cargarGaleria2026() {
   const contenedor = document.getElementById("galeria2026-scroll");
   if (!contenedor) return;
 
-  const urlCarpeta = "https://www.amazon.es/photos/share/TxSZwjC6rqwphi90RIM8zuamYEm31y31Z92Zm39SfHk";
+  const urlCarpeta = "https://www.amazon.es/photos/share/BNF0g9ckA7PPdmq1jetkgeJ9zO8BwiJW6Gj4KPumS5";
 
   contenedor.innerHTML = `
   <a href="${urlCarpeta}" target="_blank" class="galeria-badge">

@@ -1,21 +1,60 @@
 {
-  "name": "Plasencia Handball 2026",
-  "short_name": "Handball 2026",
-  "start_url": ".",
+  "id": "./",
+  "name": "Plasencia Handball",
+  "short_name": "Plasencia Handball",
+  "description": "Partidos, resultados en directo, clasificaciones y pabellones del Torneo Internacional Plasencia Handball.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#f5a25d",
   "theme_color": "#c4161c",
-  "description": "App web del torneo Plasencia Handball 2026",
+  "categories": ["sports"],
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Partidos",
+      "short_name": "Partidos",
+      "url": "./?vista=partidos",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Clasificación",
+      "short_name": "Tabla",
+      "url": "./?vista=tabla",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Pabellones",
+      "short_name": "Pabellones",
+      "url": "./?vista=pabellones",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

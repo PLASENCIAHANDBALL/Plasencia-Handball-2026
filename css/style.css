@@ -11,17 +11,34 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
   color: var(--oscuro);
 
-  /* 🔥 FONDO GENERAL */
-  background-image: url("../img/fondo-app.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  /* 🔥 FONDO GENERAL
+     Antes era "img/fondo-app.png" (4,5 MB) con background-attachment: fixed, pero esa
+     imagen era un lienzo 100 % blanco: se cargaba y repintaba en cada scroll sin aportar
+     nada. Un color liso se ve exactamente igual y no pesa. */
+  background-color: #ffffff;
+}
+
+/* Solo para lectores de pantalla (texto presente pero no visible) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ===== HEADER + NAV WRAPPER ===== */
@@ -36,7 +53,7 @@ body {
 .app-header {
   position: relative;
   height: 190px;
-  background-image: url("../img/header.png");
+  background-image: url("../img/header.webp");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
@@ -46,6 +63,8 @@ body {
 @media (max-width: 768px) {
   .app-header {
     height: 120px;
+    /* versión más ligera para móvil (8 KB frente a 15 KB) */
+    background-image: url("../img/header-m.webp");
   }
 }
 
@@ -97,6 +116,7 @@ body {
 
   gap: 3px;                  /* 🔑 menos separación */
   min-width: 44px;           /* 🔑 tamaño táctil iOS */
+  min-height: 44px;          /* objetivo táctil mínimo recomendado */
 
   font-size: 15px;           /* 🔑 icono más pequeño */
   color: #1f2933;            /* 🔑 TEXTO NEGRO */
@@ -174,8 +194,12 @@ body {
 main {
   background: transparent;
   padding-top: 0px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: max(15px, env(safe-area-inset-left));
+  padding-right: max(15px, env(safe-area-inset-right));
+
+  /* mismo ancho máximo que el menú (900 px + sus 2 márgenes de 16 px) */
+  max-width: 932px;
+  margin: 0 auto;
 }
 
 /* BOTONES GENERALES */
@@ -401,8 +425,8 @@ button:active {
 /* BOTÓN ADMIN FLOTANTE */
 #admin-fab {
   position: fixed;
-  bottom: 60px;   /* 🔽 baja el botón */
-  right: 18px;
+  bottom: calc(60px + env(safe-area-inset-bottom));   /* 🔽 baja el botón */
+  right: max(18px, env(safe-area-inset-right));
 
   width: 56px;
   height: 56px;
@@ -882,9 +906,9 @@ button:active {
 #contenido {
   display: block;
 
+  /* Sin backdrop-filter: el fondo de la app es blanco liso, así que el desenfoque no se
+     veía, pero obligaba al móvil a recalcularlo sobre toda la pantalla en cada scroll. */
   background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 
   border-radius: 26px;
   padding: 16px;
@@ -1183,8 +1207,8 @@ body.splash-activo #splash {
 
 .social-fab {
   position: fixed;
-  right: 18px;
-  bottom: 130px; /* sigue encima del admin */
+  right: max(18px, env(safe-area-inset-right));
+  bottom: calc(130px + env(safe-area-inset-bottom)); /* sigue encima del admin */
   z-index: 1800;
 
   display: flex;
@@ -1748,9 +1772,12 @@ body.splash-activo #splash {
     transform 0.35s ease;
 }
 
-/* Estado abierto */
+/* Estado abierto
+   Antes era max-height: 2000px, y un bloque con muchos partidos (varias categorías,
+   grupos y partidos anidados) quedaba cortado sin forma de verlo. Ahora no hay límite:
+   el JS (toggleCategoriaDia) anima la apertura con la altura real y luego lo deja libre. */
 .categoria-partidos.abierto {
-  max-height: 2000px; /* suficiente para muchos partidos */
+  max-height: none;
   opacity: 1;
   transform: translateY(0);
 }
@@ -1792,7 +1819,8 @@ body.splash-activo #splash {
 
 .app-footer {
   width: 100%;
-  padding: 20px 0 24px;
+  /* margen inferior extra: los botones flotantes (admin y redes) no tapan el pie */
+  padding: 20px 0 calc(110px + env(safe-area-inset-bottom));
 
   display: flex;
   flex-direction: column;   /* 🔑 CLAVE */
@@ -1964,7 +1992,6 @@ body.splash-activo #splash {
   padding: 16px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  backdrop-filter: blur(12px);
 }
 
 .equipo-ios.local {
@@ -2009,7 +2036,6 @@ body.splash-activo #splash {
 
 .team-ios-card {
   background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(12px);
   border-radius: 18px;
   padding: 16px;
   margin-bottom: 14px;
@@ -2415,10 +2441,6 @@ body.splash-activo #splash {
   text-align: center;
 }
 
-.actualizacion-fase:has(:contains("FINAL")) {
-  color: #d4af37;
-}
-
 .btn-ver-mas-partidos {
   background: transparent;
   border: none;
@@ -2604,4 +2626,247 @@ body.splash-activo #splash {
 
   margin-top: 10px;
 
+}
+
+/* ============================================================
+   MEJORAS 2027 · rendimiento, móvil y accesibilidad
+   (bloque añadido al final para que prevalezca sobre lo anterior)
+   ============================================================ */
+
+/* iOS hace zoom automático al enfocar un campo con letra menor de 16 px */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* sin retardo ni zoom por doble toque en elementos pulsables */
+button,
+a,
+[role="button"],
+select,
+input {
+  touch-action: manipulation;
+}
+
+[role="button"] {
+  cursor: pointer;
+}
+
+/* foco visible para quien navega con teclado */
+:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+/* Bloques desplegables ocultos: no deben recibir foco ni leerse con el lector de pantalla.
+   "visibility" se retrasa al cerrar para que se vea la animación de plegado. */
+.categoria-partidos {
+  transition:
+    max-height 0.45s cubic-bezier(0.4, 0.0, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.35s ease,
+    visibility 0s linear 0.45s;
+}
+
+.categoria-partidos.oculto {
+  visibility: hidden;
+}
+
+.categoria-partidos.abierto {
+  visibility: visible;
+  transition:
+    max-height 0.45s cubic-bezier(0.4, 0.0, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.35s ease,
+    visibility 0s;
+}
+
+/* ---------- avisos (sustituyen a alert()) ---------- */
+.avisos {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(92vw, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 3000;
+  pointer-events: none;
+}
+
+.aviso {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #1f2933;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.35;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  animation: avisoEntra 0.25s ease-out;
+}
+
+.aviso.error {
+  background: #b91c1c;
+}
+
+.aviso.ok {
+  background: #15803d;
+}
+
+.aviso button {
+  width: auto;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #fff;
+  color: #1f2933;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+@keyframes avisoEntra {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- tarjetas de instalación / mensajes de estado ---------- */
+.tarjeta-instalar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #fff7ed;
+  border: 1px solid #fbd5a5;
+  font-size: 14px;
+}
+
+.tarjeta-instalar strong {
+  display: block;
+}
+
+.tarjeta-instalar .acciones {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tarjeta-instalar button {
+  width: auto;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tarjeta-instalar .principal {
+  background: var(--principal);
+  color: #fff;
+}
+
+.estado-vacio,
+.estado-error {
+  text-align: center;
+  padding: 28px 12px;
+  color: #555;
+}
+
+.estado-error button {
+  width: auto;
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 22px;
+  background: var(--principal);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---------- clasificación: que quepa en un móvil sin deslizar de lado ---------- */
+@media (max-width: 520px) {
+  .tabla.clasificacion-pro {
+    min-width: 0;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  /* Se ocultan GF y GC (la diferencia DG ya resume ambos) */
+  .tabla.clasificacion-pro th:nth-child(7),
+  .tabla.clasificacion-pro td:nth-child(7),
+  .tabla.clasificacion-pro th:nth-child(8),
+  .tabla.clasificacion-pro td:nth-child(8) {
+    display: none;
+  }
+
+  .tabla.clasificacion-pro th.col-pos,
+  .tabla.clasificacion-pro td.posicion {
+    width: 34px;
+  }
+
+  .tabla.clasificacion-pro th.col-mini,
+  .tabla.clasificacion-pro td.col-mini {
+    width: 32px;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .tabla.clasificacion-pro th.col-puntos,
+  .tabla.clasificacion-pro td.col-puntos {
+    width: 40px;
+  }
+
+  .tabla.clasificacion-pro th.col-equipo,
+  .tabla.clasificacion-pro td:nth-child(2) {
+    width: auto;
+    max-width: none;
+  }
+
+  .equipo-tabla {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  /* el nombre puede ocupar dos líneas en vez de cortarse con "…" */
+  .nombre-equipo-tabla {
+    white-space: normal;
+    max-width: none;
+    line-height: 1.15;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .tabla.clasificacion-pro td,
+  .tabla.clasificacion-pro th {
+    white-space: normal;
+  }
+}
+
+/* ---------- respetar a quien desactiva las animaciones ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

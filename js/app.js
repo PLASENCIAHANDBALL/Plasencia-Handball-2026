@@ -1,38 +1,241 @@
 import { supabase } from "./supabase.js";
 
-window.onerror = function (msg, url, line, col, error) {
-  alert("Error en la app:\n" + msg);
-};
+/* ================== AJUSTES ================== */
 
-//if ("serviceWorker" in navigator) {
-  //navigator.serviceWorker.getRegistrations().then(registrations => {
-    //registrations.forEach(reg => reg.unregister());
-  //});
-//}
-
-//if ("caches" in window) {
-  //caches.keys().then(keys => {
-   // keys.forEach(key => caches.delete(key));
-  //});
-//}
+const PLACEHOLDER_ESCUDO = "img/club-placeholder.svg";
+const ZONA_TORNEO = "Europe/Madrid";     // las horas de los partidos son horas de Plasencia
+const DURACION_PARTIDO_MIN = 50;         // minutos que un partido figura "en juego" desde su hora de inicio
+const INTERVALO_VIVO_MS = 30000;         // cada cuánto se refrescan los marcadores del día
 
 document.body.classList.add("splash-activo");
 
-console.log("✅ app.js cargado");
-
 const contenido = document.getElementById("contenido");
+
+/* ================== UTILIDADES ================== */
+
+// localStorage puede lanzar error (modo privado, cookies bloqueadas): nunca debe romper la app
+function lsGet(clave) { try { return localStorage.getItem(clave); } catch (e) { return null; } }
+function lsSet(clave, valor) { try { localStorage.setItem(clave, valor); } catch (e) { /* sin almacenamiento */ } }
+function lsRemove(clave) { try { localStorage.removeItem(clave); } catch (e) { /* sin almacenamiento */ } }
+
+/* ---- Seguridad ----
+   Todo texto que llega de la base de datos se escapa UNA vez al cargarlo (sanear*),
+   así que las plantillas con innerHTML no pueden ejecutar código si alguien guarda
+   algo como <img onerror=...> en el nombre de un equipo. */
+const ESCAPES_HTML = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+
+function escaparHtml(valor) {
+  if (valor === null || valor === undefined) return "";
+  return String(valor).replace(/[&<>"']/g, c => ESCAPES_HTML[c]);
+}
+
+// Solo deja pasar direcciones http(s), rutas relativas de la propia app e imágenes data: en base64
+function urlSegura(valor, permitirData = false) {
+  if (!valor) return "";
+  const s = String(valor).trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^[\w\-./%]+$/.test(s)) return s;
+  if (permitirData && /^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(s)) return s;
+  return "";
+}
+
+function sanearClub(c) {
+  const escudo = urlSegura(c.escudo, true);
+  return {
+    ...c,
+    nombre: escaparHtml(c.nombre),
+    escudo: escudo.startsWith("data:") ? escudo : escaparHtml(escudo)
+  };
+}
+
+function sanearEquipo(e) {
+  return {
+    ...e,
+    nombre: escaparHtml(e.nombre),
+    categoria: escaparHtml(e.categoria),
+    genero: escaparHtml(e.genero),
+    grupo: escaparHtml(e.grupo)
+  };
+}
+
+function sanearPartido(p) {
+  const r = { ...p };
+  ["categoria", "genero", "grupo", "fase", "pabellon", "fecha", "hora", "estado"].forEach(k => {
+    if (r[k] !== null && r[k] !== undefined) r[k] = escaparHtml(r[k]);
+  });
+  return r;
+}
+
+function sanearPatrocinador(p) {
+  return {
+    ...p,
+    nombre: escaparHtml(p.nombre),
+    web: escaparHtml(urlSegura(p.web)),
+    imagen: escaparHtml(urlSegura(p.imagen))
+  };
+}
+
+// Convierte un texto ya escapado en texto normal (para confirm(), que no interpreta HTML)
+function textoPlano(valor) {
+  const t = document.createElement("textarea");
+  t.innerHTML = valor ?? "";
+  return t.value;
+}
+
+// Para construir ids de elementos sin espacios ni caracteres raros
+function slug(...partes) {
+  return partes
+    .join("-")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/* ---- Avisos (sustituyen a avisar(): no bloquean la pantalla) ---- */
+function avisar(texto, tipo, opciones) {
+  const { accion, etiqueta, duracion = 4500 } = opciones || {};
+  const mensaje = String(texto);
+
+  if (!tipo) {
+    tipo = /error|incorrecto|no pueden|no se pudo|obligatorios|no hay inputs/i.test(mensaje)
+      ? "error"
+      : "info";
+  }
+
+  const cont = document.getElementById("avisos");
+  if (!cont) {
+    console.log(mensaje);
+    return;
+  }
+
+  const el = document.createElement("div");
+  el.className = `aviso ${tipo}`;
+
+  const span = document.createElement("span");
+  span.textContent = mensaje;
+  el.appendChild(span);
+
+  if (accion) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.textContent = etiqueta || "Aceptar";
+    boton.addEventListener("click", () => {
+      el.remove();
+      accion();
+    });
+    el.appendChild(boton);
+  }
+
+  cont.appendChild(el);
+
+  if (duracion) setTimeout(() => el.remove(), duracion);
+
+  while (cont.children.length > 3) cont.firstChild.remove();
+}
+
+window.avisar = avisar;
+
+// Antes cada error mostraba un avisar() con el texto técnico. Ahora se guarda en la
+// consola y se avisa con un mensaje discreto (como mucho uno cada 10 s).
+let ultimoAvisoError = 0;
+
+window.addEventListener("error", (e) => {
+  console.error("Error en la app:", e.message, e.error);
+
+  if (Date.now() - ultimoAvisoError > 10000) {
+    ultimoAvisoError = Date.now();
+    avisar("Algo no ha ido bien. Si la pantalla no responde, vuelve a abrir la app.", "error");
+  }
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("Promesa sin resolver:", e.reason);
+});
+
+/* ---- Fechas y horas ----
+   Las horas de los partidos se guardan sin zona horaria y son horas de Plasencia.
+   Se interpretan siempre como hora de Madrid, aunque quien mira la app esté en
+   otro país (es un torneo internacional) o tenga el reloj del móvil en otra zona. */
+
+// "2027-06-05" -> Date local a mediodía (evita saltos de día por zona horaria)
+function parseFecha(fecha) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(fecha || "");
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
+}
+
+// Fecha de hoy en Madrid con formato "YYYY-MM-DD"
+function hoyISO() {
+  try {
+    const f = new Intl.DateTimeFormat("sv-SE", { timeZone: ZONA_TORNEO }).format(new Date());
+    if (/^\d{4}-\d{2}-\d{2}$/.test(f)) return f;
+  } catch (e) { /* se usa el reloj local */ }
+  const d = new Date();
+  const dos = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
+}
+
+// Instante real de inicio de un partido (fecha + hora interpretadas como hora de Madrid)
+function inicioPartido(p) {
+  if (!p || !p.fecha || !p.hora) return null;
+
+  const f = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.fecha);
+  const h = /^(\d{1,2}):(\d{2})/.exec(p.hora);
+  if (!f || !h) return null;
+
+  const supuesto = Date.UTC(Number(f[1]), Number(f[2]) - 1, Number(f[3]), Number(h[1]), Number(h[2]));
+
+  try {
+    const partes = new Intl.DateTimeFormat("en-GB", {
+      timeZone: ZONA_TORNEO,
+      hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit"
+    }).formatToParts(new Date(supuesto));
+
+    const g = tipo => Number(partes.find(x => x.type === tipo).value);
+    const enMadrid = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"));
+
+    return new Date(supuesto - (enMadrid - supuesto));
+  } catch (e) {
+    return new Date(`${p.fecha}T${p.hora}`);
+  }
+}
+
+// Número para ordenar partidos por fecha y hora (los que no tienen fecha, al final)
+function marcaTiempo(p) {
+  const inicio = inicioPartido({ fecha: p.fecha, hora: p.hora || "00:00" });
+  return inicio ? inicio.getTime() : Infinity;
+}
 
 /* ================== ESTADO GLOBAL ================== */
 
 let actualizacionesExpandido = false;
 
-let rolUsuario = localStorage.getItem("rol") || null;
+let rolUsuario = lsGet("rol") || null;
 
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
 let progresoSplash = 0;
 let intervaloSplash = null;
+
+// navegación (botón "atrás" del móvil) y estado de la vista
+let vistaActual = "inicio";
+let paramsVistaActual = {};
+let navegandoPorHistorial = false;
+let sinScroll = false;
+
+// instalación como app
+let promptInstalacion = null;
+
+// refresco de marcadores en vivo
+let refrescandoVivo = false;
+
+// barra de la canción
+let arrastrandoBarra = false;
 
 let clubes = [];
 let cacheClubes = null;
@@ -52,12 +255,6 @@ let partidos = [];
 
 let partidoActual = null;
 
-let grupos = typeof obtenerGrupos === "function"
-  ? obtenerGrupos()
-  : [];
-
-let grupoActual = null;
-
 let equipos = [];
 
 let equipoActual = null;
@@ -66,44 +263,117 @@ let patrocinadores = [];
 
 /* ================== AUDIO GLOBAL ================== */
 
-let audioTorneo = new Audio("audio/cancion-torneo.mp3");
+// preload "none": el mp3 (4 MB) solo se descarga cuando alguien pulsa play,
+// no al abrir la app como ocurría antes.
+const audioTorneo = new Audio();
+audioTorneo.preload = "none";
+audioTorneo.src = "audio/cancion-torneo.mp3";
 audioTorneo.loop = true;
 
+/* ================== NAVEGACIÓN ================== */
+
+// Cada pantalla principal se anota en el historial del navegador, así el botón "atrás"
+// del móvil vuelve a la pantalla anterior en vez de salirse de la app.
+function registrarNavegacion(vista, params = {}) {
+  vistaActual = vista;
+  paramsVistaActual = params;
+
+  if (navegandoPorHistorial) return;
+
+  const actual = history.state;
+
+  if (
+    actual &&
+    actual.vista === vista &&
+    JSON.stringify(actual.params || {}) === JSON.stringify(params)
+  ) return;
+
+  const estado = { vista, params };
+
+  if (!actual) history.replaceState(estado, "");
+  else history.pushState(estado, "");
+}
+
+function restaurarVista(estado) {
+  const params = estado.params || {};
+
+  switch (estado.vista) {
+    case "partidos":    mostrarPartidos(); break;
+    case "categorias":  mostrarCategorias(); break;
+    case "clubs":       mostrarEquipos(); break;
+    case "tabla":       mostrarClasificacion(); break;
+    case "pabellones":  mostrarPabellones(); break;
+    case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
+    case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
+    case "pabellon":    if (params.nombre) window.mostrarPartidosPorPabellon(params.nombre); else mostrarPabellones(); break;
+    default:            mostrarHome();
+  }
+}
+
+window.addEventListener("popstate", (e) => {
+  if (!e.state || !e.state.vista) return;
+
+  navegandoPorHistorial = true;
+  try {
+    restaurarVista(e.state);
+  } catch (err) {
+    console.error("Error al volver atrás:", err);
+  } finally {
+    navegandoPorHistorial = false;
+  }
+});
+
+// Vuelve a pintar la pantalla actual (por ejemplo, tras entrar o salir del modo admin)
 function refrescarVistaActual() {
-
-  const titulo = document.querySelector("h2")?.textContent || "";
-
-  if (titulo.includes("Inicio")) {
-    mostrarHome();
+  navegandoPorHistorial = true;
+  try {
+    restaurarVista({ vista: vistaActual, params: paramsVistaActual });
+  } finally {
+    navegandoPorHistorial = false;
   }
-
-  else if (titulo.includes("Partidos")) {
-    mostrarPartidos();
-  }
-
-  else if (titulo.includes("Editar partido")) {
-    editarPartido(partidoActual.id);
-  }
-
-  else if (titulo.includes("vs")) {
-    abrirPartido(partidoActual.id);
-  }
-
-  else if (titulo.includes("Categorías")) {
-    mostrarCategorias();
-  }
-
 }
 
-function cambiarVistaConAnimacion(html, tipo = "slide") {
-  contenido.classList.remove("fade-enter", "slide-enter");
-  contenido.innerHTML = html;
-
-  // fuerza reflow para reiniciar animación
-  void contenido.offsetWidth;
-
-  contenido.classList.add(tipo === "fade" ? "fade-enter" : "slide-enter");
+// Al cambiar de pantalla se vuelve arriba (antes se quedaba a media altura de la lista anterior)
+function sinSaltoDeScroll(fn) {
+  sinScroll = true;
+  try {
+    fn();
+  } finally {
+    setTimeout(() => { sinScroll = false; }, 0);
+  }
 }
+
+if (contenido) {
+  new MutationObserver(() => {
+    if (!sinScroll) window.scrollTo(0, 0);
+  }).observe(contenido, { childList: true });
+}
+
+// Teclado: los elementos clicables (role="button") responden a Enter y Espacio
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+
+  const el = e.target;
+  if (!el || !el.matches || !el.matches('[role="button"]')) return;
+
+  e.preventDefault();
+  el.click();
+});
+
+// Si un escudo no carga, se enseña el escudo genérico en lugar de una imagen rota
+document.addEventListener("error", (e) => {
+  const img = e.target;
+
+  if (
+    img &&
+    img.tagName === "IMG" &&
+    !img.dataset.fallback &&
+    img.matches(".escudo-partido, .escudo-ios, .escudo-equipo-mini, .escudo-tabla, .club-escudo, .equipo-actualizacion img")
+  ) {
+    img.dataset.fallback = "1";
+    img.src = PLACEHOLDER_ESCUDO;
+  }
+}, true);
 
 function formatearHora(hora24) {
   if (!hora24) return "-";
@@ -126,13 +396,13 @@ const LISTA_PABELLONES = [
 ];
 
 const IMAGENES_PABELLONES = {
-  "Municipal": "img/pabellones/municipal.png",
-  "Escuela": "img/pabellones/escuela.png",
-  "Universitario": "img/pabellones/universitario.png",
-  "Miralvalle": "img/pabellones/miralvalle.png",
-  "San Calixto": "img/pabellones/san-calixto.png",
-  "Multipista": "img/pabellones/la-data.png",
-  "San Miguel": "img/pabellones/san-miguel.png"
+  "Municipal": "img/pabellones/municipal.webp",
+  "Escuela": "img/pabellones/escuela.webp",
+  "Universitario": "img/pabellones/universitario.webp",
+  "Miralvalle": "img/pabellones/miralvalle.webp",
+  "San Calixto": "img/pabellones/san-calixto.webp",
+  "Multipista": "img/pabellones/la-data.webp",
+  "San Miguel": "img/pabellones/san-miguel.webp"
 };
 
 // 🔴 DIRECTOS POR PABELLÓN
@@ -142,36 +412,43 @@ const DIRECTOS_PABELLONES = {
 };
 
 function normalizarPartidos(lista) {
-  return lista.map(p => ({
-    ...p,
+  return (lista || []).map(original => {
+    const p = sanearPartido(original);
 
-    categoria: p.categoria
-      ? p.categoria.trim()
-      : "Sin categoría",
+    return {
+      ...p,
 
-    genero: p.genero
-      ? p.genero.trim()
-      : "Sin género",
+      categoria: p.categoria
+        ? p.categoria.trim()
+        : "Sin categoría",
 
-    grupo: p.grupo
-      ? p.grupo.trim().replace(/\s+/g, " ")
-      : "Sin grupo",
+      genero: p.genero
+        ? p.genero.trim()
+        : "Sin género",
 
-    fase: p.fase?.trim() || "grupos"
-  }));
+      grupo: p.grupo
+        ? p.grupo.trim().replace(/\s+/g, " ")
+        : "Sin grupo",
+
+      fase: p.fase?.trim() || "grupos"
+    };
+  });
 }
 
-/* ================== supabase ================== */
-async function probarSupabase() {
+// Recarga los partidos desde la base de datos SIN borrar los que ya hay si falla la red
+async function recargarPartidos() {
   const { data, error } = await supabase
-    .from("clubes")
+    .from("partidos")
     .select("*");
 
-  console.log("CLUBES DESDE SUPABASE:", data);
-  console.log("ERROR:", error);
-}
+  if (error || !data) {
+    console.error("Error recargando partidos:", error);
+    return false;
+  }
 
-probarSupabase();
+  partidos = normalizarPartidos(data);
+  return true;
+}
 
 /* ================== splash ================== */
 function iniciarBarraSplash() {
@@ -199,16 +476,26 @@ function completarBarraSplash() {
 /* ================== HOME ================== */
 function mostrarHome() {
   setNavActivoPorVista("inicio");
+  registrarNavegacion("inicio");
+
+  // el botón y la barra reflejan el estado real de la canción (antes se reiniciaban a ▶️ al volver a Inicio)
+  const reproduciendo = !audioTorneo.paused;
+  const progresoCancion =
+    isFinite(audioTorneo.duration) && audioTorneo.duration > 0
+      ? (audioTorneo.currentTime / audioTorneo.duration) * 100
+      : 0;
 
   let html = `
     <h2>Inicio</h2>
+
+    <div id="bloque-instalar"></div>
 
     <section class="cancion-torneo">
 
   <div class="galeria-badge reproductor-cancion">
 
     <div class="badge-icon">
-      <img src="img/iconos/musica.png" alt="Canción del torneo">
+      <img src="img/iconos/musica.webp" alt="" width="44" height="44">
     </div>
 
     <div class="badge-texto">
@@ -217,12 +504,13 @@ function mostrarHome() {
 
     <div class="controles-cancion">
 
-      <button onclick="reiniciarCancion()" class="btn-control">
+      <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
         ⏮️
       </button>
 
-      <button onclick="toggleCancionTorneo()" id="btn-play" class="btn-control">
-        ▶️
+      <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control"
+              aria-label="${reproduciendo ? "Pausar canción" : "Reproducir canción"}">
+        ${reproduciendo ? "⏸️" : "▶️"}
       </button>
 
     </div>
@@ -232,10 +520,11 @@ function mostrarHome() {
   <input
     type="range"
     id="barra-cancion"
-    value="0"
+    value="${progresoCancion}"
     min="0"
     max="100"
     step="1"
+    aria-label="Posición de la canción"
     oninput="moverBarraCancion()"
   >
 
@@ -262,7 +551,9 @@ function mostrarHome() {
 
   patrocinadores.forEach(p => {
   html += `
-    <div class="patrocinador-card" onclick="abrirWeb('${p.web}')">
+    <div class="patrocinador-card" role="button" tabindex="0"
+         data-web="${p.web}" onclick="abrirWeb(this.dataset.web)"
+         aria-label="Patrocinador: ${p.nombre}">
 
       ${adminActivo ? `
         <div class="acciones-admin">
@@ -283,7 +574,7 @@ function mostrarHome() {
         </div>
       ` : ""}
 
-      <img src="${p.imagen}">
+      <img src="${p.imagen}" alt="" loading="lazy" decoding="async">
       <div class="patrocinador-nombre">${p.nombre}</div>
 
     </div>
@@ -330,6 +621,8 @@ function mostrarHome() {
   `;
 
   contenido.innerHTML = html;
+
+  renderTarjetaInstalar();
 
   // cargar galería
 setTimeout(renderActualizacionesHome, 0);
@@ -391,34 +684,8 @@ function formNuevoPatrocinador() {
 }
 
 function obtenerActualizacionesPartidos() {
-
-  const ahora = new Date();
-
-  return partidos.filter(p => {
-
-    if (!p.fecha || !p.hora) return false;
-
-    const inicio = new Date(`${p.fecha}T${p.hora}`);
-
-    const DURACION = 50; // minutos
-
-    const fin = new Date(
-      inicio.getTime() + DURACION * 60000
-    );
-
-    // SOLO mostrar si está en juego
-    if (
-      p.estado !== "finalizado" &&
-      ahora >= inicio &&
-      ahora <= fin
-    ) {
-      return true;
-    }
-
-    return false;
-
-  });
-
+  // SOLO se muestran los partidos que están en juego ahora mismo
+  return partidos.filter(p => calcularEstadoPartido(p) === "en_juego");
 }
 
 function renderActualizacionesHome() {
@@ -460,7 +727,7 @@ const partidosAMostrar = actualizacionesExpandido
 
 
     html += `
-      <div class="actualizacion-card" onclick="abrirPartido(${p.id})">
+      <div class="actualizacion-card" role="button" tabindex="0" onclick="abrirPartido(${p.id})">
 
         <!-- CATEGORÍA -->
         <div class="actualizacion-categoria">
@@ -476,7 +743,7 @@ const partidosAMostrar = actualizacionesExpandido
         <div class="actualizacion-contenido">
 
           <div class="equipo-actualizacion">
-            <img src="${clubLocal?.escudo || 'img/club-placeholder.png'}">
+            <img src="${clubLocal?.escudo || PLACEHOLDER_ESCUDO}" alt="" loading="lazy" decoding="async">
             <span>${local?.nombre || "-"}</span>
           </div>
 
@@ -485,7 +752,7 @@ const partidosAMostrar = actualizacionesExpandido
           </div>
 
           <div class="equipo-actualizacion">
-            <img src="${clubVisitante?.escudo || 'img/club-placeholder.png'}">
+            <img src="${clubVisitante?.escudo || PLACEHOLDER_ESCUDO}" alt="" loading="lazy" decoding="async">
             <span>${visitante?.nombre || "-"}</span>
           </div>
 
@@ -527,25 +794,27 @@ function toggleActualizacionesHome() {
 window.toggleActualizacionesHome = toggleActualizacionesHome;
 
 function abrirWeb(url) {
-  if (!url) return;
-  window.open(url, "_blank");
+  // solo se abren enlaces http(s)
+  if (!url || !/^https?:\/\//i.test(url)) return;
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function toggleCancionTorneo() {
 
-  const boton = document.getElementById("btn-play");
-
   if (audioTorneo.paused) {
 
-    audioTorneo.play();
+    const intento = audioTorneo.play();
 
-    if (boton) boton.textContent = "⏸️";
+    if (intento && intento.catch) {
+      intento.catch(err => {
+        console.warn("No se pudo reproducir la canción:", err);
+        avisar("No se pudo reproducir la canción.", "error");
+      });
+    }
 
   } else {
 
     audioTorneo.pause();
-
-    if (boton) boton.textContent = "▶️";
 
   }
 
@@ -571,103 +840,159 @@ function moverBarraCancion() {
 
   if (!barra) return;
 
-  const tiempo =
+  // sin metadatos todavía (no se ha pulsado play) no hay duración a la que saltar
+  if (!isFinite(audioTorneo.duration) || audioTorneo.duration <= 0) {
+    barra.value = 0;
+    return;
+  }
+
+  arrastrandoBarra = true;
+
+  audioTorneo.currentTime =
     (barra.value / 100) * audioTorneo.duration;
 
-  audioTorneo.currentTime = tiempo;
+  clearTimeout(moverBarraCancion.t);
+  moverBarraCancion.t = setTimeout(() => { arrastrandoBarra = false; }, 300);
 
 }
 
-function formatearTiempo(segundos) {
-  if (!segundos) return "0:00";
+// Antes estos eventos buscaban un elemento <audio id="audio-torneo"> que no existe,
+// así que la barra de la canción nunca avanzaba. Ahora escuchan al audio real.
+function sincronizarBotonCancion() {
+  const boton = document.getElementById("btn-play");
+  if (!boton) return;
 
-  const min = Math.floor(segundos / 60);
-  const seg = Math.floor(segundos % 60);
-
-  return `${min}:${seg.toString().padStart(2, "0")}`;
+  boton.textContent = audioTorneo.paused ? "▶️" : "⏸️";
+  boton.setAttribute("aria-label", audioTorneo.paused ? "Reproducir canción" : "Pausar canción");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+audioTorneo.addEventListener("play", sincronizarBotonCancion);
+audioTorneo.addEventListener("pause", sincronizarBotonCancion);
+audioTorneo.addEventListener("ended", sincronizarBotonCancion);
 
-  const audio = document.getElementById("audio-torneo");
+audioTorneo.addEventListener("timeupdate", () => {
 
-  if (!audio) return;
+  if (arrastrandoBarra) return;
 
-  audio.addEventListener("loadedmetadata", () => {
+  const barra = document.getElementById("barra-cancion");
 
-    const barra =
-      document.getElementById("barra-cancion");
+  if (!barra || !isFinite(audioTorneo.duration) || audioTorneo.duration <= 0) return;
 
-    if (barra) {
-      barra.max = 100;
-    }
-
-  });
-
-  audio.addEventListener("timeupdate", () => {
-
-    const barra =
-      document.getElementById("barra-cancion");
-
-    const tiempo =
-      document.getElementById("tiempo-cancion");
-
-    if (!barra || !tiempo) return;
-
-    if (audio.duration) {
-
-      barra.value =
-        (audio.currentTime / audio.duration) * 100;
-
-      tiempo.textContent =
-        formatearTiempo(audio.currentTime) +
-        " / " +
-        formatearTiempo(audio.duration);
-
-    }
-
-  });
-
-  audio.addEventListener("ended", () => {
-
-    const boton =
-      document.getElementById("btn-play");
-
-    if (boton) boton.textContent = "▶️";
-
-  });
+  barra.value = (audioTorneo.currentTime / audioTorneo.duration) * 100;
 
 });
 
-async function iniciarApp() {
+const VISTAS_INICIALES = {
+  inicio: () => mostrarHome(),
+  partidos: () => mostrarPartidos(),
+  categorias: () => mostrarCategorias(),
+  clubs: () => mostrarEquipos(),
+  tabla: () => mostrarClasificacion(),
+  pabellones: () => mostrarPabellones()
+};
+
+// Los accesos directos de la app instalada abren con ?vista=partidos, ?vista=tabla…
+function vistaInicial() {
+  let vista = "inicio";
+
   try {
-    document.body.classList.add("splash-activo");
-iniciarBarraSplash();
+    vista = new URLSearchParams(location.search).get("vista") || "inicio";
+  } catch (e) { /* se queda en inicio */ }
 
-    clubes = await obtenerClubesSupabase();
-    equipos = await obtenerEquiposSupabase();
-    partidos = normalizarPartidos(await obtenerPartidosSupabase());
-    patrocinadores = await obtenerPatrocinadoresSupabase();
+  (VISTAS_INICIALES[vista] || VISTAS_INICIALES.inicio)();
+}
 
-    mostrarHome();
+function mostrarErrorCarga() {
+  setNavActivoPorVista("inicio");
 
+  contenido.innerHTML = `
+    <div class="estado-error">
+      <h2>No se han podido cargar los datos</h2>
+      <p>Comprueba tu conexión a internet e inténtalo de nuevo.</p>
+      <button type="button" onclick="reintentarCarga()">Reintentar</button>
+    </div>
+  `;
+}
+
+async function cargarDatosIniciales() {
+  // las cuatro consultas a la vez (antes iban una detrás de otra)
+  const [c, e, p, s] = await Promise.all([
+    obtenerClubesSupabase(),
+    obtenerEquiposSupabase(),
+    obtenerPartidosSupabase(),
+    obtenerPatrocinadoresSupabase()
+  ]);
+
+  clubes = c;
+  equipos = e;
+  partidos = normalizarPartidos(p);
+  patrocinadores = s;
+
+  return clubes.length > 0 || equipos.length > 0 || partidos.length > 0;
+}
+
+async function reintentarCarga() {
+  contenido.innerHTML = `<p class="estado-vacio">Cargando…</p>`;
+
+  try {
+    const hayDatos = await cargarDatosIniciales();
+    if (hayDatos) vistaInicial();
+    else mostrarErrorCarga();
   } catch (e) {
-    console.error("Error iniciando app:", e);
-    alert("Error cargando datos");
-  } finally {
+    console.error("Error al reintentar:", e);
+    mostrarErrorCarga();
+  }
+}
+
+window.reintentarCarga = reintentarCarga;
+
+async function iniciarApp() {
+  document.body.classList.add("splash-activo");
+  iniciarBarraSplash();
+
+  // primera entrada del historial: pulsar "atrás" desde cualquier pantalla vuelve a Inicio
+  try { history.replaceState({ vista: "inicio", params: {} }, ""); } catch (e) { /* sin historial */ }
+
+  let splashOculto = false;
+
+  const ocultarSplash = () => {
+    if (splashOculto) return;
+    splashOculto = true;
+
     completarBarraSplash();
 
-setTimeout(() => {
-  document.body.classList.remove("splash-activo");
+    setTimeout(() => {
+      document.body.classList.remove("splash-activo");
 
-  const splash = document.getElementById("splash");
-  if (splash) {
-    splash.classList.add("splash-hide");
+      const splash = document.getElementById("splash");
+      if (splash) {
+        splash.classList.add("splash-hide");
+        setTimeout(() => splash.remove(), 600);
+      }
+    }, 200);
+  };
 
-    setTimeout(() => splash.remove(), 600);
+  // Si la red va muy lenta, se enseña la app igualmente en vez de dejar el splash eternamente
+  const seguridad = setTimeout(() => {
+    if (splashOculto) return;
+    contenido.innerHTML = `<p class="estado-vacio">Cargando datos…</p>`;
+    ocultarSplash();
+  }, 12000);
+
+  let hayDatos = false;
+
+  try {
+    hayDatos = await cargarDatosIniciales();
+  } catch (e) {
+    console.error("Error iniciando app:", e);
   }
-}, 500);
-  }
+
+  clearTimeout(seguridad);
+
+  if (hayDatos) vistaInicial();
+  else mostrarErrorCarga();
+
+  ocultarSplash();
 }
 
 /* ================== GALERÍA ================== */
@@ -678,9 +1003,9 @@ function cargarGaleria2026() {
   const urlCarpeta = "https://www.amazon.es/photos/share/BNF0g9ckA7PPdmq1jetkgeJ9zO8BwiJW6Gj4KPumS5";
 
   contenedor.innerHTML = `
-  <a href="${urlCarpeta}" target="_blank" class="galeria-badge">
+  <a href="${urlCarpeta}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
     <div class="badge-icon">
-      <img src="img/iconos/fotos.png" alt="Fotos torneo 2026">
+      <img src="img/iconos/fotos.webp" alt="" width="44" height="44">
     </div>
     <div class="badge-texto">
       <strong>Torneo 2026</strong>
@@ -697,9 +1022,9 @@ function cargarGaleria2025() {
   const urlCarpeta2025 = "https://www.amazon.es/photos/share/aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s";
 
   contenedor.innerHTML = `
-  <a href="${urlCarpeta2025}" target="_blank" class="galeria-badge">
+  <a href="${urlCarpeta2025}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
     <div class="badge-icon">
-      <img src="img/iconos/fotos.png" alt="Fotos torneo 2025">
+      <img src="img/iconos/fotos.webp" alt="" width="44" height="44">
     </div>
     <div class="badge-texto">
       <strong>Torneo 2025</strong>
@@ -732,30 +1057,7 @@ async function obtenerPatrocinadoresSupabase() {
     return [];
   }
 
-  return data || [];
-}
-
-async function crearPatrocinadorSupabase(patrocinador) {
-  const { error } = await supabase
-    .from("patrocinadores")
-    .insert([patrocinador]);
-
-  if (error) {
-    alert("Error guardando patrocinador");
-    console.error(error);
-  }
-}
-
-async function borrarPatrocinadorSupabase(id) {
-  const { error } = await supabase
-    .from("patrocinadores")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert("Error borrando patrocinador");
-    console.error(error);
-  }
+  return (data || []).map(sanearPatrocinador);
 }
 
 /* ================== PARTIDOS ================== */
@@ -773,24 +1075,22 @@ function renderBloquesPorFecha(lista, tipo) {
   const grupos = agruparPorFecha(lista);
   let html = "";
 
-  // 📅 fecha de hoy en formato YYYY-MM-DD
-  const hoy = new Date().toISOString().split("T")[0];
+  // 📅 fecha de hoy (en hora de Madrid) en formato YYYY-MM-DD
+  // (antes se usaba la fecha UTC y entre las 0:00 y las 2:00 contaba como "ayer")
+  const hoy = hoyISO();
 
   Object.entries(grupos).forEach(([fecha, partidosDia]) => {
-    const fechaBonita = new Date(fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long"
-    });
+    const fechaBonita = textoFecha(fecha) || "Fecha por confirmar";
 
     // 🔥 abrir solo si es hoy
-    const abierta = fecha === hoy ? "abierta" : "";
+    const esHoy = fecha === hoy;
+    const abierta = esHoy ? "abierta" : "";
 
     html += `
       <div class="fecha-bloque ${abierta}">
-        <div class="fecha-header" onclick="this.parentElement.classList.toggle('abierta')">
+        <div class="fecha-header" role="button" tabindex="0" aria-expanded="${esHoy}" onclick="toggleFecha(this)">
           <span>📅 ${fechaBonita}</span>
-          <span class="flecha">⌄</span>
+          <span class="flecha" aria-hidden="true">⌄</span>
         </div>
 
         <div class="fecha-partidos">
@@ -878,12 +1178,13 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
 
   Object.entries(categorias).forEach(([categoria, listaCategoria]) => {
 
-    const idCategoria = `categoria-${tipo}-${fecha}-${capitalizar(categoria)}`;
+    const idCategoria = slug("categoria", tipo, fecha, categoria);
 
     html += `
   <div class="bloque-categoria-principal">
 
-    <div class="categoria-principal-header"
+    <div class="categoria-principal-header" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="${idCategoria}"
          onclick="toggleCategoriaDia('${idCategoria}', this)">
 
       <span class="badge-categoria ${obtenerClaseCategoria(categoria)}">
@@ -906,11 +1207,6 @@ function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
   return html;
 }
 
-function capitalizar(texto) {
-  if (!texto) return "";
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
-
 function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 
   const generos = listaCategoria.reduce((acc, p) => {
@@ -929,12 +1225,13 @@ function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 
   Object.entries(generos).forEach(([genero, listaGenero]) => {
 
-    const idGenero = `genero-${tipo}-${fecha}-${listaGenero[0].categoria}-${genero}`;
+    const idGenero = slug("genero", tipo, fecha, listaGenero[0].categoria, genero);
 
     html += `
       <div class="bloque-genero">
 
-        <div class="genero-header"
+        <div class="genero-header" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="${idGenero}"
              onclick="toggleCategoriaDia('${idGenero}', this)">
 
           <span class="badge-genero ${obtenerClaseGenero(genero)}">
@@ -976,14 +1273,13 @@ function renderGruposDentroGenero(listaGenero, fecha, tipo) {
 
   Object.entries(grupos).forEach(([grupo, lista]) => {
 
-    const id = `grupo-${tipo}-${fecha}-${lista[0].categoria}-${lista[0].genero}-${grupo}`
-      .replace(/\s+/g, "-")
-      .toLowerCase();
+    const id = slug("grupo", tipo, fecha, lista[0].categoria, lista[0].genero, grupo);
 
     html += `
       <div class="bloque-categoria-dia">
 
-        <div class="categoria-header"
+        <div class="categoria-header" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="${id}"
              onclick="toggleCategoriaDia('${id}', this)">
 
           <span>${grupo}</span>
@@ -1009,28 +1305,52 @@ function toggleCategoriaDia(id, header) {
   const contenedor = document.getElementById(id);
   if (!contenedor) return;
 
-  const estaOculto = contenedor.classList.contains("oculto");
+  const abrir = contenedor.classList.contains("oculto");
 
-  if (estaOculto) {
+  if (abrir) {
     contenedor.classList.remove("oculto");
     contenedor.classList.add("abierto");
+
+    // Se anima de 0 a la altura real y después se deja sin límite, para que los bloques
+    // anidados (categoría > género > grupo) nunca queden cortados.
+    contenedor.style.maxHeight = contenedor.scrollHeight + "px";
+
+    const liberar = () => {
+      if (contenedor.classList.contains("abierto")) contenedor.style.maxHeight = "none";
+    };
+
+    contenedor.addEventListener("transitionend", e => {
+      if (e.target === contenedor && e.propertyName === "max-height") liberar();
+    }, { once: true });
+
+    setTimeout(liberar, 600); // por si no hay transición (animaciones reducidas)
   } else {
-    contenedor.classList.add("oculto");
+    // se fija la altura actual para poder animar el plegado hasta 0
+    contenedor.style.maxHeight = contenedor.scrollHeight + "px";
+    void contenedor.offsetHeight;
+
     contenedor.classList.remove("abierto");
+    contenedor.classList.add("oculto");
+    contenedor.style.maxHeight = "";
   }
 
   if (header) {
-    header.classList.toggle("abierto", estaOculto);
+    header.classList.toggle("abierto", abrir);
+    header.setAttribute("aria-expanded", abrir ? "true" : "false");
   }
 }
 
-function refrescarPartidos() {
-  partidos = obtenerPartidos();
-  mostrarPartidos();
+function toggleFecha(header) {
+  const bloque = header.parentElement;
+  const abierta = bloque.classList.toggle("abierta");
+  header.setAttribute("aria-expanded", abierta ? "true" : "false");
 }
+
+window.toggleFecha = toggleFecha;
 
 function mostrarPartidos() {
   setNavActivoPorVista("partidos");
+  registrarNavegacion("partidos");
 
   let html = `<h2>Partidos</h2>`;
   
@@ -1042,11 +1362,7 @@ function mostrarPartidos() {
     html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
   }
 
-  const ordenados = [...partidos].sort((a, b) => {
-    const fa = new Date(`${a.fecha}T${a.hora || "00:00"}`);
-    const fb = new Date(`${b.fecha}T${b.hora || "00:00"}`);
-    return fa - fb;
-  });
+  const ordenados = [...partidos].sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
 
   const proximos = ordenados.filter(
   p => calcularEstadoPartido(p) !== "finalizado"
@@ -1082,7 +1398,7 @@ window.mostrarCuadroEliminatorioDesdeFiltro = mostrarCuadroEliminatorioDesdeFilt
 
 async function mostrarCuadroEliminatorio(categoria, genero) {
   equipos = await obtenerEquiposSupabase();   // 🔥 OBLIGATORIO
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  await recargarPartidos();
 
   setNavActivoPorVista("partidos");
 
@@ -1098,21 +1414,23 @@ function renderBracket(categoria, genero) {
   categoria = categoria.toLowerCase().trim();
   genero = genero.toLowerCase().trim();
 
+  // Antes se comparaba p.genero (con mayúscula inicial, "Masculino") con genero ya en
+  // minúsculas, así que el cuadro salía siempre vacío ("Por definir").
   const semis = partidos.filter(p =>
-  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
-  p.genero === genero &&
+  p.categoria?.toLowerCase() === categoria &&
+  p.genero?.toLowerCase() === genero &&
   p.fase === "semifinal"
 );
 
   const final = partidos.find(p =>
-  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
-  p.genero === genero &&
+  p.categoria?.toLowerCase() === categoria &&
+  p.genero?.toLowerCase() === genero &&
   p.fase === "final"
 );
 
   const tercer = partidos.find(p =>
-  p.categoria?.toLowerCase() === categoria?.toLowerCase() &&
-  p.genero === genero &&
+  p.categoria?.toLowerCase() === categoria &&
+  p.genero?.toLowerCase() === genero &&
   p.fase === "tercer_puesto"
 );
 
@@ -1175,32 +1493,11 @@ function renderMatchBracket(partido, esFinal = false) {
       : `<div class="vs">vs</div>`;
 
   return `
-    <div class="match ${esFinal ? "match-final" : ""}"
+    <div class="match ${esFinal ? "match-final" : ""}" role="button" tabindex="0"
          onclick="abrirPartido(${partido.id})">
       <div class="${claseLocal}">${local?.nombre || "—"}</div>
       ${resultado}
       <div class="${claseVisitante}">${visitante?.nombre || "—"}</div>
-    </div>
-  `;
-}
-
-function renderPartidoCuadro(p) {
-  const local = equipos.find(e => e.id === p.local_id);
-  const visitante = equipos.find(e => e.id === p.visitante_id);
-
-  return `
-    <div class="partido-cuadro" onclick="abrirPartido(${p.id})">
-      <div class="equipo">${local?.nombre || "—"}</div>
-
-      <div class="resultado">
-        ${
-          p.estado === "finalizado"
-            ? `${p.goles_local} - ${p.goles_visitante}`
-            : "vs"
-        }
-      </div>
-
-      <div class="equipo">${visitante?.nombre || "—"}</div>
     </div>
   `;
 }
@@ -1358,17 +1655,17 @@ const nuevoPartido = {
 
   if (error) {
     console.error(error);
-    alert("Error creando partido");
+    avisar("Error creando partido");
     return;
   }
 
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  await recargarPartidos();
   mostrarPartidos();
 }
 
 async function mostrarCuadrosEliminatorios() {
   equipos = await obtenerEquiposSupabase();
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  await recargarPartidos();
 
   setNavActivoPorVista("partidos");
 
@@ -1410,17 +1707,20 @@ async function mostrarCuadrosEliminatorios() {
   contenido.innerHTML = html;
 }
 
-function formatearFecha(fecha) {
-  if (!fecha) return "📅 Fecha por confirmar";
-
-  const d = new Date(fecha);
-  if (isNaN(d)) return "📅 Fecha por confirmar";
+// "sábado, 05 de junio" (o null si no hay fecha válida)
+function textoFecha(fecha) {
+  const d = parseFecha(fecha);
+  if (!d) return null;
 
   return d.toLocaleDateString("es-ES", {
     weekday: "long",
     day: "2-digit",
     month: "long"
   });
+}
+
+function formatearFecha(fecha) {
+  return textoFecha(fecha) || "📅 Fecha por confirmar";
 }
 
 function renderPartidoCard(p) {
@@ -1461,7 +1761,7 @@ ${p.fase !== "grupos" ? `
 
   <div class="equipo-partido">
     ${clubLocal?.escudo
-      ? `<img src="${clubLocal.escudo}" class="escudo-partido">`
+      ? `<img src="${clubLocal.escudo}" class="escudo-partido" alt="" loading="lazy" decoding="async">`
       : ""
     }
     <span class="nombre-equipo">
@@ -1479,7 +1779,7 @@ ${p.fase !== "grupos" ? `
 
   <div class="equipo-partido">
     ${clubVisitante?.escudo
-      ? `<img src="${clubVisitante.escudo}" class="escudo-partido">`
+      ? `<img src="${clubVisitante.escudo}" class="escudo-partido" alt="" loading="lazy" decoding="async">`
       : ""
     }
     <span class="nombre-equipo">
@@ -1699,7 +1999,7 @@ if (partidoActual.fase === "grupos") {
   const visitanteId = Number(document.getElementById("equipoVisitante")?.value);
 
   if (localId === visitanteId) {
-    alert("El equipo local y visitante no pueden ser el mismo");
+    avisar("El equipo local y visitante no pueden ser el mismo");
     return;
   }
 
@@ -1713,12 +2013,12 @@ if (partidoActual.fase === "grupos") {
     .eq("id", partidoActual.id);
 
   if (error) {
-    alert("Error guardando cambios");
+    avisar("Error guardando cambios");
     console.error(error);
     return;
   }
 
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  await recargarPartidos();
   mostrarPartidos();
 }
 
@@ -1781,6 +2081,8 @@ function abrirPartido(id) {
   partidoActual = partidos.find(p => p.id === id);
   if (!partidoActual) return;
 
+  registrarNavegacion("partido", { id });
+
   const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
   const equipoVisitante = equipos.find(e => e.id === partidoActual.visitante_id);
 
@@ -1798,15 +2100,11 @@ function abrirPartido(id) {
   ` : `
   `;
 
-const fechaBonita = partidoActual.fecha
-  ? new Date(partidoActual.fecha).toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long"
-    })
-  : "-";
+const fechaBonita = textoFecha(partidoActual.fecha) || "-";
 
   contenido.innerHTML = `
+  <h2 class="sr-only">${equipoLocal?.nombre || "Equipo local"} contra ${equipoVisitante?.nombre || "Equipo visitante"}</h2>
+
   <div class="info-partido-detalle">
 
   <div class="detalle-fecha-hora">
@@ -1833,9 +2131,9 @@ ${partidoActual.fase !== "grupos" ? `
 
   <div class="equipo-ios local">
     <img 
-      src="${clubLocal?.escudo || 'img/club-placeholder.png'}"
+      src="${clubLocal?.escudo || PLACEHOLDER_ESCUDO}"
       class="escudo-ios"
-      alt="${equipoLocal?.nombre}"
+      alt="Escudo de ${equipoLocal?.nombre || "equipo local"}"
     >
     <div class="nombre-ios">${equipoLocal?.nombre || "Equipo local"}</div>
     <div class="goles-ios local" id="golesLocal">
@@ -1849,9 +2147,9 @@ ${partidoActual.fase !== "grupos" ? `
 
   <div class="equipo-ios visitante">
     <img 
-      src="${clubVisitante?.escudo || 'img/club-placeholder.png'}"
+      src="${clubVisitante?.escudo || PLACEHOLDER_ESCUDO}"
       class="escudo-ios"
-      alt="${equipoVisitante?.nombre}"
+      alt="Escudo de ${equipoVisitante?.nombre || "equipo visitante"}"
     >
     <div class="nombre-ios">${equipoVisitante?.nombre || "Equipo visitante"}</div>
     <div class="goles-ios visitante" id="golesVisitante">
@@ -1900,40 +2198,72 @@ ${partidoActual.fase !== "grupos" ? `
 `;
 }
 
+// Recalcula y guarda la clasificación de un grupo con los partidos MÁS RECIENTES de la
+// base de datos. Antes se usaban los partidos cargados al abrir la app: si otro móvil
+// había cerrado un partido entretanto, la clasificación se guardaba sin ese resultado.
+async function recalcularClasificacionGrupo(categoria, genero, grupo) {
+  const frescos = await recargarPartidos();
+
+  if (!frescos) {
+    avisar("No se pudo actualizar la clasificación (sin conexión). Vuelve a intentarlo.", "error");
+    return false;
+  }
+
+  return guardarClasificacionSupabase(categoria, genero, grupo);
+}
+
 async function finalizarPartido() {
   if (!confirm("¿Finalizar este partido?")) return;
 
-  partidoActual.estado = "finalizado";
+  // Se guarda el resultado que se ve en los campos. Antes, si se escribían los goles a mano
+  // y no se pulsaba "Guardar resultado", el partido se cerraba con el marcador anterior.
+  const inputLocal = document.getElementById("inputLocal");
+  const inputVisitante = document.getElementById("inputVisitante");
+
+  const golesLocal = inputLocal ? Number(inputLocal.value) : partidoActual.goles_local;
+  const golesVisitante = inputVisitante ? Number(inputVisitante.value) : partidoActual.goles_visitante;
+
+  if (
+    !Number.isInteger(golesLocal) || !Number.isInteger(golesVisitante) ||
+    golesLocal < 0 || golesVisitante < 0
+  ) {
+    avisar("Los goles deben ser números enteros de 0 o más", "error");
+    return;
+  }
 
   const { error } = await supabase
     .from("partidos")
     .update({
       estado: "finalizado",
-      goles_local: partidoActual.goles_local,
-      goles_visitante: partidoActual.goles_visitante
+      goles_local: golesLocal,
+      goles_visitante: golesVisitante
     })
     .eq("id", partidoActual.id);
 
   if (error) {
     console.error(error);
-    alert("Error finalizando partido");
+    avisar("Error finalizando partido");
     return;
   }
 
-  document.dispatchEvent(new Event("partido-finalizado"));
+  partidoActual.estado = "finalizado";
+  partidoActual.goles_local = golesLocal;
+  partidoActual.goles_visitante = golesVisitante;
 
-  alert("Partido finalizado");
-  renderActualizacionesHome();
+  avisar("Partido finalizado", "ok");
 
   if (partidoActual.fase === "grupos") {
-  await guardarClasificacionSupabase(
-    partidoActual.categoria,
-    partidoActual.genero,
-    partidoActual.grupo
-  );
-}
+    await recalcularClasificacionGrupo(
+      partidoActual.categoria,
+      partidoActual.genero,
+      partidoActual.grupo
+    );
+  }
 
-mostrarPartidos();
+  document.dispatchEvent(new Event("partido-finalizado"));
+  renderActualizacionesHome();
+
+  mostrarPartidos();
 }
 
 async function asegurarEquipoEnClasificacion(equipo) {
@@ -1997,26 +2327,28 @@ function animarMarcador(id) {
   el.classList.add("animar");
 }
 
-function refrescarVistaPartido() {
-  const index = partidos.findIndex(p => p.id === partidoActual.id);
-  if (index !== -1) {
-    partidoActual = partidos[index];
+// Antes este botón llamaba a guardarPartidos(), una función que ya no existe, así que
+// la hora y el lugar no se guardaban nunca y solo salía un error. Ahora se guardan en Supabase.
+async function guardarDatosPartido() {
+  const hora = document.getElementById("hora").value || null;
+  const pabellon = document.getElementById("pabellon").value;
+
+  const { error } = await supabase
+    .from("partidos")
+    .update({ hora, pabellon })
+    .eq("id", partidoActual.id);
+
+  if (error) {
+    console.error(error);
+    avisar("Error guardando los datos del partido");
+    return;
   }
-  abrirPartido(partidoActual.id);
-}
 
-function guardarDatosPartido() {
-  partidoActual.hora = document.getElementById("hora").value;
-  partidoActual.pabellon = document.getElementById("pabellon").value;
-  actualizarPartido();
-}
+  partidoActual.hora = hora;
+  partidoActual.pabellon = escaparHtml(pabellon);
 
-function actualizarPartido() {
-  partidos = partidos.map(p =>
-    p.id === partidoActual.id ? partidoActual : p
-  );
-  guardarPartidos(partidos);
-  abrirPartido(partidoActual.id);
+  avisar("Datos guardados", "ok");
+  sinSaltoDeScroll(() => abrirPartido(partidoActual.id));
 }
 
 async function borrarPartido(id) {
@@ -2026,66 +2358,33 @@ async function borrarPartido(id) {
 
   await borrarPartidoSupabase(id);
 
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
-
   // 🔥 recalcular clasificación SI estaba finalizado
   if (partido?.estado === "finalizado" && partido.fase === "grupos") {
-  await guardarClasificacionSupabase(
-    partido.categoria,
-    partido.genero,
-    partido.grupo
-  );
-}
+    await recalcularClasificacionGrupo(
+      partido.categoria,
+      partido.genero,
+      partido.grupo
+    );
+  } else {
+    await recargarPartidos();
+  }
 
   mostrarPartidos();
   actualizarClasificacion();
 }
 
+// Un partido figura "en juego" desde su hora de inicio (hora de Madrid) durante
+// DURACION_PARTIDO_MIN minutos, salvo que ya esté marcado como finalizado.
 function calcularEstadoPartido(partido) {
   if (partido.estado === "finalizado") return "finalizado";
 
-  if (!partido.fecha || !partido.hora) return "pendiente";
+  const inicio = inicioPartido(partido);
+  if (!inicio) return "pendiente";
 
-  const ahora = new Date();
+  const ahora = Date.now();
+  const fin = inicio.getTime() + DURACION_PARTIDO_MIN * 60000;
 
-  const inicio = new Date(`${partido.fecha}T${partido.hora}`);
-  const DURACION_MINUTOS = 50; // AJUSTA si quieres
-  const fin = new Date(inicio.getTime() + DURACION_MINUTOS * 60000);
-
-  if (ahora >= inicio && ahora <= fin) {
-    return "en_juego";
-  }
-
-  if (ahora < inicio) {
-    return "pendiente";
-  }
-
-  return "pendiente";
-}
-
-function mostrarSelectorFaseFinal() {
-  contenido.innerHTML = `
-    <h2>🏆 Generar fase final</h2>
-
-    <label>Categoría</label>
-    <select id="ff-categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="ff-genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <button onclick="generarFaseFinalDesdeSelector()">
-      🚀 Generar fase final
-    </button>
-
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
-  `;
+  return ahora >= inicio.getTime() && ahora <= fin ? "en_juego" : "pendiente";
 }
 
 async function guardarResultado() {
@@ -2093,20 +2392,22 @@ async function guardarResultado() {
   const inputVisitante = document.getElementById("inputVisitante");
 
   if (!inputLocal || !inputVisitante) {
-    alert("No hay inputs de resultado disponibles");
+    avisar("No hay inputs de resultado disponibles");
     return;
   }
 
   const golesLocal = Number(inputLocal.value);
   const golesVisitante = Number(inputVisitante.value);
 
-  if (golesLocal < 0 || golesVisitante < 0) {
-    alert("Los goles no pueden ser negativos");
+  if (!Number.isInteger(golesLocal) || !Number.isInteger(golesVisitante)) {
+    avisar("Los goles deben ser números enteros", "error");
     return;
   }
 
-  partidoActual.goles_local = golesLocal;
-  partidoActual.goles_visitante = golesVisitante;
+  if (golesLocal < 0 || golesVisitante < 0) {
+    avisar("Los goles no pueden ser negativos", "error");
+    return;
+  }
 
   const { error } = await supabase
     .from("partidos")
@@ -2118,11 +2419,26 @@ async function guardarResultado() {
 
   if (error) {
     console.error(error);
-    alert("Error guardando resultado");
+    avisar("Error guardando resultado");
     return;
   }
 
-  abrirPartido(partidoActual.id);
+  // el marcador local solo cambia cuando se ha guardado de verdad
+  partidoActual.goles_local = golesLocal;
+  partidoActual.goles_visitante = golesVisitante;
+
+  // Si el partido ya estaba cerrado (corrección de un resultado), la clasificación
+  // debe recalcularse: antes solo se arreglaba sola 5 minutos después, desde el móvil de cualquiera.
+  if (partidoActual.estado === "finalizado" && partidoActual.fase === "grupos") {
+    await recalcularClasificacionGrupo(
+      partidoActual.categoria,
+      partidoActual.genero,
+      partidoActual.grupo
+    );
+  }
+
+  avisar("Resultado guardado", "ok");
+  sinSaltoDeScroll(() => abrirPartido(partidoActual.id));
 }
 
 /* ================== ADMIN ================== */
@@ -2145,9 +2461,9 @@ async function toggleAdmin() {
     rolUsuario = null;
     adminActivo = false;
     mesaActiva = false;
-    localStorage.removeItem("rol");
+    lsRemove("rol");
     document.getElementById("admin-fab")?.classList.remove("admin-activo");
-    alert("Sesión cerrada");
+    avisar("Sesión cerrada");
     refrescarVistaActual();
     return;
   }
@@ -2158,7 +2474,7 @@ async function toggleAdmin() {
   const rol = await validarPinSupabase(pin);
 
   if (!rol) {
-    alert("PIN incorrecto");
+    avisar("PIN incorrecto");
     return;
   }
 
@@ -2166,17 +2482,11 @@ async function toggleAdmin() {
   adminActivo = rol === "admin";
   mesaActiva = rol === "mesa";
 
-  localStorage.setItem("rol", rol);
+  lsSet("rol", rol);
   document.getElementById("admin-fab")?.classList.add("admin-activo");
 
-  alert(`Modo ${rol.toUpperCase()} activado`);
+  avisar(`Modo ${rol.toUpperCase()} activado`);
   refrescarVistaActual();
-}
-
-function salirAdmin() {
-  adminActivo = false;
-  localStorage.removeItem("admin");
-  mostrarPartidos();
 }
 
 /* ================== INICIO ================== */
@@ -2186,7 +2496,7 @@ async function guardarNuevoPatrocinador() {
   const file = document.getElementById("imagen").files[0];
 
   if (!nombre || !file) {
-    alert("Nombre y logo son obligatorios");
+    avisar("Nombre y logo son obligatorios");
     return;
   }
 
@@ -2201,7 +2511,7 @@ async function guardarNuevoPatrocinador() {
 
   if (uploadError) {
     console.error(uploadError);
-    alert("Error subiendo imagen");
+    avisar("Error subiendo imagen");
     return;
   }
 
@@ -2227,7 +2537,7 @@ const { error } = await supabase
 
   if (error) {
     console.error(error);
-    alert("Error guardando patrocinador");
+    avisar("Error guardando patrocinador");
     return;
   }
 
@@ -2247,7 +2557,7 @@ async function borrarPatrocinador(id) {
 
   if (fetchError) {
     console.error(fetchError);
-    alert("Error obteniendo patrocinador");
+    avisar("Error obteniendo patrocinador");
     return;
   }
 
@@ -2278,7 +2588,7 @@ async function borrarPatrocinador(id) {
 
   if (error) {
     console.error(error);
-    alert("Error borrando patrocinador");
+    avisar("Error borrando patrocinador");
     return;
   }
 
@@ -2288,46 +2598,6 @@ async function borrarPatrocinador(id) {
 }
 
 /* ================== CLASIFICACION SUPABASE ================== */
-async function actualizarClasificacionSupabase(partido) {
-  const equiposPartido = [
-    { id: partido.local_id, goles: partido.goles_local, rival: partido.goles_visitante },
-    { id: partido.visitante_id, goles: partido.goles_visitante, rival: partido.goles_local }
-  ];
-
-  for (const e of equiposPartido) {
-    const esLocal = e.id === partido.local_id;
-
-    let pg = 0, pe = 0, pp = 0, puntos = 0;
-
-    if (e.goles > e.rival) {
-      pg = 1;
-      puntos = 2;
-    } else if (e.goles === e.rival) {
-      pe = 1;
-      puntos = 1;
-    } else {
-      pp = 1;
-    }
-
-    const { error } = await supabase.rpc("actualizar_clasificacion", {
-      p_equipo_id: e.id,
-      p_categoria: partido.categoria,
-      p_genero: partido.genero,
-      p_grupo: partido.grupo,
-      p_pg: pg,
-      p_pe: pe,
-      p_pp: pp,
-      p_gf: e.goles,
-      p_gc: e.rival,
-      p_puntos: puntos
-    });
-
-    if (error) {
-      console.error("Error actualizando clasificación:", error);
-    }
-  }
-}
-
 /* ================== CLUBES SUPABASE ================== */
 async function obtenerClubesSupabase(intentos = 3) {
 
@@ -2340,7 +2610,7 @@ async function obtenerClubesSupabase(intentos = 3) {
 
     if (error) throw error;
 
-    return data || [];
+    return (data || []).map(sanearClub);
 
   } catch (error) {
 
@@ -2379,7 +2649,7 @@ async function obtenerEquiposSupabase() {
     return [];
   }
 
-  return data;
+  return (data || []).map(sanearEquipo);
 }
 
 async function obtenerEquiposPorFiltro(categoria, genero, grupo) {
@@ -2429,7 +2699,7 @@ async function crearEquipoSupabase(equipo) {
     .insert([equipo]);
 
   if (error) {
-    alert("Error creando equipo");
+    avisar("Error creando equipo");
     console.error(error);
   }
 }
@@ -2441,7 +2711,7 @@ async function editarEquipoSupabase(id, cambios) {
     .eq("id", id);
 
   if (error) {
-    alert("Error editando equipo");
+    avisar("Error editando equipo");
     console.error(error);
   }
 }
@@ -2453,7 +2723,7 @@ async function borrarEquipoSupabase(id) {
     .eq("id", id);
 
   if (error) {
-    alert("Error borrando equipo");
+    avisar("Error borrando equipo");
     console.error(error);
   }
 }
@@ -2470,7 +2740,7 @@ async function obtenerEquiposPorClub(clubId) {
     return [];
   }
 
-  return data;
+  return (data || []).map(sanearEquipo);
 }
 
 /* ================== PARTIDOS (SUPABASE) ================== */
@@ -2487,44 +2757,6 @@ async function obtenerPartidosSupabase() {
   return data;
 }
 
-async function cargarDatos() {
-  clubes = await obtenerClubesSupabase();
-  equipos = await obtenerEquiposSupabase();
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
-  patrocinadores = await obtenerPatrocinadoresSupabase();
-  mostrarHome();
-}
-
-async function crearPartidoSupabase(partido) {
-
-  console.log("CREANDO PARTIDO:", partido);
-
-  const { data, error } = await supabase
-    .from("partidos")
-    .insert([partido])
-    .select();
-
-  if (error) {
-    console.error("❌ ERROR SUPABASE:", error);
-    alert("ERROR REAL: " + error.message);
-    throw error; // 🔥 IMPORTANTE
-  }
-
-  console.log("✅ PARTIDO CREADO:", data);
-}
-
-async function editarPartidoSupabase(id, cambios) {
-  const { error } = await supabase
-    .from("partidos")
-    .update(cambios)
-    .eq("id", id);
-
-  if (error) {
-    alert("Error editando partido");
-    console.error(error);
-  }
-}
-
 async function borrarPartidoSupabase(id) {
   const { error } = await supabase
     .from("partidos")
@@ -2532,7 +2764,7 @@ async function borrarPartidoSupabase(id) {
     .eq("id", id);
 
   if (error) {
-    alert("Error borrando partido");
+    avisar("Error borrando partido");
     console.error(error);
   }
 }
@@ -2559,133 +2791,18 @@ async function guardarNuevoPartido() {
 
   if (error) {
     console.error(error);
-    alert("Error guardando partido");
+    avisar("Error guardando partido");
     return;
   }
 
-  partidos = normalizarPartidos(await obtenerPartidosSupabase());
+  await recargarPartidos();
   mostrarPartidos();
-}
-
-/* ================== GRUPOS ================== */
-function mostrarGrupos() {
-  let html = `<h2>Grupos</h2>`;
-
-  if (adminActivo) {
-    html += `<button onclick="formNuevoGrupo()">➕ Crear grupo</button>`;
-  }
-
-  grupos.forEach(g => {
-    html += `
-      <div class="card">
-        <h3>${g.categoria} ${g.genero}</h3>
-        <p><strong>${g.nombre}</strong></p>
-        <ul>
-          ${g.equipos.map(e => `<li>${e}</li>`).join("")}
-        </ul>
-        ${adminActivo ? `<button onclick="editarGrupo(${g.id})">✏️ Editar</button>` : ""}
-      </div>
-    `;
-  });
-
-  contenido.innerHTML = html;
-}
-
-function formNuevoGrupo() {
-  contenido.innerHTML = `
-    <h2>Nuevo grupo</h2>
-
-    <label>Categoría</label>
-    <select id="categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <label>Nombre del grupo</label>
-    <input id="nombre" placeholder="Grupo A">
-
-    <label>Equipos (uno por línea)</label>
-    <textarea id="equipos" rows="5"></textarea>
-
-    <button onclick="guardarNuevoGrupo()">💾 Guardar grupo</button>
-    <button class="volver" onclick="mostrarGrupos()">⬅ Volver</button>
-  `;
-}
-
-function guardarNuevoGrupo() {
-  const categoria = document.getElementById("categoria").value;
-  const genero = document.getElementById("genero").value;
-  const nombre = document.getElementById("nombre").value;
-  const equipos = document.getElementById("equipos").value
-    .split("\n")
-    .filter(e => e.trim() !== "");
-
-  const nuevoGrupo = {
-    id: Date.now(),
-    categoria,
-    genero,
-    nombre,
-    equipos
-  };
-
-  grupos.push(nuevoGrupo);
-  guardarGrupos(grupos);
-  mostrarGrupos();
-}
-
-function editarGrupo(id) {
-  grupoActual = grupos.find(g => g.id === id);
-
-  contenido.innerHTML = `
-    <h2>Editar grupo</h2>
-
-    <label>Categoría</label>
-    <select id="categoria">
-      <option ${grupoActual.categoria==="Infantil"?"selected":""}>Infantil</option>
-      <option ${grupoActual.categoria==="Cadete"?"selected":""}>Cadete</option>
-      <option ${grupoActual.categoria==="Juvenil"?"selected":""}>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="genero">
-      <option ${grupoActual.genero==="Masculino"?"selected":""}>Masculino</option>
-      <option ${grupoActual.genero==="Femenino"?"selected":""}>Femenino</option>
-    </select>
-
-    <label>Nombre</label>
-    <input id="nombre" value="${grupoActual.nombre}">
-
-    <label>Equipos</label>
-    <textarea id="equipos" rows="5">${grupoActual.equipos.join("\n")}</textarea>
-
-    <button onclick="guardarEdicionGrupo()">💾 Guardar cambios</button>
-    <button class="volver" onclick="mostrarGrupos()">⬅ Volver</button>
-  `;
-}
-
-function guardarEdicionGrupo() {
-  grupoActual.categoria = document.getElementById("categoria").value;
-  grupoActual.genero = document.getElementById("genero").value;
-  grupoActual.nombre = document.getElementById("nombre").value;
-  grupoActual.equipos = document.getElementById("equipos").value
-    .split("\n")
-    .filter(e => e.trim() !== "");
-
-  grupos = grupos.map(g => g.id === grupoActual.id ? grupoActual : g);
-  guardarGrupos(grupos);
-  mostrarGrupos();
 }
 
 /* ================== CATEGORIAS ================== */
 function mostrarCategorias() {
   setNavActivoPorVista("categorias");
+  registrarNavegacion("categorias");
 
   contenido.innerHTML = `
     <h2>Categorías</h2>
@@ -2762,8 +2879,8 @@ function filtrarCategorias() {
   const club = clubes.find(c => c.id === e.club_id);
 
   html += `
-  <div class="card equipo-card" onclick="togglePartidosEquipo(${e.id})">
-  <img src="${club?.escudo || 'img/club-placeholder.png'}" class="escudo-equipo-mini">
+  <div class="card equipo-card" role="button" tabindex="0" onclick="togglePartidosEquipo(${e.id})">
+  <img src="${club?.escudo || PLACEHOLDER_ESCUDO}" class="escudo-equipo-mini" alt="" loading="lazy" decoding="async">
   <div class="equipo-info">
     <strong>${e.nombre}</strong>
     <div class="equipo-grupo">${e.grupo}</div>
@@ -2848,7 +2965,7 @@ function renderMiniPartido(p, finalizado = false) {
   const visitante = equipos.find(e => e.id === p.visitante_id);
 
   return `
-    <div class="card partido-card-mini ${finalizado ? "finalizado" : ""}"
+    <div class="card partido-card-mini ${finalizado ? "finalizado" : ""}" role="button" tabindex="0"
          onclick="event.stopPropagation(); abrirPartido(${p.id})">
       <strong>${formatearFecha(p.fecha)}</strong>
       <div>
@@ -2867,16 +2984,9 @@ function renderMiniPartido(p, finalizado = false) {
   `;
 }
 
-function volverCategoriasAnimado() {
-  mostrarCategorias();
-  contenido.classList.remove("fade-enter", "slide-enter");
-  void contenido.offsetWidth;
-  contenido.classList.add("fade-enter");
-}
-
 function formNuevoEquipo() {
   if (clubes.length === 0) {
-    alert("Primero debes crear un club");
+    avisar("Primero debes crear un club");
     return;
   }
 
@@ -3019,6 +3129,7 @@ async function borrarEquipo(id) {
 /* ================== CLASIFICACION ================== */
 function mostrarClasificacion() {
   setNavActivoPorVista("tabla");
+  registrarNavegacion("tabla");
 
   contenido.innerHTML = `
   <h2>Clasificación</h2>
@@ -3087,7 +3198,7 @@ function renderTablaClasificacion(data) {
 
         <td>
           <div class="equipo-tabla">
-            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla">` : ""}
+            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla" alt="" loading="lazy" decoding="async">` : ""}
             <span class="nombre-equipo-tabla">${equipo?.nombre || "-"}</span>
           </div>
         </td>
@@ -3108,12 +3219,22 @@ function renderTablaClasificacion(data) {
   return html;
 }
 
+let ticketClasificacion = 0;
+
 async function actualizarClasificacion() {
   const catEl = document.getElementById("clas-cat");
   const genEl = document.getElementById("clas-gen");
   const grpEl = document.getElementById("clas-grp");
 
   if (!catEl || !genEl || !grpEl) return;
+
+  // si cambias de filtro rápido, solo cuenta la última consulta
+  const ticket = ++ticketClasificacion;
+
+  const zona = document.getElementById("tablaClasificacion");
+  if (zona && !zona.firstChild) {
+    zona.innerHTML = `<p class="estado-vacio">Cargando clasificación…</p>`;
+  }
 
   const categoria = catEl.value;
   const genero = genEl.value;
@@ -3130,7 +3251,20 @@ async function actualizarClasificacion() {
     query = query.eq("grupo", grupoSeleccionado);
   }
 
-  const { data, error } = await query;
+  const { data: filasBD, error } = await query;
+
+  if (ticket !== ticketClasificacion) return;
+
+  // Antes, si la consulta fallaba (sin cobertura), data era null y data.sort() rompía la pantalla
+  if (error || !filasBD) {
+    console.error(error);
+    if (zona) {
+      zona.innerHTML = `<p class="estado-vacio">No se pudo cargar la clasificación. Comprueba tu conexión.</p>`;
+    }
+    return;
+  }
+
+  const data = filasBD.map(f => ({ ...f, grupo: escaparHtml(f.grupo) }));
 
   data.sort((a, b) => {
 
@@ -3159,11 +3293,6 @@ async function actualizarClasificacion() {
 
 });
   
-  if (error) {
-    console.error(error);
-    return;
-  }
-
   let htmlFinal = "";
 
   // 🔥 CASO: TODOS LOS GRUPOS
@@ -3211,11 +3340,17 @@ async function actualizarClasificacion() {
     htmlFinal = renderTablaClasificacion(data);
   }
 
-  document.getElementById("tablaClasificacion").innerHTML = `
+  if (!data.length) {
+    htmlFinal = `<p class="estado-vacio">Todavía no hay clasificación para esta selección.</p>`;
+  }
+
+  if (zona) {
+    zona.innerHTML = `
     <div class="tabla-wrapper">
       ${htmlFinal}
     </div>
   `;
+  }
 }
 
 async function guardarClasificacionSupabase(categoria, genero, grupo) {
@@ -3227,84 +3362,51 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
     partidos
   );
 
+  // grupo sin equipos: no hay nada que guardar (y no se borra lo que hubiera)
+  if (clasificacion.length === 0) return true;
+
+  // Antes cada equipo se buscaba por NOMBRE; si dos categorías tenían un equipo con el
+  // mismo nombre se podía guardar el id del equipo equivocado. Ahora se usa el id.
+  const filas = clasificacion.map(e => ({
+    categoria,
+    genero,
+    grupo,
+    equipo_id: e.id,
+    pj: e.pj,
+    pg: e.pg,
+    pe: e.pe,
+    pp: e.pp,
+    gf: e.gf,
+    gc: e.gc,
+    puntos: e.puntos
+  }));
+
   // 1️⃣ borrar clasificación anterior de ese grupo
-  await supabase
+  const { error: errorBorrar } = await supabase
     .from("clasificacion")
     .delete()
     .eq("categoria", categoria)
     .eq("genero", genero)
     .eq("grupo", grupo);
 
-  // 2️⃣ insertar nueva
-  const filas = clasificacion.map(e => {
-    const equipo = equipos.find(eq => eq.nombre === e.nombre);
-    return {
-      categoria,
-      genero,
-      grupo,
-      equipo_id: equipo.id,
-      pj: e.pj,
-      pg: e.pg,
-      pe: e.pe,
-      pp: e.pp,
-      gf: e.gf,
-      gc: e.gc,
-      puntos: e.puntos
-    };
-  });
+  if (errorBorrar) {
+    console.error("Error borrando clasificación:", errorBorrar);
+    avisar("Error actualizando la clasificación");
+    return false;
+  }
 
+  // 2️⃣ insertar la nueva
   const { error } = await supabase
     .from("clasificacion")
     .insert(filas);
 
   if (error) {
     console.error("Error guardando clasificación:", error);
-  }
-}
-
-async function recalcularTodasLasClasificaciones() {
-
-  console.log("🔄 Recalculando clasificaciones...");
-
-  try {
-
-    const combinaciones = [
-      ...new Set(
-        equipos.map(e =>
-          `${e.categoria}|${e.genero}|${e.grupo}`
-        )
-      )
-    ];
-
-    for (const combo of combinaciones) {
-
-      const [categoria, genero, grupo] =
-        combo.split("|");
-
-      await guardarClasificacionSupabase(
-        categoria,
-        genero,
-        grupo
-      );
-
-    }
-
-    console.log("✅ Clasificaciones actualizadas");
-
-    // refrescar vista si está abierta
-    if (document.getElementById("tablaClasificacion")) {
-      actualizarClasificacion();
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Error recalculando clasificación:",
-      error
-    );
-
+    avisar("Error guardando la clasificación");
+    return false;
   }
 
+  return true;
 }
 
 function compararEquipos(a, b, categoria, genero, grupo, partidos) {
@@ -3637,6 +3739,7 @@ function resolverEmpateMultiple(
 /* ================== EQUIPOS GRUPO ================== */
 function mostrarEquipos() {
   setNavActivoPorVista("clubs");
+  registrarNavegacion("clubs");
 
   let html = `<h2>Clubs Participantes</h2>`;
 
@@ -3653,10 +3756,10 @@ function mostrarEquipos() {
 
   clubes.forEach(c => {
   html += `
-    <div class="club-card" onclick="verClub(${c.id})">
+    <div class="club-card" role="button" tabindex="0" onclick="verClub(${c.id})">
 
       <div class="club-info">
-        <img src="${c.escudo}" class="club-escudo">
+        <img src="${c.escudo || PLACEHOLDER_ESCUDO}" class="club-escudo" alt="" loading="lazy" decoding="async">
         <strong>${c.nombre}</strong>
       </div>
 
@@ -3676,6 +3779,14 @@ function mostrarEquipos() {
 
 async function verClub(id) {
   const club = clubes.find(c => c.id === id);
+
+  // el club puede haberse borrado desde otro dispositivo
+  if (!club) {
+    mostrarEquipos();
+    return;
+  }
+
+  registrarNavegacion("club", { id });
 
   const equiposClub = await obtenerEquiposPorClub(id);
 
@@ -3736,38 +3847,78 @@ function formNuevoClub() {
   `;
 }
 
+// Lee la imagen del escudo y la reduce (máx. 192 px). Los escudos se guardan dentro de la
+// tabla "clubes" y se descargan todos juntos al abrir la app: cuanto más ligeros, más rápido carga.
+function leerEscudo(file, max = 192) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+
+    lector.onerror = () => reject(lector.error);
+
+    lector.onload = () => {
+      const original = lector.result;
+      const img = new Image();
+
+      img.onerror = () => resolve(original); // no se puede decodificar: se guarda tal cual
+
+      img.onload = () => {
+        if (!img.width || !img.height) return resolve(original);
+
+        const escala = Math.min(1, max / Math.max(img.width, img.height));
+
+        if (escala === 1 && file.size < 60000) return resolve(original); // ya es pequeño
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * escala));
+        canvas.height = Math.max(1, Math.round(img.height * escala));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        let salida = canvas.toDataURL("image/webp", 0.85);
+        if (!salida.startsWith("data:image/webp")) salida = canvas.toDataURL("image/png");
+
+        resolve(salida.length < original.length ? salida : original);
+      };
+
+      img.src = original;
+    };
+
+    lector.readAsDataURL(file);
+  });
+}
+
 async function guardarNuevoClub() {
-  const nombre = document.getElementById("nombre").value;
+  const nombre = document.getElementById("nombre").value.trim();
   const file = document.getElementById("escudo").files[0];
 
   if (!nombre || !file) {
-    alert("Nombre y escudo son obligatorios");
+    avisar("Nombre y escudo son obligatorios");
     return;
   }
 
-  const reader = new FileReader();
+  let escudo;
 
-  reader.onload = async () => {
-    const { error } = await supabase
-      .from("clubes")
-      .insert({
-        nombre,
-        escudo: reader.result
-      });
+  try {
+    escudo = await leerEscudo(file);
+  } catch (e) {
+    console.error(e);
+    avisar("Error leyendo la imagen del escudo");
+    return;
+  }
 
-    if (error) {
-      alert("Error guardando club");
-      console.error(error);
-      return;
-    }
+  const { error } = await supabase
+    .from("clubes")
+    .insert({ nombre, escudo });
 
-    // 🔥 RECARGAR CLUBES CORRECTAMENTE
-    clubes = await obtenerClubesSupabase();
+  if (error) {
+    avisar("Error guardando club");
+    console.error(error);
+    return;
+  }
 
-    mostrarEquipos();
-  };
+  // 🔥 RECARGAR CLUBES CORRECTAMENTE
+  clubes = await obtenerClubesSupabase();
 
-  reader.readAsDataURL(file);
+  mostrarEquipos();
 }
 
 function editarClub(id) {
@@ -3792,59 +3943,42 @@ async function guardarEdicionClub(id) {
   const club = clubes.find(c => c.id === id);
   if (!club) return;
 
-  const nuevoNombre = document.getElementById("nombre").value;
+  const cambios = {
+    nombre: document.getElementById("nombre").value.trim()
+  };
+
   const file = document.getElementById("escudo").files[0];
 
-  let escudoFinal = club.escudo;
-
   if (file) {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      escudoFinal = reader.result;
-
-      const { error } = await supabase
-        .from("clubes")
-        .update({
-          nombre: nuevoNombre,
-          escudo: escudoFinal
-        })
-        .eq("id", id);
-
-      if (error) {
-        alert("Error al editar club");
-        console.error(error);
-        return;
-      }
-
-      clubes = await obtenerClubesSupabase();
-      mostrarEquipos();
-    };
-
-    reader.readAsDataURL(file);
-  } else {
-    const { error } = await supabase
-      .from("clubes")
-      .update({
-        nombre: nuevoNombre
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert("Error al editar club");
-      console.error(error);
+    try {
+      cambios.escudo = await leerEscudo(file);
+    } catch (e) {
+      console.error(e);
+      avisar("Error leyendo la imagen del escudo");
       return;
     }
-
-    clubes = await obtenerClubesSupabase();
-    mostrarEquipos();
   }
+
+  const { error } = await supabase
+    .from("clubes")
+    .update(cambios)
+    .eq("id", id);
+
+  if (error) {
+    avisar("Error al editar club");
+    console.error(error);
+    return;
+  }
+
+  clubes = await obtenerClubesSupabase();
+  mostrarEquipos();
 }
 
 async function borrarClub(id) {
   const club = clubes.find(c => c.id === id);
   if (!club) return;
 
-  if (!confirm(`¿Eliminar el club "${club.nombre}"?`)) return;
+  if (!confirm(`¿Eliminar el club "${textoPlano(club.nombre)}"?`)) return;
 
   const { error } = await supabase
     .from("clubes")
@@ -3855,58 +3989,10 @@ async function borrarClub(id) {
   mostrarEquipos();
 }
 
-function formNuevoEquipoClub(clubId) {
-  contenido.innerHTML = `
-    <h2>Nuevo equipo</h2>
-
-    <label>Nombre del equipo</label>
-    <input id="nombre">
-
-    <label>Categoría</label>
-    <select id="categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <label>Grupo</label>
-    <select id="grupo">
-      <option>Grupo A</option>
-      <option>Grupo B</option>
-      <option>Grupo C</option>
-      <option>Grupo D</option>
-      <option>Grupo Único</option>
-    </select>
-
-    <button onclick="guardarNuevoEquipoClub(${clubId})">💾 Guardar</button>
-    <button class="volver" onclick="verClub(${clubId})">⬅ Volver</button>
-  `;
-}
-
-function guardarNuevoEquipoClub(clubId) {
-  const nuevo = {
-    id: Date.now(),
-    nombre: document.getElementById("nombre").value,
-    categoria: document.getElementById("categoria").value,
-    genero: document.getElementById("genero").value,
-    grupo: document.getElementById("grupo").value,
-    clubId
-  };
-
-  equipos.push(nuevo);
-  guardarEquipos(equipos);
-
-  verClub(clubId);
-}
 /* ================== PABELLONES ================== */
 function mostrarPabellones() {
   setNavActivoPorVista("pabellones");
+  registrarNavegacion("pabellones");
 
   const pabellones = [
   "Municipal",
@@ -3926,7 +4012,8 @@ function mostrarPabellones() {
     <div class="pabellones-grid">
       ${pabellones.map(p => `
         <div 
-  class="pabellon-card"
+  class="pabellon-card" role="button" tabindex="0"
+  aria-label="Pabellón ${p}: ${contarPartidos(p)} partidos"
   style="background-image: url('${IMAGENES_PABELLONES[p]}')"
   onclick="mostrarPartidosPorPabellon('${p}')"
 >
@@ -3984,19 +4071,9 @@ window.formNuevoClub = formNuevoClub;
 window.guardarNuevoClub = guardarNuevoClub;
 window.editarClub = editarClub;
 window.borrarClub = borrarClub;
-window.formNuevoEquipoClub = formNuevoEquipoClub;
-window.guardarNuevoEquipoClub = guardarNuevoEquipoClub;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
-window.mostrarSelectorFaseFinal = mostrarSelectorFaseFinal;
 window.toggleCategoriaDia = toggleCategoriaDia;
-
-// grupos
-window.mostrarGrupos = mostrarGrupos;
-window.formNuevoGrupo = formNuevoGrupo;
-window.guardarNuevoGrupo = guardarNuevoGrupo;
-window.editarGrupo = editarGrupo;
-window.guardarEdicionGrupo = guardarEdicionGrupo;
 
 // patrocinadores
 window.guardarNuevoPatrocinador = guardarNuevoPatrocinador;
@@ -4019,15 +4096,12 @@ window.abrirWeb = abrirWeb;
 
 window.mostrarPartidosPorPabellon = function(pabellon) {
   setNavActivoPorVista("pabellones");
+  registrarNavegacion("pabellon", { nombre: pabellon });
 
   const partidosPabellon = partidos.filter(p => p.pabellon === pabellon);
 
   // 🔹 ordenar por fecha + hora
-  const ordenados = [...partidosPabellon].sort((a, b) => {
-    const fa = new Date(`${a.fecha}T${a.hora || "00:00"}`);
-    const fb = new Date(`${b.fecha}T${b.hora || "00:00"}`);
-    return fa - fb;
-  });
+  const ordenados = [...partidosPabellon].sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
 
   const proximos = ordenados.filter(
   p => calcularEstadoPartido(p) !== "finalizado"
@@ -4060,6 +4134,7 @@ let html = `
     <a
       href="${UBICACIONES_PABELLONES[pabellon] || '#'}"
       target="_blank"
+      rel="noopener noreferrer"
       class="badge-glass badge-ubicacion"
     >
       🗺️ Ubicación
@@ -4071,6 +4146,7 @@ let html = `
       <a
         href="${DIRECTOS_PABELLONES[pabellon]}"
         target="_blank"
+        rel="noopener noreferrer"
         class="badge-glass badge-directo"
       >
         🔴 Ver directo
@@ -4101,43 +4177,177 @@ html += finalizados.length
   contenido.innerHTML = html;
 };
 
-const footer = document.querySelector(".app-footer");
+/* ================== DIRECTO: MARCADORES DEL DÍA ================== */
+// Solo se consultan los partidos de HOY (consulta pequeña) y solo mientras la pestaña está visible.
+// Así los marcadores se mueven sin recargar y sin gastar el cupo de datos de Supabase.
+const firmaPartido = p => [p.estado, p.goles_local, p.goles_visitante, p.hora, p.pabellon, p.finalizado].join("|");
 
-window.addEventListener("scroll", () => {
-  if (!footer) return;
+async function refrescarPartidosHoy() {
+  if (refrescandoVivo || document.hidden || !navigator.onLine) return;
+  if (!partidos.length) return;
 
-  const scrollY = window.scrollY;
-  const viewport = window.innerHeight;
-  const fullHeight = document.body.scrollHeight;
+  refrescandoVivo = true;
 
-  // margen para que aparezca al "estirar"
-  const umbral = 40;
+  try {
+    const { data, error } = await supabase
+      .from("partidos")
+      .select("*")
+      .eq("fecha", hoyISO());
 
-  if (scrollY + viewport >= fullHeight - umbral) {
-    footer.classList.add("visible");
-  } else {
-    footer.classList.remove("visible");
+    if (error || !data) return;
+
+    const frescos = normalizarPartidos(data);
+    let cambio = false;
+
+    for (const f of frescos) {
+      const i = partidos.findIndex(p => p.id === f.id);
+      if (i === -1) {
+        partidos.push(f);
+        cambio = true;
+      } else if (firmaPartido(partidos[i]) !== firmaPartido(f)) {
+        partidos[i] = f;
+        cambio = true;
+      }
+    }
+
+    if (cambio) aplicarCambiosEnVivo();
+  } catch (e) {
+    console.error("Error refrescando partidos de hoy:", e);
+  } finally {
+    refrescandoVivo = false;
+  }
+}
+
+function aplicarCambiosEnVivo() {
+  // nunca se redibuja mientras alguien edita (admin / mesa) o escribe en un campo
+  if (adminActivo || mesaActiva) return;
+  const activo = document.activeElement;
+  if (activo && /^(INPUT|SELECT|TEXTAREA)$/.test(activo.tagName)) return;
+
+  if (vistaActual === "inicio") {
+    renderActualizacionesHome();
+  } else if (vistaActual === "partidos" || vistaActual === "pabellon") {
+    const y = window.scrollY;
+    sinSaltoDeScroll(() => restaurarVista({ vista: vistaActual, params: paramsVistaActual }));
+    window.scrollTo(0, y);
+  }
+}
+
+setInterval(refrescarPartidosHoy, INTERVALO_VIVO_MS);
+
+// al volver a la pestaña (o recuperar la cobertura) se actualiza al momento
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    refrescarPartidosHoy();
+    if (registroSW) registroSW.update().catch(() => {});
   }
 });
+window.addEventListener("online", refrescarPartidosHoy);
 
-setInterval(() => {
-  if (document.getElementById("bloque-actualizaciones")) {
-    renderActualizacionesHome();
-  }
-}, 30000); // cada 30s
+/* ================== PWA: SERVICE WORKER E INSTALACIÓN ================== */
+let registroSW = null;
+let eventoInstalar = null;
 
-// 🔄 RECALCULAR CLASIFICACIÓN AUTOMÁTICAMENTE
-setInterval(() => {
+function registrarServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  if (location.protocol !== "https:" && location.hostname !== "localhost") return;
 
-  recalcularTodasLasClasificaciones();
+  navigator.serviceWorker.register("sw.js").then(reg => {
+    registroSW = reg;
 
-}, 5 * 60 * 1000); // cada 5 minutos
+    const avisarActualizacion = worker => {
+      avisar("Hay una versión nueva de la app.", "info", {
+        etiqueta: "Actualizar",
+        duracion: 0,
+        accion: () => {
+          navigator.serviceWorker.addEventListener("controllerchange", () => location.reload(), { once: true });
+          worker.postMessage("saltar-espera");
+          setTimeout(() => location.reload(), 1500);
+        }
+      });
+    };
+
+    if (reg.waiting && navigator.serviceWorker.controller) avisarActualizacion(reg.waiting);
+
+    reg.addEventListener("updatefound", () => {
+      const nuevo = reg.installing;
+      if (!nuevo) return;
+      nuevo.addEventListener("statechange", () => {
+        if (nuevo.state === "installed" && navigator.serviceWorker.controller) avisarActualizacion(nuevo);
+      });
+    });
+  }).catch(e => console.warn("No se pudo registrar el service worker:", e));
+}
+
+const yaInstalada = () =>
+  window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+const esIOS = () =>
+  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  eventoInstalar = e;
+  renderTarjetaInstalar();
+});
+
+window.addEventListener("appinstalled", () => {
+  eventoInstalar = null;
+  document.getElementById("tarjeta-instalar")?.remove();
+});
+
+function renderTarjetaInstalar() {
+  document.getElementById("tarjeta-instalar")?.remove();
+
+  if (yaInstalada() || lsGet("instalar-descartado")) return;
+  if (vistaActual !== "inicio") return;
+
+  const ios = esIOS();
+  if (!eventoInstalar && !ios) return;
+
+  const caja = document.createElement("div");
+  caja.id = "tarjeta-instalar";
+  caja.className = "tarjeta-instalar";
+
+  caja.innerHTML = eventoInstalar
+    ? `<strong>📲 Instala la app</strong>
+       <span>Ábrela desde tu pantalla de inicio y consulta los partidos aunque falle la cobertura.</span>
+       <div class="acciones">
+         <button type="button" class="principal" onclick="instalarApp()">Instalar</button>
+         <button type="button" onclick="descartarInstalar()">Ahora no</button>
+       </div>`
+    : `<strong>📲 Instala la app</strong>
+       <span>Pulsa <b>Compartir</b> y luego <b>«Añadir a pantalla de inicio»</b>.</span>
+       <div class="acciones">
+         <button type="button" onclick="descartarInstalar()">Entendido</button>
+       </div>`;
+
+  contenido.insertBefore(caja, contenido.firstChild);
+}
+
+async function instalarApp() {
+  if (!eventoInstalar) return;
+  eventoInstalar.prompt();
+  try { await eventoInstalar.userChoice; } catch (e) { /* cancelado */ }
+  eventoInstalar = null;
+  document.getElementById("tarjeta-instalar")?.remove();
+}
+
+function descartarInstalar() {
+  lsSet("instalar-descartado", "1");
+  document.getElementById("tarjeta-instalar")?.remove();
+}
+
+window.instalarApp = instalarApp;
+window.descartarInstalar = descartarInstalar;
 
 /* ================== ARRANQUE ================== */
-window.addEventListener("load", () => {
-  iniciarApp();
+// El script es un módulo: se ejecuta cuando el HTML ya está leído, no hace falta esperar a "load"
+// (que esperaba a todas las imágenes y retrasaba el arranque).
+if (adminActivo) {
+  document.getElementById("admin-fab")?.classList.add("admin-activo");
+}
 
-  if (adminActivo) {
-    document.getElementById("admin-fab")?.classList.add("admin-activo");
-  }
-});
+iniciarApp();
+registrarServiceWorker();

@@ -4126,24 +4126,30 @@ function mostrarPabellones() {
   const contarPartidos = pabellon =>
     partidos.filter(p => p.pabellon === pabellon).length;
 
+  const total = partidos.length;
+
   document.getElementById("contenido").innerHTML = `
     <h2>Pabellones</h2>
-    <div class="pabellones-grid">
-      ${pabellones.map(p => `
-        <div 
-  class="pabellon-card" role="button" tabindex="0"
-  aria-label="Pabellón ${p}: ${contarPartidos(p)} partidos"
-  style="background-image: url('${IMAGENES_PABELLONES[p]}')"
-  onclick="mostrarPartidosPorPabellon('${p}')"
->
-  <div class="pabellon-overlay">
-    <div class="pabellon-nombre">${p}</div>
-    <div class="pabellon-contador">
-      ${contarPartidos(p)} partidos
-    </div>
-  </div>
-</div>
-      `).join("")}
+    <p class="pab-intro">${pabellones.length} pabellones · ${total} partidos. Toca uno para ver su programación.</p>
+    <div class="pab-grid">
+      ${pabellones.map(p => {
+        const n = contarPartidos(p);
+        return `
+        <div class="pab-card" role="button" tabindex="0"
+             aria-label="Pabellón ${p}: ${n} partidos"
+             onclick="mostrarPartidosPorPabellon('${p}')">
+          <div class="pab-foto">
+            <img src="${IMAGENES_PABELLONES[p]}" alt="" loading="lazy" decoding="async">
+            <span class="pab-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
+          </div>
+          <div class="pab-info">
+            <div class="pab-texto">
+              <strong class="pab-nombre">${p}</strong>
+              <span class="pab-contador">${n} ${n === 1 ? "partido" : "partidos"}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join("")}
     </div>
   `;
 }

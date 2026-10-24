@@ -3724,3 +3724,27 @@ body.splash-activo .music-fab { display: none !important; }
   .clas-equipo { gap: 8px; }
   .clas-equipo span { font-size: 13px; }
 }
+
+/* ---------- pabellones renovados ---------- */
+.pab-intro { margin: 4px 0 18px; color: var(--muted); font-size: 14px; }
+.pab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pab-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; cursor: pointer; box-shadow: 0 8px 22px rgba(27,111,184,.09); transition: transform .2s ease, box-shadow .2s ease; }
+.pab-card:active { transform: scale(.97); }
+.pab-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) { .pab-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(27,111,184,.18); } .pab-card:hover .pab-foto img { transform: scale(1.06); } .pab-card:hover .pab-flecha { background: var(--azul-fuerte); color: #fff; } }
+.pab-foto { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--tile); }
+.pab-foto img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.pab-foto::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: linear-gradient(transparent, rgba(10,58,128,.28)); pointer-events: none; }
+.pab-chip { position: absolute; top: 10px; left: 10px; z-index: 1; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px 5px 8px; border-radius: 999px; background: rgba(255,255,255,.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--tile-ink); font-size: 11px; font-weight: 600; }
+.pab-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 12px 14px 14px; }
+.pab-texto { display: grid; gap: 2px; min-width: 0; }
+.pab-nombre { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.2; overflow-wrap: anywhere; }
+.pab-contador { font-size: 13px; color: var(--accent-text); font-weight: 500; }
+.pab-flecha { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tile); color: var(--tile-ink); transition: background .2s, color .2s; }
+@media (min-width: 760px) { .pab-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; } }
+@media (max-width: 380px) { .pab-chip { display: none; } .pab-nombre { font-size: 15px; } }
+
+.pab-chip { display: none; }
+.pab-flecha { position: absolute; right: 10px; bottom: 10px; z-index: 1; width: 34px; height: 34px; background: rgba(255,255,255,.92); box-shadow: 0 4px 10px rgba(10,58,128,.25); }
+.pab-info { padding: 12px 14px 14px; }
+.pab-nombre { overflow-wrap: normal; }

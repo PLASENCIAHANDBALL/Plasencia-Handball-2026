@@ -26,7 +26,7 @@ const BANDERAS = {
 };
 
 function urlBandera(cod) {
-  return `url("data:image/svg+xml,${encodeURIComponent(BANDERAS[cod])}")`;
+  return `url('data:image/svg+xml,${encodeURIComponent(BANDERAS[cod]).replace(/'/g, "%27")}')`;
 }
 
 /* ------------------------- diccionario ------------------------- */

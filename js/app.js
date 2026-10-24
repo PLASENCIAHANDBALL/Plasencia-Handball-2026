@@ -711,60 +711,58 @@ const partidosAMostrar = actualizacionesExpandido
 
   let html = `
     <section class="actualizaciones-home">
-      <h3>Partidos en juego</h3>
+      <h3 class="en-vivo-titulo">
+        <span class="punto-vivo" aria-hidden="true"></span>
+        Partidos en juego
+        <span class="pt-cuenta">${destacados.length}</span>
+      </h3>
 
       <div id="lista-actualizaciones">
   `;
 
-  partidosAMostrar.forEach((p, index) => {
+  partidosAMostrar.forEach((p) => {
     const local = equipos.find(e => e.id === p.local_id);
     const visitante = equipos.find(e => e.id === p.visitante_id);
 
     const clubLocal = clubes.find(c => c.id === local?.club_id);
     const clubVisitante = clubes.find(c => c.id === visitante?.club_id);
 
-    const estadoTexto =
-      p.estado === "finalizado" ? "Final" : "En juego";
-
+    const inicio = inicioPartido(p);
+    const minutos = inicio ? Math.max(0, Math.floor((Date.now() - inicio.getTime()) / 60000)) : null;
+    const gl = Number(p.goles_local) || 0, gv = Number(p.goles_visitante) || 0;
 
     html += `
-      <div class="actualizacion-card" role="button" tabindex="0" onclick="abrirPartido(${p.id})">
+      <article class="actualizacion-card vivo" role="button" tabindex="0" onclick="abrirPartido(${p.id})">
 
-        <!-- CATEGORÍA -->
-        <div class="actualizacion-categoria">
-          ${p.categoria} · ${p.genero}
+        <div class="vivo-cab">
+          <span class="vivo-chip"><span class="punto-vivo" aria-hidden="true"></span>En vivo</span>
+          <span class="vivo-cat">${p.categoria} · ${p.genero}</span>
+          <span class="vivo-fase">${textoGrupoOFase(p)}</span>
         </div>
 
-        <!-- GRUPO / FASE -->
-        <div class="actualizacion-fase">
-          ${textoGrupoOFase(p)}
-        </div>
-
-        <!-- EQUIPOS -->
-        <div class="actualizacion-contenido">
-
-          <div class="equipo-actualizacion">
+        <div class="vivo-duelo">
+          <div class="vivo-equipo">
             <img src="${clubLocal?.escudo || PLACEHOLDER_ESCUDO}" alt="" loading="lazy" decoding="async">
             <span>${local?.nombre || "-"}</span>
           </div>
 
-          <div class="marcador-actualizacion">
-            ${p.goles_local} - ${p.goles_visitante}
+          <div class="vivo-marcador" aria-label="Marcador ${gl} a ${gv}">
+            <b class="${gl > gv ? "lidera" : ""}">${gl}</b><i>–</i><b class="${gv > gl ? "lidera" : ""}">${gv}</b>
           </div>
 
-          <div class="equipo-actualizacion">
+          <div class="vivo-equipo">
             <img src="${clubVisitante?.escudo || PLACEHOLDER_ESCUDO}" alt="" loading="lazy" decoding="async">
             <span>${visitante?.nombre || "-"}</span>
           </div>
-
         </div>
 
-        <!-- ESTADO -->
-        <div class="actualizacion-estado">
-          ${estadoTexto}
+        <div class="vivo-pie">
+          <span>${ico("pabellon", 14)} ${p.pabellon || "-"}</span>
+          <span>${minutos !== null ? `Empezó hace ${minutos} min` : formatearHora(p.hora)}</span>
+          <span class="vivo-ver">Ver partido ${ico("derecha", 14)}</span>
         </div>
 
-      </div>
+      </article>
     `;
   });
 

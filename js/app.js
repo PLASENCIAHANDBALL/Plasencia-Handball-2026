@@ -378,11 +378,11 @@ document.addEventListener("error", (e) => {
 function formatearHora(hora24) {
   if (!hora24) return "-";
 
+  // formato de 24 horas, como se usa en España (20:30 en vez de 8:30 p. m.)
   const [h, m] = hora24.split(":").map(Number);
-  const ampm = h >= 12 ? "p. m." : "a. m.";
-  const hora12 = h % 12 || 12;
+  if (Number.isNaN(h) || Number.isNaN(m)) return hora24;
 
-  return `${hora12}:${m.toString().padStart(2, "0")} ${ampm}`;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
 const LISTA_PABELLONES = [

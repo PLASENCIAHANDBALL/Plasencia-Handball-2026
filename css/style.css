@@ -3680,3 +3680,47 @@ body.splash-activo .music-fab { display: none !important; }
 .splash-content { z-index: 1; }
 .splash-texto { color: var(--accent-text); }
 @media (prefers-reduced-motion: reduce) { .splash-video { display: none; } }
+
+/* ---------- clasificación renovada ---------- */
+.clas-lista { display: grid; gap: 16px; }
+.clas-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(27,111,184,.08); }
+.clas-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; background: linear-gradient(135deg, var(--tile), var(--brillo)); }
+.clas-cab h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--tile-ink); }
+.clas-cab span { font-size: 12px; font-weight: 600; color: var(--accent-text); background: rgba(255,255,255,.7); padding: 4px 10px; border-radius: 999px; }
+.clas-scroll { overflow-x: auto; }
+.clas-tabla { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.clas-tabla th { padding: 10px 6px; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--muted); text-align: center; background: #f6fafe; border-bottom: 1px solid var(--border); }
+.clas-tabla td { padding: 10px 6px; font-size: 14px; text-align: center; color: var(--text); border-bottom: 1px solid #edf3f9; }
+.clas-tabla tbody tr:last-child td { border-bottom: 0; }
+.clas-tabla tbody tr:nth-child(even) { background: #fafcfe; }
+.clas-tabla tr.es-lider { background: linear-gradient(90deg, rgba(91,184,240,.16), rgba(91,184,240,0) 70%); }
+.clas-tabla .c-pos { width: 44px; padding-left: 12px; }
+.clas-tabla .c-eq { text-align: left; width: 100%; min-width: 140px; }
+.clas-tabla .c-pts { width: 56px; padding-right: 12px; }
+.clas-tabla .c-ext { display: none; }
+.clas-equipo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.clas-equipo span { font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.clas-escudo { width: 28px; height: 28px; object-fit: contain; flex: none; }
+.clas-escudo-vacio { border-radius: 50%; background: var(--tile); }
+.pos-badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; font-weight: 700; color: var(--muted); }
+.pos-1 { background: linear-gradient(135deg, var(--accent), var(--azul-medio)); color: #fff; box-shadow: 0 4px 10px rgba(43,134,217,.35); }
+.pos-2 { background: var(--brillo); color: var(--tile-ink); }
+.pos-3 { background: var(--tile); color: var(--tile-ink); }
+.pts-pill { display: inline-block; min-width: 34px; padding: 4px 8px; border-radius: 999px; background: var(--tile); color: var(--tile-ink); font-weight: 700; }
+.es-lider .pts-pill { background: var(--azul-fuerte); color: #fff; }
+.dg-pos { color: #1c8a4f; font-weight: 600; }
+.dg-neg { color: #c4453a; font-weight: 600; }
+.clas-leyenda { margin: 14px 4px 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+@media (min-width: 700px) {
+  .clas-tabla .c-ext { display: table-cell; }
+  .clas-tabla th, .clas-tabla td { padding: 12px 10px; }
+  .clas-tabla td { font-size: 15px; }
+}
+@media (max-width: 420px) {
+  .clas-tabla th, .clas-tabla td { padding-left: 3px; padding-right: 3px; }
+  .clas-tabla .c-pos { width: 38px; padding-left: 8px; }
+  .clas-tabla .c-pts { padding-right: 8px; }
+  .clas-escudo { width: 24px; height: 24px; }
+  .clas-equipo { gap: 8px; }
+  .clas-equipo span { font-size: 13px; }
+}

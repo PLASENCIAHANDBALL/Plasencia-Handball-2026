@@ -3236,53 +3236,59 @@ document.addEventListener("partido-finalizado", () => {
   actualizarClasificacion();
 });
 
-function renderTablaClasificacion(data) {
+function renderTablaClasificacion(data, titulo) {
   let html = `
-    <table class="tabla clasificacion-pro">
-      <tr>
-        <th class="col-pos">#</th>
-        <th class="col-equipo">Equipo</th>
-        <th class="col-mini">PJ</th>
-        <th class="col-mini">PG</th>
-        <th class="col-mini">PE</th>
-        <th class="col-mini">PP</th>
-        <th class="col-mini">GF</th>
-        <th class="col-mini">GC</th>
-        <th class="col-mini">DG</th>
-        <th class="col-puntos">Pts</th>
-      </tr>
+    <section class="clas-card">
+      ${titulo ? `<header class="clas-cab"><h3>${titulo}</h3><span>${data.length} equipos</span></header>` : ""}
+      <div class="clas-scroll">
+      <table class="clas-tabla">
+        <thead>
+          <tr>
+            <th class="c-pos" scope="col">#</th>
+            <th class="c-eq" scope="col">Equipo</th>
+            <th scope="col" title="Partidos jugados">PJ</th>
+            <th scope="col" title="Partidos ganados">PG</th>
+            <th scope="col" title="Partidos empatados">PE</th>
+            <th scope="col" title="Partidos perdidos">PP</th>
+            <th class="c-ext" scope="col" title="Goles a favor">GF</th>
+            <th class="c-ext" scope="col" title="Goles en contra">GC</th>
+            <th scope="col" title="Diferencia de goles">DG</th>
+            <th class="c-pts" scope="col">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
   data.forEach((fila, index) => {
     const equipo = equipos.find(e => e.id === fila.equipo_id);
     const club = clubes.find(c => c.id === equipo?.club_id);
-
-    const posicion = index + 1;
+    const pos = index + 1;
+    const dg = fila.gf - fila.gc;
+    const claseDg = dg > 0 ? "dg-pos" : dg < 0 ? "dg-neg" : "";
+    const textoDg = dg > 0 ? `+${dg}` : `${dg}`;
+    const escudo = club?.escudo
+      ? `<img src="${escaparHtml(club.escudo)}" class="clas-escudo" alt="" loading="lazy" decoding="async">`
+      : `<span class="clas-escudo clas-escudo-vacio"></span>`;
 
     html += `
-      <tr>
-        <td class="posicion">${posicion}</td>
-
-        <td>
-          <div class="equipo-tabla">
-            ${club?.escudo ? `<img src="${club.escudo}" class="escudo-tabla" alt="" loading="lazy" decoding="async">` : ""}
-            <span class="nombre-equipo-tabla">${equipo?.nombre || "-"}</span>
-          </div>
+      <tr class="${pos === 1 ? "es-lider" : ""}">
+        <td class="c-pos"><span class="pos-badge pos-${pos <= 3 ? pos : "n"}">${pos}</span></td>
+        <td class="c-eq">
+          <div class="clas-equipo">${escudo}<span>${escaparHtml(equipo?.nombre || "-")}</span></div>
         </td>
-
-        <td class="col-mini">${fila.pj}</td>
-        <td class="col-mini">${fila.pg}</td>
-        <td class="col-mini">${fila.pe}</td>
-        <td class="col-mini">${fila.pp}</td>
-        <td class="col-mini">${fila.gf}</td>
-        <td class="col-mini">${fila.gc}</td>
-        <td class="col-mini">${fila.gf - fila.gc}</td>
-        <td class="col-puntos"><strong>${fila.puntos}</strong></td>
+        <td>${fila.pj}</td>
+        <td>${fila.pg}</td>
+        <td>${fila.pe}</td>
+        <td>${fila.pp}</td>
+        <td class="c-ext">${fila.gf}</td>
+        <td class="c-ext">${fila.gc}</td>
+        <td class="${claseDg}">${textoDg}</td>
+        <td class="c-pts"><span class="pts-pill">${fila.puntos}</span></td>
       </tr>
     `;
   });
 
-  html += `</table>`;
+  html += `</tbody></table></div></section>`;
   return html;
 }
 
@@ -3396,15 +3402,12 @@ async function actualizarClasificacion() {
 
 });
       
-      htmlFinal += `
-        <h3 class="titulo-grupo">${nombreGrupo}</h3>
-        ${renderTablaClasificacion(datosGrupo)}
-      `;
+      htmlFinal += renderTablaClasificacion(datosGrupo, nombreGrupo);
     });
   }
   // 🔵 CASO: UN SOLO GRUPO
   else {
-    htmlFinal = renderTablaClasificacion(data);
+    htmlFinal = renderTablaClasificacion(data, grupoSeleccionado);
   }
 
   if (!data.length) {
@@ -3413,9 +3416,10 @@ async function actualizarClasificacion() {
 
   if (zona) {
     zona.innerHTML = `
-    <div class="tabla-wrapper">
+    <div class="clas-lista">
       ${htmlFinal}
     </div>
+    ${data.length ? `<p class="clas-leyenda">PJ jugados · PG ganados · PE empatados · PP perdidos · DG diferencia de goles · Pts puntos</p>` : ""}
   `;
   }
 }

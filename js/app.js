@@ -13,6 +13,19 @@ const contenido = document.getElementById("contenido");
 
 /* ================== UTILIDADES ================== */
 
+// Iconos de línea (1,5 px), de un solo estilo, en lugar de emojis
+const ICONOS = {
+  play:  '<path d="M8 5.5v13l11-6.5z"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
+  prev:  '<path d="M6 5v14M19 5.5v13L9 12z"/>',
+  up:    '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  down:  '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>'
+};
+function ico(nombre, tam = 18) {
+  return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
+}
+
 // localStorage puede lanzar error (modo privado, cookies bloqueadas): nunca debe romper la app
 function lsGet(clave) { try { return localStorage.getItem(clave); } catch (e) { return null; } }
 function lsSet(clave, valor) { try { localStorage.setItem(clave, valor); } catch (e) { /* sin almacenamiento */ } }
@@ -505,12 +518,12 @@ function mostrarHome() {
     <div class="controles-cancion">
 
       <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
-        ⏮️
+        ${ico("prev")}
       </button>
 
       <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control"
               aria-label="${reproduciendo ? "Pausar canción" : "Reproducir canción"}">
-        ${reproduciendo ? "⏸️" : "▶️"}
+        ${reproduciendo ? ico("pause") : ico("play")}
       </button>
 
     </div>
@@ -558,17 +571,17 @@ function mostrarHome() {
       ${adminActivo ? `
         <div class="acciones-admin">
 
-          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)">
-            ⬆️
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)" aria-label="Subir patrocinador">
+            ${ico("up")}
           </button>
 
-          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)">
-            ⬇️
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)" aria-label="Bajar patrocinador">
+            ${ico("down")}
           </button>
 
           <button class="btn-borrar-patrocinador"
-            onclick="event.stopPropagation(); borrarPatrocinador(${p.id})">
-            ✖
+            onclick="event.stopPropagation(); borrarPatrocinador(${p.id})" aria-label="Borrar patrocinador">
+            ${ico("close")}
           </button>
 
         </div>
@@ -584,7 +597,7 @@ function mostrarHome() {
   html += `</div>`;
 
   if (adminActivo) {
-    html += `<button onclick="formNuevoPatrocinador()">➕ Añadir patrocinador</button>`;
+    html += `<button onclick="formNuevoPatrocinador()">Añadir patrocinador</button>`;
   }
 
   // HISTORIA AL FINAL
@@ -592,7 +605,7 @@ function mostrarHome() {
     <section class="historia">
       <h3>Historia del Torneo</h3>
       <div class="historia-card">
-        <p id="texto-historia">
+        <div id="texto-historia">
           <p>
   Nuestra historia comienza gracias a un grupo de amigos y grandes aficionados al balonmano que compartíamos una misma ilusión: crear algo especial para este deporte que tanto nos une.
 </p>
@@ -616,6 +629,7 @@ function mostrarHome() {
 <p>
   Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores, familias, patrocinadores y a todas las personas que confían en nosotros y hacen posible que este proyecto siga creciendo año tras año.
 </p>
+        </div>
       </div>
     </section>
   `;
@@ -678,8 +692,8 @@ function formNuevoPatrocinador() {
     <label>Logo</label>
     <input type="file" id="imagen" accept="image/*">
 
-    <button onclick="guardarNuevoPatrocinador()">💾 Guardar</button>
-    <button class="volver" onclick="mostrarHome()">⬅ Volver</button>
+    <button onclick="guardarNuevoPatrocinador()">Guardar</button>
+    <button class="volver" onclick="mostrarHome()">Volver</button>
   `;
 }
 
@@ -710,7 +724,7 @@ const partidosAMostrar = actualizacionesExpandido
 
   let html = `
     <section class="actualizaciones-home">
-      <h3>📢 Partidos en juego</h3>
+      <h3>Partidos en juego</h3>
 
       <div id="lista-actualizaciones">
   `;
@@ -723,7 +737,7 @@ const partidosAMostrar = actualizacionesExpandido
     const clubVisitante = clubes.find(c => c.id === visitante?.club_id);
 
     const estadoTexto =
-      p.estado === "finalizado" ? "🏁 Final" : "🟢 En juego";
+      p.estado === "finalizado" ? "Final" : "En juego";
 
 
     html += `
@@ -862,7 +876,7 @@ function sincronizarBotonCancion() {
   const boton = document.getElementById("btn-play");
   if (!boton) return;
 
-  boton.textContent = audioTorneo.paused ? "▶️" : "⏸️";
+  boton.innerHTML = audioTorneo.paused ? ico("play") : ico("pause");
   boton.setAttribute("aria-label", audioTorneo.paused ? "Reproducir canción" : "Pausar canción");
 }
 
@@ -1089,7 +1103,7 @@ function renderBloquesPorFecha(lista, tipo) {
     html += `
       <div class="fecha-bloque ${abierta}">
         <div class="fecha-header" role="button" tabindex="0" aria-expanded="${esHoy}" onclick="toggleFecha(this)">
-          <span>📅 ${fechaBonita}</span>
+          <span>${fechaBonita}</span>
           <span class="flecha" aria-hidden="true">⌄</span>
         </div>
 
@@ -1162,10 +1176,6 @@ function obtenerIconoGenero(genero) {
   if (!genero) return "";
 
   const gen = genero.toLowerCase();
-
-  if (gen.includes("masculino")) return "♂";
-
-  if (gen.includes("femenino")) return "♀";
 
   return "";
 }
@@ -1355,11 +1365,11 @@ function mostrarPartidos() {
   let html = `<h2>Partidos</h2>`;
   
   if (adminActivo) {
-  html += `<button onclick="formCrearFaseFinal()">🏆 Crear partido de fase final</button>`;
+  html += `<button onclick="formCrearFaseFinal()">Crear partido de fase final</button>`;
 }
 
   if (adminActivo) {
-    html += `<button onclick="formNuevoPartido()">➕ Crear partido</button>`;
+    html += `<button onclick="formNuevoPartido()">Crear partido</button>`;
   }
 
   const ordenados = [...partidos].sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
@@ -1373,13 +1383,13 @@ const finalizados = ordenados
   .reverse();
 
   /* ===== PRÓXIMOS ===== */
-html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += `<h3 class="bloque-titulo">Próximos partidos</h3>`;
 html += proximos.length
   ? renderBloquesPorFecha(proximos, "proximos")
   : `<p>No hay próximos partidos</p>`;
 
 /* ===== FINALIZADOS ===== */
-html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+html += `<h3 class="bloque-titulo">Partidos finalizados</h3>`;
 html += finalizados.length
   ? renderBloquesPorFecha(finalizados, "finalizados")
   : `<p>No hay partidos finalizados</p>`;
@@ -1403,10 +1413,10 @@ async function mostrarCuadroEliminatorio(categoria, genero) {
   setNavActivoPorVista("partidos");
 
   contenido.innerHTML = `
-    <h2>🏆 Cuadro eliminatorio</h2>
+    <h2>Cuadro eliminatorio</h2>
     <h3>${categoria} · ${genero}</h3>
     ${renderBracket(categoria, genero)}
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+    <button class="volver" onclick="mostrarPartidos()">Volver</button>
   `;
 }
 
@@ -1457,7 +1467,7 @@ function renderBracket(categoria, genero) {
         tercer
           ? `
           <div class="bracket-tercer">
-            <h4>🥉 3.º / 4.º puesto</h4>
+            <h4>3.º / 4.º puesto</h4>
             ${renderMatchBracket(tercer)}
           </div>
           `
@@ -1504,7 +1514,7 @@ function renderMatchBracket(partido, esFinal = false) {
 
 function formCrearFaseFinal() {
   contenido.innerHTML = `
-    <h2>🏆 Crear partido fase final</h2>
+    <h2>Crear partido fase final</h2>
 
     <label>Equipo local</label>
     <select id="equipoLocal"></select>
@@ -1588,8 +1598,8 @@ function formCrearFaseFinal() {
       ${LISTA_PABELLONES.map(p => `<option>${p}</option>`).join("")}
     </select>
 
-    <button onclick="guardarFaseFinal()">💾 Crear partido</button>
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+    <button onclick="guardarFaseFinal()">Crear partido</button>
+    <button class="volver" onclick="mostrarPartidos()">Volver</button>
   `;
 
   cargarTodosEquipos();
@@ -1683,15 +1693,15 @@ async function mostrarCuadrosEliminatorios() {
 
   if (combinaciones.length === 0) {
     contenido.innerHTML = `
-      <h2>🏆 Cuadros eliminatorios</h2>
+      <h2>Cuadros eliminatorios</h2>
       <p>No hay fases finales creadas aún.</p>
-      <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+      <button class="volver" onclick="mostrarPartidos()">Volver</button>
     `;
     return;
   }
 
   // 2️⃣ pintar todos los cuadros
-  let html = `<h2>🏆 Cuadros eliminatorios</h2>`;
+  let html = `<h2>Cuadros eliminatorios</h2>`;
 
   combinaciones.forEach(({ categoria, genero }) => {
     html += `
@@ -1702,7 +1712,7 @@ async function mostrarCuadrosEliminatorios() {
     `;
   });
 
-  html += `<button class="volver" onclick="mostrarClasificacion()">⬅ Volver</button>`;
+  html += `<button class="volver" onclick="mostrarClasificacion()">Volver</button>`;
 
   contenido.innerHTML = html;
 }
@@ -1720,7 +1730,7 @@ function textoFecha(fecha) {
 }
 
 function formatearFecha(fecha) {
-  return textoFecha(fecha) || "📅 Fecha por confirmar";
+  return textoFecha(fecha) || "Fecha por confirmar";
 }
 
 function renderPartidoCard(p) {
@@ -1792,26 +1802,26 @@ ${p.fase !== "grupos" ? `
       <div class="badge-estado ${estadoReal}">
   ${
     estadoReal === "finalizado"
-      ? "🏁 Finalizado"
+      ? "Finalizado"
       : estadoReal === "en_juego"
-      ? "🟢 En juego"
-      : "🔴 Pendiente"
+      ? "En juego"
+      : "Pendiente"
   }
 </div>
       
       <div class="partido-info">
-        🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
+        ${formatearHora(p.hora)} · ${p.pabellon || "-"}
       </div>
 
-      <div class="partido-grupo">🏷️ ${p.grupo}</div>
+      <div class="partido-grupo">${p.grupo}</div>
 
       <button onclick="abrirPartido(${p.id})">Abrir partido</button>
 
       ${
         adminActivo
           ? `
-            <button onclick="editarPartido(${p.id})">✏️ Editar</button>
-            <button onclick="borrarPartido(${p.id})">🗑️ Borrar</button>
+            <button onclick="editarPartido(${p.id})">Editar</button>
+            <button onclick="borrarPartido(${p.id})">Borrar</button>
           `
           : ""
       }
@@ -1864,8 +1874,8 @@ function formNuevoPartido() {
   `).join("")}
 </select>
 
-    <button onclick="guardarNuevoPartido()">💾 Guardar partido</button>
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+    <button onclick="guardarNuevoPartido()">Guardar partido</button>
+    <button class="volver" onclick="mostrarPartidos()">Volver</button>
   `;
 
   // 🔥 LISTENERS (FUERA del HTML)
@@ -1962,8 +1972,8 @@ ${
   `).join("")}
 </select>
 
-    <button onclick="guardarEdicionPartido()">💾 Guardar cambios</button>
-    <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+    <button onclick="guardarEdicionPartido()">Guardar cambios</button>
+    <button class="volver" onclick="mostrarPartidos()">Volver</button>
   `;
 }
 
@@ -2029,37 +2039,37 @@ function esEliminatoria(partido) {
 function textoFase(fase) {
 
   if (fase === "final")
-    return "🏆 FINAL";
+    return "Final";
 
   if (fase === "semifinal")
-    return "🥈 SEMIFINAL";
+    return "Semifinal";
 
   if (fase === "cuartos")
-  return "🕔 CUARTOS DE FINAL";
+  return "Cuartos de final";
   
   if (fase === "tercer_puesto")
-    return "🥉 3.º / 4.º PUESTO";
+    return "3.º y 4.º puesto";
 
   if (fase === "quinto_puesto")
-    return "5️⃣ 5.º / 6.º PUESTO";
+    return "5.º y 6.º puesto";
 
   if (fase === "septimo_puesto")
-    return "7️⃣ 7.º / 8.º PUESTO";
+    return "7.º y 8.º puesto";
 
   if (fase === "noveno_puesto")
-    return "9️⃣ 9.º / 10.º PUESTO";
+    return "9.º y 10.º puesto";
 
   if (fase === "grupo_unico")
-  return "📋 GRUPO ÚNICO";
+  return "Grupo único";
   
   if (fase === "serie1")
-  return "🔵 SERIE 1";
+  return "Serie 1";
 
 if (fase === "serie2")
-  return "🟣 SERIE 2";
+  return "Serie 2";
   
   if (fase === "playoff")
-    return "⚔️ PLAYOFF";
+    return "Playoff";
 
   return "";
 
@@ -2071,7 +2081,7 @@ function textoGrupoOFase(partido) {
   }
 
   if (partido.grupo) {
-    return `🏷️ ${partido.grupo}`;
+    return `${partido.grupo}`;
   }
 
   return "";
@@ -2096,7 +2106,7 @@ function abrirPartido(id) {
     <label>Lugar</label>
     <input id="pabellon" value="${partidoActual.pabellon || ""}">
 
-    <button onclick="guardarDatosPartido()">💾 Guardar datos</button>
+    <button onclick="guardarDatosPartido()">Guardar datos</button>
   ` : `
   `;
 
@@ -2108,7 +2118,7 @@ const fechaBonita = textoFecha(partidoActual.fecha) || "-";
   <div class="info-partido-detalle">
 
   <div class="detalle-fecha-hora">
-    📅 <strong>${fechaBonita}</strong> · 🕒 ${formatearHora(partidoActual.hora)}
+    <strong>${fechaBonita}</strong> · ${formatearHora(partidoActual.hora)}
   </div>
 
   <div class="detalle-categoria">
@@ -2122,7 +2132,7 @@ ${partidoActual.fase !== "grupos" ? `
 ` : ""}
 
   <div class="detalle-lugar">
-    📍 ${partidoActual.pabellon || "-"}
+    ${partidoActual.pabellon || "-"}
   </div>
 
 </div>
@@ -2188,13 +2198,13 @@ ${partidoActual.fase !== "grupos" ? `
       <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
     </div>
 
-    <button onclick="guardarResultado()">💾 Guardar resultado</button>
-    <button class="btn-finalizar" onclick="finalizarPartido()">🏁 Finalizar partido</button>
+    <button onclick="guardarResultado()">Guardar resultado</button>
+    <button class="btn-finalizar" onclick="finalizarPartido()">Finalizar partido</button>
 
   </div>
 ` : ""}
 
-  <button class="volver" onclick="mostrarPartidos()">⬅ Volver</button>
+  <button class="volver" onclick="mostrarPartidos()">Volver</button>
 `;
 }
 
@@ -2946,12 +2956,12 @@ function togglePartidosEquipo(idEquipo) {
 
   let html = "";
 
-  html += `<div class="bloque-partidos"><strong>⏳ Próximos partidos</strong></div>`;
+  html += `<div class="bloque-partidos"><strong>Próximos partidos</strong></div>`;
   html += proximos.length
     ? proximos.map(p => renderMiniPartido(p)).join("")
     : `<p class="partido-vacio">No hay próximos partidos</p>`;
 
-  html += `<div class="bloque-partidos"><strong>🏁 Partidos finalizados</strong></div>`;
+  html += `<div class="bloque-partidos"><strong>Partidos finalizados</strong></div>`;
   html += finalizados.length
     ? finalizados.map(p => renderMiniPartido(p, true)).join("")
     : `<p class="partido-vacio">No hay partidos finalizados</p>`;
@@ -2977,7 +2987,7 @@ function renderMiniPartido(p, finalizado = false) {
       </div>
       ${!finalizado ? `
         <div class="mini-info">
-          🕒 ${formatearHora(p.hora)} · 📍 ${p.pabellon || "-"}
+          ${formatearHora(p.hora)} · ${p.pabellon || "-"}
         </div>` : ""
       }
     </div>
@@ -3023,8 +3033,8 @@ function formNuevoEquipo() {
       <option>Grupo Único</option>
     </select>
 
-    <button onclick="guardarNuevoEquipo()">💾 Guardar equipo</button>
-    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+    <button onclick="guardarNuevoEquipo()">Guardar equipo</button>
+    <button class="volver" onclick="mostrarEquipos()">Volver</button>
   `;
 }
 
@@ -3076,8 +3086,8 @@ function editarEquipo(id) {
       <option ${equipoActual.grupo==="Grupo Único"?"selected":""}>Grupo Único</option>
     </select>
 
-    <button onclick="guardarEdicionEquipo()">💾 Guardar cambios</button>
-    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+    <button onclick="guardarEdicionEquipo()">Guardar cambios</button>
+    <button class="volver" onclick="mostrarEquipos()">Volver</button>
   `;
 }
 
@@ -3187,10 +3197,7 @@ function renderTablaClasificacion(data) {
     const equipo = equipos.find(e => e.id === fila.equipo_id);
     const club = clubes.find(c => c.id === equipo?.club_id);
 
-    let posicion = index + 1;
-    if (index === 0) posicion = "🥇";
-    if (index === 1) posicion = "🥈";
-    if (index === 2) posicion = "🥉";
+    const posicion = index + 1;
 
     html += `
       <tr>
@@ -3330,7 +3337,7 @@ async function actualizarClasificacion() {
 });
       
       htmlFinal += `
-        <h3 class="titulo-grupo">🏷️ ${nombreGrupo}</h3>
+        <h3 class="titulo-grupo">${nombreGrupo}</h3>
         ${renderTablaClasificacion(datosGrupo)}
       `;
     });
@@ -3745,8 +3752,8 @@ function mostrarEquipos() {
 
   if (adminActivo) {
     html += `
-      <button onclick="formNuevoClub()">➕ Añadir club</button>
-      <button onclick="formNuevoEquipo()">➕ Añadir equipo</button>
+      <button onclick="formNuevoClub()">Añadir club</button>
+      <button onclick="formNuevoEquipo()">Añadir equipo</button>
     `;
   }
 
@@ -3765,8 +3772,8 @@ function mostrarEquipos() {
 
       ${adminActivo ? `
         <div class="club-acciones">
-          <button onclick="event.stopPropagation(); editarClub(${c.id})">✏️ Editar</button>
-          <button onclick="event.stopPropagation(); borrarClub(${c.id})">🗑️ Borrar</button>
+          <button onclick="event.stopPropagation(); editarClub(${c.id})">Editar</button>
+          <button onclick="event.stopPropagation(); borrarClub(${c.id})">Borrar</button>
         </div>
       ` : ""}
 
@@ -3812,14 +3819,14 @@ async function verClub(id) {
       </div>
 
       <div class="team-group">
-        🏷️ ${e.grupo}
+        ${e.grupo}
       </div>
 
       ${
         adminActivo ? `
           <div class="team-actions">
-            <button onclick="editarEquipo(${e.id})">✏️</button>
-            <button onclick="borrarEquipo(${e.id})">🗑️</button>
+            <button onclick="editarEquipo(${e.id})">Editar</button>
+            <button onclick="borrarEquipo(${e.id})">Borrar</button>
           </div>
         ` : ""
       }
@@ -3827,7 +3834,7 @@ async function verClub(id) {
   `;
 });
 
-  html += `<button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>`;
+  html += `<button class="volver" onclick="mostrarEquipos()">Volver</button>`;
 
   contenido.innerHTML = html;
 }
@@ -3842,8 +3849,8 @@ function formNuevoClub() {
     <label>Escudo</label>
     <input type="file" id="escudo" accept="image/*">
 
-    <button onclick="guardarNuevoClub()">💾 Guardar</button>
-    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+    <button onclick="guardarNuevoClub()">Guardar</button>
+    <button class="volver" onclick="mostrarEquipos()">Volver</button>
   `;
 }
 
@@ -3934,8 +3941,8 @@ function editarClub(id) {
     <label>Escudo</label>
     <input type="file" id="escudo" accept="image/*">
 
-    <button onclick="guardarEdicionClub(${id})">💾 Guardar cambios</button>
-    <button class="volver" onclick="mostrarEquipos()">⬅ Volver</button>
+    <button onclick="guardarEdicionClub(${id})">Guardar cambios</button>
+    <button class="volver" onclick="mostrarEquipos()">Volver</button>
   `;
 }
 
@@ -4137,7 +4144,7 @@ let html = `
       rel="noopener noreferrer"
       class="badge-glass badge-ubicacion"
     >
-      🗺️ Ubicación
+      Ubicación
     </a>
 
     ${
@@ -4149,7 +4156,7 @@ let html = `
         rel="noopener noreferrer"
         class="badge-glass badge-directo"
       >
-        🔴 Ver directo
+        Ver directo
       </a>
     `
     : ``
@@ -4158,20 +4165,20 @@ let html = `
 `;
 
   /* ===== PRÓXIMOS ===== */
-html += `<h3 class="bloque-titulo">⏳ Próximos partidos</h3>`;
+html += `<h3 class="bloque-titulo">Próximos partidos</h3>`;
 html += proximos.length
   ? renderBloquesPorFecha(proximos, "proximos")
   : `<p>No hay próximos partidos.</p>`;
 
 /* ===== FINALIZADOS ===== */
-html += `<h3 class="bloque-titulo">🏁 Partidos finalizados</h3>`;
+html += `<h3 class="bloque-titulo">Partidos finalizados</h3>`;
 html += finalizados.length
   ? renderBloquesPorFecha(finalizados, "finalizados")
   : `<p>No hay partidos finalizados.</p>`;
 
   /* ===== BOTÓN ÚNICO DE VOLVER ===== */
   html += `
-    <button class="volver" onclick="mostrarPabellones()">⬅ Volver a pabellones</button>
+    <button class="volver" onclick="mostrarPabellones()">Volver a pabellones</button>
   `;
 
   contenido.innerHTML = html;
@@ -4311,13 +4318,13 @@ function renderTarjetaInstalar() {
   caja.className = "tarjeta-instalar";
 
   caja.innerHTML = eventoInstalar
-    ? `<strong>📲 Instala la app</strong>
+    ? `<strong>Instala la app</strong>
        <span>Ábrela desde tu pantalla de inicio y consulta los partidos aunque falle la cobertura.</span>
        <div class="acciones">
          <button type="button" class="principal" onclick="instalarApp()">Instalar</button>
          <button type="button" onclick="descartarInstalar()">Ahora no</button>
        </div>`
-    : `<strong>📲 Instala la app</strong>
+    : `<strong>Instala la app</strong>
        <span>Pulsa <b>Compartir</b> y luego <b>«Añadir a pantalla de inicio»</b>.</span>
        <div class="acciones">
          <button type="button" onclick="descartarInstalar()">Entendido</button>

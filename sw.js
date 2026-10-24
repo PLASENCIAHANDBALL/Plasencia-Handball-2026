@@ -14,7 +14,7 @@
    se refresca sola en la siguiente visita (estrategia "stale-while-revalidate").
    ============================================================ */
 
-const VERSION = "2026-10-24-4";
+const VERSION = "2026-10-24-6";
 
 const CACHE_APP = `ph-app-${VERSION}`;
 const CACHE_IMG = "ph-img-v1";
@@ -152,6 +152,17 @@ async function cachePrimero(event, req) {
   return res;
 }
 
+// Fuentes: guardada si la hay; si no, red y se guarda (la hoja de estilos llega como respuesta opaca)
+async function fuentes(event, req) {
+  const cache = await caches.open(CACHE_IMG);
+  const guardada = await cache.match(req);
+  if (guardada) return guardada;
+
+  const res = await fetch(req);
+  if (res && (res.ok || res.type === "opaque")) event.waitUntil(cache.put(req, res.clone()).catch(() => {}));
+  return res;
+}
+
 // Datos: red si responde a tiempo; si no, última copia guardada
 async function redPrimero(event, req, nombreCache, ms) {
   const cache = await caches.open(nombreCache);
@@ -198,6 +209,12 @@ self.addEventListener("fetch", (event) => {
       return;
     }
     return; // auth, rpc, subidas…
+  }
+
+  // --- Tipografía (Google Fonts): se guarda para que también salga sin cobertura ---
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
+    event.respondWith(fuentes(event, req));
+    return;
   }
 
   // --- Librería de Supabase desde el CDN ---

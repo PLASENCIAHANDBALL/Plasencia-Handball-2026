@@ -14,7 +14,7 @@
    se refresca sola en la siguiente visita (estrategia "stale-while-revalidate").
    ============================================================ */
 
-const VERSION = "2026-10-24-10";
+const VERSION = "2026-10-24-11";
 
 const CACHE_APP = `ph-app-${VERSION}`;
 const CACHE_IMG = "ph-img-v1";
@@ -88,6 +88,46 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "saltar-espera") self.skipWaiting();
+});
+
+/* ---------- avisos de partidos (notificaciones push) ---------- */
+
+self.addEventListener("push", (event) => {
+  let datos = {};
+  try {
+    datos = event.data ? event.data.json() : {};
+  } catch (e) {
+    datos = { body: event.data ? event.data.text() : "" };
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(datos.title || "Plasencia Handball", {
+      body: datos.body || "",
+      icon: "assets/icons/icon-192.png",
+      tag: datos.tag || undefined,
+      data: { url: datos.url || "./" }
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const destino = new URL((event.notification.data && event.notification.data.url) || "./", self.registration.scope).href;
+
+  event.waitUntil((async () => {
+    const ventanas = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+
+    for (const v of ventanas) {
+      if (v.url.startsWith(self.registration.scope)) {
+        await v.focus();
+        v.postMessage({ tipo: "abrir-partido", url: destino });
+        return;
+      }
+    }
+
+    await self.clients.openWindow(destino);
+  })());
 });
 
 /* ---------- utilidades ---------- */

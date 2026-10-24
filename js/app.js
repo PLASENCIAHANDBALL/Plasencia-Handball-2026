@@ -26,6 +26,8 @@ const ICONOS = {
   pabellon:   '<path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   musica:     '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
   bolsa:      '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+  campana:    '<path d="M6 16v-5a6 6 0 1112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
+  derecha:    '<path d="M9 6l6 6-6 6"/>',
   camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
 };
 function ico(nombre, tam = 18) {
@@ -326,6 +328,7 @@ function restaurarVista(estado) {
     case "tabla":       mostrarClasificacion(); break;
     case "pabellones":  mostrarPabellones(); break;
     case "tienda":      mostrarTienda(); break;
+    case "avisos":      mostrarAvisos(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
     case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
     case "pabellon":    if (params.nombre) window.mostrarPartidosPorPabellon(params.nombre); else mostrarPabellones(); break;
@@ -514,6 +517,15 @@ function mostrarHome() {
     <h2 class="sr-only">Inicio</h2>
 
     <div id="bloque-instalar"></div>
+
+    <button type="button" class="tarjeta-avisos" onclick="mostrarAvisos()">
+      <span class="avisos-icono">${ico("campana", 24)}</span>
+      <span class="avisos-texto">
+        <strong>Avisos de partidos</strong>
+        <small>${textoEstadoAvisos()}</small>
+      </span>
+      ${ico("derecha", 20)}
+    </button>
 
     <section class="reproductor ${reproduciendo ? "sonando" : ""}" id="reproductor" aria-label="Canción del torneo">
       <div class="reproductor-portada" aria-hidden="true">${ico("musica", 34)}</div>
@@ -946,18 +958,25 @@ const VISTAS_INICIALES = {
   clubs: () => mostrarEquipos(),
   tabla: () => mostrarClasificacion(),
   pabellones: () => mostrarPabellones(),
-  tienda: () => mostrarTienda()
+  tienda: () => mostrarTienda(),
+  avisos: () => mostrarAvisos()
 };
 
 // Los accesos directos de la app instalada abren con ?vista=partidos, ?vista=tabla…
 function vistaInicial() {
   let vista = "inicio";
+  let idPartido = 0;
 
   try {
-    vista = new URLSearchParams(location.search).get("vista") || "inicio";
+    const params = new URLSearchParams(location.search);
+    vista = params.get("vista") || "inicio";
+    idPartido = Number(params.get("partido")) || 0;
   } catch (e) { /* se queda en inicio */ }
 
   (VISTAS_INICIALES[vista] || VISTAS_INICIALES.inicio)();
+
+  // los avisos de partido abren la app con ?partido=ID
+  if (idPartido && partidos.some(p => p.id === idPartido)) abrirPartido(idPartido);
 }
 
 function mostrarErrorCarga() {
@@ -4408,6 +4427,312 @@ async function borrarProducto(id) {
   mostrarTienda();
 }
 
+
+/* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */
+
+// Clave pública de las notificaciones (la privada vive solo en el servidor)
+const VAPID_PUBLICA = "BEt8LQ-9nULs55gA0G2zG4tWvgRG8L2C_ZTq2oa4u6itS0kJZ8xdVWOpR5SVpwq_Fe_lYqvePjQlOBviOZL3m0s";
+
+function avisosSoportados() {
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+}
+
+function leerPrefsAvisos() {
+  try {
+    const p = JSON.parse(lsGet("avisos") || "null");
+    if (p && typeof p === "object") {
+      return {
+        activo: !!p.activo,
+        equipos: (Array.isArray(p.equipos) ? p.equipos : []).map(Number).filter(Number.isFinite),
+        categorias: (Array.isArray(p.categorias) ? p.categorias : []).filter(c => typeof c === "string")
+      };
+    }
+  } catch (e) { /* preferencias estropeadas: se empieza de cero */ }
+  return { activo: false, equipos: [], categorias: [] };
+}
+
+function guardarPrefsAvisos(prefs) {
+  lsSet("avisos", JSON.stringify(prefs));
+}
+
+function textoEstadoAvisos() {
+  const p = leerPrefsAvisos();
+  const activos = p.activo && avisosSoportados() && Notification.permission === "granted";
+  if (!activos) return "Te avisamos antes de que empiece tu equipo";
+
+  const n = p.equipos.length;
+  const c = p.categorias.length;
+  const partes = [];
+  if (n) partes.push(`${n} ${n === 1 ? "equipo" : "equipos"}`);
+  if (c) partes.push(`${c} ${c === 1 ? "categoría" : "categorías"}`);
+  return partes.length ? `Activados · ${partes.join(" y ")}` : "Activados · elige equipos o categorías";
+}
+
+function claveAUint8(base64url) {
+  const relleno = "=".repeat((4 - (base64url.length % 4)) % 4);
+  const bin = atob((base64url + relleno).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+
+async function obtenerSuscripcionPush(crear) {
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+
+  if (!sub && crear) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: claveAUint8(VAPID_PUBLICA)
+    });
+  }
+
+  return sub;
+}
+
+async function enviarPrefsAvisos(sub, prefs) {
+  const datos = sub.toJSON();
+
+  const { error } = await supabase.rpc("push_guardar", {
+    p_endpoint: sub.endpoint,
+    p_p256dh: datos.keys?.p256dh,
+    p_auth: datos.keys?.auth,
+    p_equipos: prefs.equipos,
+    p_categorias: prefs.categorias
+  });
+
+  if (error) console.warn("No se pudieron guardar los avisos:", error);
+  return !error;
+}
+
+// Al abrir la app se vuelve a registrar la suscripción por si el navegador la renovó
+async function resincronizarAvisos() {
+  if (!avisosSoportados() || Notification.permission !== "granted") return;
+
+  const prefs = leerPrefsAvisos();
+  if (!prefs.activo) return;
+
+  try {
+    const sub = await obtenerSuscripcionPush(true);
+    if (sub) await enviarPrefsAvisos(sub, prefs);
+  } catch (e) {
+    console.warn("No se pudo renovar la suscripción de avisos:", e);
+  }
+}
+
+async function activarAvisos() {
+  if (!avisosSoportados()) return;
+
+  if (Notification.permission === "denied") {
+    avisar("Las notificaciones están bloqueadas. Actívalas en los ajustes del navegador para esta web.", "error");
+    return mostrarAvisos();
+  }
+
+  try {
+    const permiso = await Notification.requestPermission();
+    if (permiso !== "granted") {
+      avisar("Sin permiso no podemos enviarte avisos.", "error");
+      return mostrarAvisos();
+    }
+
+    const prefs = leerPrefsAvisos();
+    const sub = await obtenerSuscripcionPush(true);
+    const ok = await enviarPrefsAvisos(sub, prefs);
+
+    if (!ok) throw new Error("No se pudo registrar en el servidor");
+
+    prefs.activo = true;
+    guardarPrefsAvisos(prefs);
+    avisar("Avisos activados");
+  } catch (e) {
+    console.error("Error activando avisos:", e);
+    avisar("No se han podido activar los avisos. Inténtalo de nuevo.", "error");
+  }
+
+  mostrarAvisos();
+}
+
+async function desactivarAvisos() {
+  const prefs = leerPrefsAvisos();
+  prefs.activo = false;
+  guardarPrefsAvisos(prefs);
+
+  try {
+    const sub = await obtenerSuscripcionPush(false);
+    if (sub) {
+      await supabase.rpc("push_borrar", { p_endpoint: sub.endpoint });
+      await sub.unsubscribe();
+    }
+  } catch (e) {
+    console.warn("No se pudo cancelar la suscripción:", e);
+  }
+
+  avisar("Avisos desactivados");
+  mostrarAvisos();
+}
+
+function alternarSwitchAvisos(el) {
+  if (el.checked) activarAvisos();
+  else desactivarAvisos();
+}
+
+let temporizadorAvisos = null;
+
+function alternarAviso(tipo, valor, marcado) {
+  const prefs = leerPrefsAvisos();
+  const lista = tipo === "equipo" ? prefs.equipos : prefs.categorias;
+  const clave = tipo === "equipo" ? Number(valor) : String(valor);
+  const i = lista.indexOf(clave);
+
+  if (marcado && i === -1) lista.push(clave);
+  if (!marcado && i !== -1) lista.splice(i, 1);
+
+  guardarPrefsAvisos(prefs);
+  actualizarResumenAvisos();
+
+  // se envía al servidor al dejar de tocar (no una petición por cada casilla)
+  clearTimeout(temporizadorAvisos);
+  temporizadorAvisos = setTimeout(async () => {
+    if (!prefs.activo || Notification.permission !== "granted") return;
+
+    try {
+      const sub = await obtenerSuscripcionPush(false);
+      if (sub && await enviarPrefsAvisos(sub, leerPrefsAvisos())) {
+        const estado = document.getElementById("avisos-guardado");
+        if (estado) estado.textContent = "Cambios guardados";
+      }
+    } catch (e) {
+      console.warn("No se pudo guardar la selección de avisos:", e);
+    }
+  }, 700);
+}
+
+function actualizarResumenAvisos() {
+  const r = document.getElementById("avisos-resumen");
+  if (r) r.textContent = textoEstadoAvisos();
+  const estado = document.getElementById("avisos-guardado");
+  if (estado) estado.textContent = "";
+}
+
+async function probarAviso() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification("Aviso de prueba", {
+      body: "Así verás los avisos de los partidos que van a empezar.",
+      icon: "assets/icons/icon-192.png",
+      tag: "prueba"
+    });
+  } catch (e) {
+    console.warn("No se pudo mostrar la notificación de prueba:", e);
+    avisar("No se ha podido mostrar la notificación de prueba.", "error");
+  }
+}
+
+function pintarEquiposAvisos(filtro = "") {
+  const caja = document.getElementById("avisos-equipos");
+  if (!caja) return;
+
+  const prefs = leerPrefsAvisos();
+  const q = filtro.trim().toLowerCase();
+
+  const porClub = new Map();
+  equipos.forEach(e => {
+    const club = clubes.find(c => c.id === e.club_id);
+    const nombreClub = club?.nombre || "Sin club";
+    const texto = `${nombreClub} ${e.nombre} ${e.categoria} ${e.genero}`.toLowerCase();
+    if (q && !texto.includes(q)) return;
+    if (!porClub.has(nombreClub)) porClub.set(nombreClub, []);
+    porClub.get(nombreClub).push(e);
+  });
+
+  if (!porClub.size) {
+    caja.innerHTML = `<p class="partido-vacio">No hay equipos que coincidan.</p>`;
+    return;
+  }
+
+  caja.innerHTML = [...porClub.entries()]
+    .sort((a, b) => textoPlano(a[0]).localeCompare(textoPlano(b[0]), "es"))
+    .map(([club, lista]) => `
+      <div class="avisos-club">
+        <div class="avisos-club-nombre">${club}</div>
+        ${lista.map(e => `
+          <label class="aviso-opcion">
+            <input type="checkbox" ${prefs.equipos.includes(e.id) ? "checked" : ""}
+                   onchange="alternarAviso('equipo', ${Number(e.id)}, this.checked)">
+            <span><strong>${e.nombre}</strong><small>${e.categoria} · ${e.genero}</small></span>
+          </label>`).join("")}
+      </div>`).join("");
+}
+
+function mostrarAvisos() {
+  setNavActivoPorVista("inicio");
+  registrarNavegacion("avisos");
+
+  const prefs = leerPrefsAvisos();
+  const soportado = avisosSoportados();
+  const necesitaInstalar = esIOS() && !yaInstalada();
+  const permiso = soportado ? Notification.permission : "denied";
+  const activos = prefs.activo && permiso === "granted";
+
+  const categorias = [...new Set(equipos.map(e => `${e.categoria}|${e.genero}`))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+
+  let aviso = "";
+  if (necesitaInstalar) {
+    aviso = `<div class="aviso-info">En iPhone y iPad los avisos solo funcionan con la app instalada. Pulsa <b>Compartir</b>, elige <b>«Añadir a pantalla de inicio»</b> y vuelve a abrir esta pantalla desde allí.</div>`;
+  } else if (!soportado) {
+    aviso = `<div class="aviso-info">Este navegador no admite notificaciones. Prueba con Chrome, Edge, Firefox o Safari actualizado.</div>`;
+  } else if (permiso === "denied") {
+    aviso = `<div class="aviso-info">Las notificaciones están bloqueadas para esta web. Actívalas en los ajustes del navegador y vuelve aquí.</div>`;
+  }
+
+  contenido.innerHTML = `
+    <h2>Avisos de partidos</h2>
+    <p class="tienda-intro">Recibe una notificación en el móvil unos 15 minutos antes de que empiece un partido de los equipos o categorías que elijas.</p>
+
+    ${aviso}
+
+    <label class="avisos-switch ${soportado && !necesitaInstalar ? "" : "desactivado"}">
+      <span>
+        <strong>Recibir avisos</strong>
+        <small id="avisos-resumen">${textoEstadoAvisos()}</small>
+      </span>
+      <input type="checkbox" role="switch" ${activos ? "checked" : ""} ${soportado && !necesitaInstalar ? "" : "disabled"}
+             onchange="alternarSwitchAvisos(this)">
+      <i aria-hidden="true"></i>
+    </label>
+    <div id="avisos-guardado" class="avisos-guardado" role="status" aria-live="polite"></div>
+
+    <h3>Categorías</h3>
+    <div class="avisos-chips">
+      ${categorias.map(c => {
+        const [cat, gen] = c.split("|");
+        return `<label class="aviso-chip">
+          <input type="checkbox" ${prefs.categorias.includes(c) ? "checked" : ""}
+                 onchange="alternarAviso('categoria', this.dataset.valor, this.checked)" data-valor="${c}">
+          <span>${cat} · ${gen}</span>
+        </label>`;
+      }).join("") || `<p class="partido-vacio">Aún no hay categorías.</p>`}
+    </div>
+
+    <h3>Equipos</h3>
+    <input type="search" id="avisos-buscar" class="avisos-buscar" placeholder="Buscar club o equipo" aria-label="Buscar club o equipo"
+           oninput="pintarEquiposAvisos(this.value)">
+    <div id="avisos-equipos"></div>
+
+    ${activos ? `<button type="button" class="volver" onclick="probarAviso()">Enviarme un aviso de prueba</button>` : ""}
+    <button type="button" class="volver" onclick="mostrarHome()">Volver</button>
+  `;
+
+  pintarEquiposAvisos();
+}
+
+navigator.serviceWorker?.addEventListener("message", (e) => {
+  if (e.data?.tipo !== "abrir-partido") return;
+  try {
+    const id = Number(new URL(e.data.url).searchParams.get("partido"));
+    if (id) abrirPartido(id);
+  } catch (err) { /* enlace no válido: se ignora */ }
+});
+
 /* ================== EXPONER FUNCIONES A HTML ================== */
 
 // navegación principal
@@ -4418,6 +4743,11 @@ window.mostrarEquipos = mostrarEquipos;
 window.mostrarClasificacion = mostrarClasificacion;
 window.mostrarPabellones = mostrarPabellones; // aunque aún no exista, no pasa nada
 window.mostrarTienda = mostrarTienda;
+window.mostrarAvisos = mostrarAvisos;
+window.alternarSwitchAvisos = alternarSwitchAvisos;
+window.alternarAviso = alternarAviso;
+window.pintarEquiposAvisos = pintarEquiposAvisos;
+window.probarAviso = probarAviso;
 window.formNuevoProducto = formNuevoProducto;
 window.editarProducto = editarProducto;
 window.guardarNuevoProducto = guardarNuevoProducto;
@@ -4736,3 +5066,4 @@ if (adminActivo) {
 
 iniciarApp();
 registrarServiceWorker();
+resincronizarAvisos();

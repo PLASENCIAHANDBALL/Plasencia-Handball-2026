@@ -3529,3 +3529,17 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1px solid var
 .form-producto .volver { margin-top: 10px; }
 
 @media (max-width: 520px) { .nav-principal button span { font-size: 10px; letter-spacing: -.01em; } }
+
+/* ---- club: equipos desplegables con sus partidos ---- */
+.team-clicable { cursor: pointer; transition: border-color .15s ease; }
+.team-clicable:hover, .team-clicable.abierto { border-color: var(--accent); }
+.team-clicable:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.team-ver-partidos { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent-text); }
+.team-ver-partidos .ico { transition: transform .2s ease; }
+.team-clicable.abierto .team-ver-partidos .ico { transform: rotate(180deg); }
+.partidos-club { margin-top: 12px; padding-top: 4px; border-top: 1px solid var(--border); cursor: default; }
+.partidos-club.oculto { display: none; }
+.partidos-club .bloque-partidos { margin: 12px 0 8px; color: var(--text); font-size: 14px; }
+.partidos-club .partido-card-mini { margin: 0 0 8px; padding: 10px 12px; cursor: pointer; border-color: var(--border); }
+.partidos-club .partido-card-mini:hover { border-color: var(--accent); }
+.partidos-club .partido-vacio { margin: 4px 0 8px; color: var(--muted); font-size: 14px; }

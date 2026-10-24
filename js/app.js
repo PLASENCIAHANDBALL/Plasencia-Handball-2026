@@ -3850,7 +3850,9 @@ async function verClub(id) {
 
   equiposClub.forEach(e => {
   html += `
-    <div class="team-ios-card" data-cat="${e.categoria}">
+    <div class="team-ios-card team-clicable" data-cat="${e.categoria}" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="partidos-club-${e.id}"
+         onclick="togglePartidosEquipoClub(${Number(e.id)}, this)">
       <div class="team-ios-header">
         <span class="team-cat">${e.categoria}</span>
         <span class="team-gen">${e.genero}</span>
@@ -3864,14 +3866,20 @@ async function verClub(id) {
         ${e.grupo}
       </div>
 
+      <div class="team-ver-partidos">
+        <span>Ver partidos</span>${ico("down", 16)}
+      </div>
+
       ${
         adminActivo ? `
           <div class="team-actions">
-            <button onclick="editarEquipo(${e.id})">Editar</button>
-            <button onclick="borrarEquipo(${e.id})">Borrar</button>
+            <button onclick="event.stopPropagation(); editarEquipo(${e.id})">Editar</button>
+            <button onclick="event.stopPropagation(); borrarEquipo(${e.id})">Borrar</button>
           </div>
         ` : ""
       }
+
+      <div id="partidos-club-${e.id}" class="partidos-club oculto" onclick="event.stopPropagation()"></div>
     </div>
   `;
 });
@@ -3880,6 +3888,46 @@ async function verClub(id) {
 
   contenido.innerHTML = html;
 }
+
+// Despliega, dentro del club, los partidos de un equipo: primero los que quedan y luego los jugados
+function togglePartidosEquipoClub(idEquipo, tarjeta) {
+  const panel = document.getElementById(`partidos-club-${idEquipo}`);
+  if (!panel || !tarjeta) return;
+
+  const abrir = panel.classList.contains("oculto");
+
+  panel.classList.toggle("oculto", !abrir);
+  tarjeta.setAttribute("aria-expanded", abrir ? "true" : "false");
+  tarjeta.classList.toggle("abierto", abrir);
+
+  if (!abrir) {
+    panel.innerHTML = "";
+    return;
+  }
+
+  const delEquipo = partidos.filter(p => p.local_id === idEquipo || p.visitante_id === idEquipo);
+
+  const proximos = delEquipo
+    .filter(p => calcularEstadoPartido(p) !== "finalizado")
+    .sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
+
+  const finalizados = delEquipo
+    .filter(p => calcularEstadoPartido(p) === "finalizado")
+    .sort((a, b) => marcaTiempo(b) - marcaTiempo(a));
+
+  panel.innerHTML = `
+    <div class="bloque-partidos"><strong>Próximos partidos</strong></div>
+    ${proximos.length
+      ? proximos.map(p => renderMiniPartido(p)).join("")
+      : `<p class="partido-vacio">No hay próximos partidos</p>`}
+
+    <div class="bloque-partidos"><strong>Partidos finalizados</strong></div>
+    ${finalizados.length
+      ? finalizados.map(p => renderMiniPartido(p, true)).join("")
+      : `<p class="partido-vacio">No hay partidos finalizados</p>`}
+  `;
+}
+window.togglePartidosEquipoClub = togglePartidosEquipoClub;
 
 function formNuevoClub() {
   contenido.innerHTML = `

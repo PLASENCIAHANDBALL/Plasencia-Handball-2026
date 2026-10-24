@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { iniciarIdioma, t } from "./i18n.js";
 
 /* ================== AJUSTES ================== */
 
@@ -1003,6 +1004,7 @@ async function reintentarCarga() {
 window.reintentarCarga = reintentarCarga;
 
 async function iniciarApp() {
+  iniciarIdioma();
   document.body.classList.add("splash-activo");
   iniciarBarraSplash();
 
@@ -4671,8 +4673,8 @@ function actualizarResumenAvisos() {
 async function probarAviso() {
   try {
     const reg = await navigator.serviceWorker.ready;
-    await reg.showNotification("Aviso de prueba", {
-      body: "Así verás los avisos de los partidos que van a empezar.",
+    await reg.showNotification(t("Aviso de prueba"), {
+      body: t("Así verás los avisos de los partidos que van a empezar."),
       icon: "assets/icons/icon-192.png",
       tag: "prueba"
     });

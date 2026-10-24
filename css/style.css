@@ -2873,75 +2873,59 @@ a:focus-visible {
 
 
 /* ==========================================================================
-   RENOVACIÓN 2027 · azul cielo
-   Este bloque va al final a propósito: redefine la paleta y pule los componentes
-   sin tocar el resto del fichero. Para cambiar el color de toda la app basta con
-   modificar las variables de aquí abajo.
+   RENOVACIÓN 2027
+   Rediseño de toda la app salvo la cabecera (el .app-header y su imagen se dejan
+   como estaban, para que la diseñes tú). Va al final a propósito: redefine la paleta
+   y los componentes sin tocar lo anterior.
+
+   Idea: "marcador de pabellón". Cifras grandes y de ancho fijo, bloques planos sobre
+   fondo azul hielo y navegación al alcance del pulgar (barra inferior en el móvil).
+   Para cambiar el color de toda la app basta con modificar las variables de abajo.
    ========================================================================== */
 
 :root {
   --cielo: #5bb8f0;          /* color de marca */
   --cielo-claro: #cfe9fb;
-  --hielo: #f1f8fe;          /* fondo de la app */
-  --hielo-2: #e3f1fc;        /* fondos de selección / chips */
-  --oceano: #1b6fb8;         /* texto de énfasis y enlaces (contraste AA sobre blanco) */
-  --marino: #0d2a45;         /* texto principal */
+  --hielo: #eef7fe;          /* fondo de la app */
+  --hielo-2: #dff0fc;        /* fondos de selección / chips */
+  --oceano: #1b6fb8;         /* énfasis y enlaces (contraste AA sobre blanco) */
+  --marino: #0d2a45;         /* texto principal y marcadores */
   --tinta-suave: #546a80;    /* texto secundario */
-  --linea: #d6e7f5;          /* bordes finos */
-  --vivo: #e5484d;           /* partido en juego */
+  --linea: #d3e6f5;
+  --vivo: #e5484d;
   --ok: #1f9d68;
 
   --principal: var(--cielo);
   --principal-suave: var(--hielo-2);
   --oscuro: var(--marino);
-  --sombra: 0 1px 2px rgba(13, 42, 69, .06), 0 6px 18px rgba(27, 111, 184, .08);
-  --sombra-alta: 0 2px 4px rgba(13, 42, 69, .06), 0 14px 32px rgba(27, 111, 184, .16);
+  --sombra: 0 1px 2px rgba(13, 42, 69, .05), 0 8px 24px rgba(27, 111, 184, .08);
+  --sombra-alta: 0 2px 6px rgba(13, 42, 69, .08), 0 16px 36px rgba(27, 111, 184, .18);
 
-  --radio: 16px;
-  --radio-chico: 10px;
+  --radio: 18px;
+  --radio-chico: 12px;
+  --alto-barra: 68px;
 }
 
 body {
   background: var(--hielo);
   color: var(--marino);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.005em;
   line-height: 1.45;
 }
 
-/* ---- cabecera: sin foto, solo el logo sobre un degradado limpio ---- */
-.app-header {
-  height: 168px;
-  background-color: var(--cielo-claro);
-  background-image:
-    url("../img/logo-torneo.webp"),
-    radial-gradient(120% 140% at 50% 0%, #ffffff 0%, rgba(255,255,255,0) 55%),
-    linear-gradient(180deg, #bfe3fa 0%, #8cccf3 100%);
-  background-repeat: no-repeat;
-  background-size: auto 104px, 100% 100%, 100% 100%;
-  background-position: center 22px, center, center;
-}
+/* ---------- navegación ---------- */
+/* Escritorio: píldora que se queda fija arriba al bajar */
+.header-wrapper { z-index: 20; }
 
-@media (max-width: 768px) {
-  .app-header {
-    height: 128px;
-    background-image:
-      url("../img/logo-torneo.webp"),
-      radial-gradient(120% 140% at 50% 0%, #ffffff 0%, rgba(255,255,255,0) 55%),
-      linear-gradient(180deg, #bfe3fa 0%, #8cccf3 100%);
-    background-size: auto 78px, 100% 100%, 100% 100%;
-    background-position: center 14px, center, center;
-  }
-}
-
-/* ---- menú: barra blanca con pastilla azul en la sección activa ---- */
 .nav-principal {
-  margin: -30px auto 18px;
+  position: sticky;
+  top: 10px;
+  margin: 14px auto 18px;
   padding: 6px;
-  gap: 2px;
-  background: rgba(255, 255, 255, .94);
+  gap: 4px;
+  background: rgba(255, 255, 255, .96);
   border: 1px solid var(--linea);
-  border-radius: 20px;
+  border-radius: 22px;
   box-shadow: var(--sombra-alta);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -2950,104 +2934,116 @@ body {
 .nav-principal button {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 52px;
+  min-height: 54px;
   padding: 6px 2px;
   gap: 4px;
   margin: 0;
   opacity: 1;
-  filter: none;
   color: var(--tinta-suave);
-  border-radius: 14px !important;
-  position: relative;
-  transition: background-color .18s ease, color .18s ease;
+  border-radius: 16px !important;
+  filter: grayscale(1) opacity(.6);
+  transition: background-color .18s ease, filter .18s ease;
 }
 
 .nav-principal button span {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0;
   color: inherit;
 }
 
-.nav-principal button:not(.activo) { filter: grayscale(1) opacity(.62); }
-
 .nav-principal button.activo {
-  background: var(--hielo-2) !important;
-  color: var(--oceano);
+  background: var(--marino) !important;
+  color: #fff;
+  filter: none;
   text-shadow: none;
   transform: none;
-  filter: none;
 }
-
-.nav-principal button.activo span { color: var(--oceano); font-weight: 700; }
+.nav-principal button.activo span { color: #fff; font-weight: 700; }
 .nav-principal button.activo::after { display: none; }
 
 @media (hover: hover) {
-  .nav-principal button:not(.activo):hover { background: var(--hielo) !important; }
+  .nav-principal button:not(.activo):hover { background: var(--hielo-2) !important; filter: none; }
 }
 
-@media (max-width: 480px) {
-  .nav-principal { margin-top: -26px; padding: 5px; }
+/* Móvil: barra inferior flotante, a la altura del pulgar y separada de la cabecera */
+@media (max-width: 768px) {
+  body { padding-bottom: calc(var(--alto-barra) + 28px + env(safe-area-inset-bottom)); }
+
+  .nav-principal {
+    position: fixed;
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 6px;
+    z-index: 50;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .97);
+  }
+
   .nav-principal button span { font-size: 9.5px; }
+
+  /* los botones flotantes suben para no quedar tapados por la barra */
+  #admin-fab { bottom: calc(var(--alto-barra) + 24px + env(safe-area-inset-bottom)); }
+  .social-fab { bottom: calc(var(--alto-barra) + 94px + env(safe-area-inset-bottom)); }
+  .avisos { bottom: calc(var(--alto-barra) + 24px + env(safe-area-inset-bottom)); }
 }
 
-/* ---- títulos ---- */
+/* ---------- títulos ---------- */
 main h2 {
-  font-size: 1.65rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   color: var(--marino);
-  margin: 6px 0 14px;
+  margin: 8px 0 16px;
 }
 
-.bloque-titulo,
-main h3 {
+main h3, .bloque-titulo {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: -0.01em;
   color: var(--marino);
+  margin: 26px 0 12px;
 }
 
-/* ---- tarjetas ---- */
-.card,
-.club-card,
-.partido-card,
-.partido-card-mini,
-.equipo-card {
+#contenido { background: transparent; border-radius: 0; padding: 4px 0 16px; }
+
+/* ---------- tarjetas ---------- */
+.card, .club-card, .partido-card, .partido-card-mini, .equipo-card {
   background: #fff;
   border: 1px solid var(--linea);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
 }
 
-/* ---- botones ---- */
+/* ---------- botones ---------- */
 button {
   font-family: inherit;
-  font-weight: 600;
-  border-radius: var(--radio-chico);
+  font-weight: 650;
   color: var(--marino);
   border: 1px solid var(--linea);
+  border-radius: var(--radio-chico);
   box-shadow: none;
   transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
 }
-
 @media (hover: hover) {
   main button:hover { border-color: var(--cielo); background: var(--hielo); }
 }
 
-.volver,
-.volver-pabellones {
-  background: var(--oceano);
+.volver, .volver-pabellones {
+  background: var(--marino);
   background-image: none;
   color: #fff;
-  border-color: var(--oceano);
+  border-color: var(--marino);
 }
-
 @media (hover: hover) {
-  .volver:hover, .volver-pabellones:hover { background: #155c9c; border-color: #155c9c; }
+  .volver:hover, .volver-pabellones:hover { background: var(--oceano); border-color: var(--oceano); }
 }
 
-/* ---- selectores y campos ---- */
 select, input[type="text"], input[type="number"], input[type="time"], input[type="date"], input[type="password"], textarea {
   font-family: inherit;
   color: var(--marino);
@@ -3055,30 +3051,117 @@ select, input[type="text"], input[type="number"], input[type="time"], input[type
   border-radius: var(--radio-chico);
   background-color: #fff;
 }
-
 select:focus, input:focus, textarea:focus {
   outline: 2px solid var(--cielo);
   outline-offset: 1px;
   border-color: var(--cielo);
 }
 
-/* ---- marcadores: cifras de ancho fijo, como un marcador de pabellón ---- */
-.partido-marcador, .resultado-final, .goles, .marcador, .score, .tabla td, .clasificacion-pro td {
-  font-variant-numeric: tabular-nums;
+/* chips de categoría */
+.tab {
+  border-radius: 999px;
+  border: 1px solid var(--linea);
+  background: #fff;
+  color: var(--marino);
 }
+.tab.active { background: var(--marino); color: #fff; border-color: var(--marino); }
 
-/* ---- tablas ---- */
-.tabla th, .clasificacion-pro th {
-  background: var(--oceano);
+/* ---------- partidos agrupados ---------- */
+.fecha-header {
+  background: var(--marino);
+  background-image: none;
   color: #fff;
+  border-radius: var(--radio);
+  padding: 15px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: var(--sombra);
+}
+.fecha-header * { color: inherit; }
+
+.categoria-header {
+  background: #fff;
+  color: var(--marino);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-chico);
+  box-shadow: none;
   font-weight: 700;
 }
+
+/* ---------- tarjeta de partido: el marcador es el protagonista ---------- */
+.partido-card { padding: 16px 16px 14px; position: relative; overflow: hidden; }
+
+.partido-card::before {            /* franja de categoría */
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--cielo);
+}
+
+.partido-fecha { font-size: 13px; color: var(--tinta-suave); opacity: 1; margin-bottom: 8px; }
+.partido-fecha strong { font-weight: 600; }
+
+.partido-categoria {
+  background: var(--hielo-2);
+  color: var(--oceano);
+  font-weight: 650;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.partido-equipos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+
+.equipo-partido { text-align: center; gap: 4px; }
+.escudo-partido { width: 40px; height: 40px; object-fit: contain; margin-bottom: 2px; }
+.nombre-equipo { font-size: 14px; font-weight: 650; line-height: 1.2; }
+
+.partido-equipos .resultado-centro {
+  min-width: 74px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--marino);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.partido-equipos .resultado-centro:not(:has(*)):where(:empty) { display: none; }
+
+.badge-estado { font-size: 12.5px; font-weight: 650; }
+.badge-estado.en_juego { background: #ffe9ea; color: #b4232a; }
+.badge-estado.finalizado { background: var(--hielo-2); color: var(--oceano); }
+.badge-estado.pendiente { background: #eef1f4; color: var(--tinta-suave); }
+
+.partido-marcador, .resultado-final, .goles, .tabla td, .clasificacion-pro td { font-variant-numeric: tabular-nums; }
+
+/* ---------- tablas ---------- */
+.tabla th, .clasificacion-pro th { background: var(--marino); color: #fff; font-weight: 700; }
 .tabla th, .tabla td { border-color: var(--linea); }
 
-/* ---- pastilla de "en juego" ---- */
-.badge-estado.en_juego, .badge-estado.en-juego { color: var(--vivo); }
+/* ---------- elementos rellenos de azul cielo (texto azul marino: se lee mejor que el blanco) ---------- */
+.abrir-btn, .detalle-categoria, .galeria-badge, .badge-fase, .equipo-ios.local, .estado-error button {
+  background: linear-gradient(135deg, #8fd0f7, #5bb8f0);
+  color: var(--marino);
+  border-color: transparent;
+  text-shadow: none;
+}
+.galeria-badge *, .galeria-badge .badge-texto { color: var(--marino); }
 
-/* ---- pie y splash ---- */
+.badge-infantil { background: #5bb8f0; color: var(--marino); }
+.badge-cadete   { background: #7c6cf0; color: #fff; }
+.badge-juvenil  { background: #178a5a; color: #fff; }
+
+/* ---------- pie, carga y botones flotantes ---------- */
 .footer-email a { color: var(--oceano); }
 
 #splash {
@@ -3088,56 +3171,11 @@ select:focus, input:focus, textarea:focus {
 }
 #splash-progreso { background: var(--oceano); }
 
-/* ---- botones flotantes ---- */
-#admin-fab { background: var(--oceano); color: #fff; box-shadow: var(--sombra-alta); }
+#admin-fab { background: var(--marino); color: #fff; box-shadow: var(--sombra-alta); }
 #admin-fab.admin-activo { background: var(--ok); }
 .social-main { background: #fff; border: 1px solid var(--linea); box-shadow: var(--sombra-alta); }
 
-/* ---- tarjeta de instalación ---- */
 .tarjeta-instalar { background: #fff; border: 1px solid var(--linea); }
-.tarjeta-instalar .principal { background: var(--oceano); color: #fff; border-color: var(--oceano); }
+.tarjeta-instalar .principal { background: var(--marino); color: #fff; border-color: var(--marino); }
 
-/* ---- ajustes tras revisar el resultado ---- */
-
-/* el contenido ya no va dentro de una "tarjeta" gigante: las tarjetas se apoyan en el fondo */
-#contenido {
-  background: transparent;
-  border-radius: 0;
-  padding: 4px 0 16px;
-}
-
-/* logo más grande: la imagen tiene margen transparente alrededor */
-.app-header {
-  background-size: auto 215px, 100% 100%, 100% 100%;
-  background-position: center -14px, center, center;
-}
-@media (max-width: 768px) {
-  .app-header {
-    background-size: auto 150px, 100% 100%, 100% 100%;
-    background-position: center -10px, center, center;
-  }
-}
-
-/* Elementos rellenos de azul claro: texto azul marino (el blanco sobre azul claro no se lee bien) */
-.abrir-btn, .tab.active, .detalle-categoria, .galeria-badge, .fecha-header,
-.badge-fase, .equipo-ios.local, .badge-infantil, .estado-error button {
-  background: linear-gradient(135deg, #8fd0f7, #5bb8f0);
-  color: var(--marino);
-  border-color: transparent;
-  text-shadow: none;
-}
-.galeria-badge *, .fecha-header * { color: var(--marino); }
-
-/* categorías: cada una con su color, ya no son todas iguales */
-.badge-infantil { background: #5bb8f0; color: var(--marino); }
-.badge-cadete   { background: #7c6cf0; color: #fff; }
-.badge-juvenil  { background: #178a5a; color: #fff; }
-
-/* chips de categoría y selectores */
-.tab { border-radius: 999px; border: 1px solid var(--linea); background: #fff; color: var(--marino); }
-
-/* tarjetas del inicio: marcador legible y sin recargar */
-.card .partido-marcador, .actualizaciones-home .marcador { font-weight: 800; }
-
-/* el menú no debe taparse con los botones flotantes al final de la página */
-main { padding-bottom: 88px; }
+main { padding-bottom: 24px; }

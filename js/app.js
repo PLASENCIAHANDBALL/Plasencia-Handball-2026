@@ -394,7 +394,7 @@ document.addEventListener("error", (e) => {
     img &&
     img.tagName === "IMG" &&
     !img.dataset.fallback &&
-    img.matches(".escudo-partido, .escudo-ios, .escudo-equipo-mini, .escudo-tabla, .club-escudo, .equipo-actualizacion img")
+    img.matches(".escudo-partido, .escudo-ios, .escudo-equipo-mini, .escudo-tabla, .club-escudo, .avisos-escudo, .equipo-actualizacion img")
   ) {
     img.dataset.fallback = "1";
     img.src = PLACEHOLDER_ESCUDO;
@@ -4576,7 +4576,7 @@ function alternarSwitchAvisos(el) {
 
 let temporizadorAvisos = null;
 
-function alternarAviso(tipo, valor, marcado) {
+function alternarAviso(tipo, valor, marcado, el) {
   const prefs = leerPrefsAvisos();
   const lista = tipo === "equipo" ? prefs.equipos : prefs.categorias;
   const clave = tipo === "equipo" ? Number(valor) : String(valor);
@@ -4587,6 +4587,12 @@ function alternarAviso(tipo, valor, marcado) {
 
   guardarPrefsAvisos(prefs);
   actualizarResumenAvisos();
+
+  const club = el?.closest(".avisos-club");
+  if (club) {
+    const n = club.querySelectorAll(".aviso-opcion input:checked").length;
+    club.querySelector(".avisos-contador").textContent = textoContadorClub(n);
+  }
 
   // se envía al servidor al dejar de tocar (no una petición por cada casilla)
   clearTimeout(temporizadorAvisos);
@@ -4626,6 +4632,12 @@ async function probarAviso() {
   }
 }
 
+const clubesAbiertosAvisos = new Set();
+
+function textoContadorClub(n) {
+  return n ? `${n} ${n === 1 ? "elegido" : "elegidos"}` : "";
+}
+
 function pintarEquiposAvisos(filtro = "") {
   const caja = document.getElementById("avisos-equipos");
   if (!caja) return;
@@ -4639,8 +4651,8 @@ function pintarEquiposAvisos(filtro = "") {
     const nombreClub = club?.nombre || "Sin club";
     const texto = `${nombreClub} ${e.nombre} ${e.categoria} ${e.genero}`.toLowerCase();
     if (q && !texto.includes(q)) return;
-    if (!porClub.has(nombreClub)) porClub.set(nombreClub, []);
-    porClub.get(nombreClub).push(e);
+    if (!porClub.has(nombreClub)) porClub.set(nombreClub, { club, lista: [] });
+    porClub.get(nombreClub).lista.push(e);
   });
 
   if (!porClub.size) {
@@ -4650,16 +4662,37 @@ function pintarEquiposAvisos(filtro = "") {
 
   caja.innerHTML = [...porClub.entries()]
     .sort((a, b) => textoPlano(a[0]).localeCompare(textoPlano(b[0]), "es"))
-    .map(([club, lista]) => `
-      <div class="avisos-club">
-        <div class="avisos-club-nombre">${club}</div>
-        ${lista.map(e => `
-          <label class="aviso-opcion">
-            <input type="checkbox" ${prefs.equipos.includes(e.id) ? "checked" : ""}
-                   onchange="alternarAviso('equipo', ${Number(e.id)}, this.checked)">
-            <span><strong>${e.nombre}</strong><small>${e.categoria} · ${e.genero}</small></span>
-          </label>`).join("")}
-      </div>`).join("");
+    .map(([nombre, { club, lista }]) => {
+      const elegidos = lista.filter(e => prefs.equipos.includes(e.id)).length;
+      // al buscar se abren los clubs que coinciden; si no, solo los que la persona abrió
+      const abierto = q || clubesAbiertosAvisos.has(nombre);
+
+      return `
+      <details class="avisos-club" data-club="${nombre}" ${abierto ? "open" : ""}>
+        <summary>
+          <img class="avisos-escudo" src="${club?.escudo || "img/club-placeholder.svg"}" alt="" width="26" height="26" loading="lazy" decoding="async">
+          <span class="avisos-club-nombre">${nombre}</span>
+          <span class="avisos-contador">${textoContadorClub(elegidos)}</span>
+          ${ico("down", 18)}
+        </summary>
+        <div class="avisos-club-equipos">
+          ${lista.map(e => `
+            <label class="aviso-opcion">
+              <input type="checkbox" ${prefs.equipos.includes(e.id) ? "checked" : ""}
+                     onchange="alternarAviso('equipo', ${Number(e.id)}, this.checked, this)">
+              <span><strong>${e.nombre}</strong><small>${e.categoria} · ${e.genero}</small></span>
+            </label>`).join("")}
+        </div>
+      </details>`;
+    }).join("");
+
+  caja.querySelectorAll("details.avisos-club").forEach(d => {
+    d.addEventListener("toggle", () => {
+      if (document.getElementById("avisos-buscar")?.value.trim()) return;
+      if (d.open) clubesAbiertosAvisos.add(d.dataset.club);
+      else clubesAbiertosAvisos.delete(d.dataset.club);
+    });
+  });
 }
 
 function mostrarAvisos() {

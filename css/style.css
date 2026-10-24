@@ -3179,3 +3179,41 @@ select:focus, input:focus, textarea:focus {
 .tarjeta-instalar .principal { background: var(--marino); color: #fff; border-color: var(--marino); }
 
 main { padding-bottom: 24px; }
+
+/* ---- ajuste: todo en azul claro (sin azul marino en rellenos) ----
+   El azul marino queda solo para el texto. Los rellenos usan el azul cielo y sus tonos claros. */
+.nav-principal button.activo { background: var(--cielo) !important; color: var(--marino); }
+.nav-principal button.activo span { color: var(--marino); }
+
+.tab.active { background: var(--cielo); color: var(--marino); border-color: var(--cielo); }
+
+.fecha-header {
+  background: linear-gradient(135deg, #9bd5f8, var(--cielo));
+  color: var(--marino);
+}
+
+.partido-equipos .resultado-centro {
+  background: var(--hielo-2);
+  color: var(--marino);
+  border: 1px solid var(--cielo-claro);
+}
+
+.volver, .volver-pabellones {
+  background: var(--cielo);
+  color: var(--marino);
+  border-color: var(--cielo);
+}
+@media (hover: hover) {
+  .volver:hover, .volver-pabellones:hover { background: #7cc8f4; border-color: #7cc8f4; }
+}
+
+.tabla th, .clasificacion-pro th { background: var(--cielo); color: var(--marino); }
+
+#admin-fab { background: var(--cielo); color: var(--marino); }
+
+.tarjeta-instalar .principal { background: var(--cielo); color: var(--marino); border-color: var(--cielo); }
+
+/* los tres filtros de la clasificación caben siempre en pantalla (antes el último se cortaba en móviles estrechos) */
+.subfiltros { display: flex; flex-wrap: wrap; gap: 8px; }
+.subfiltros select { flex: 1 1 100px; min-width: 0; max-width: 100%; }
+.subfiltros select { font-size: 14px; padding-left: 10px; padding-right: 22px; text-overflow: clip; }

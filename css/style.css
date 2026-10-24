@@ -3431,3 +3431,21 @@ main h3::before { content: ""; position: absolute; left: 0; top: 14%; bottom: 14
   .hero-accesos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .hero-accesos button { flex-direction: column; gap: 4px; min-width: 0; min-height: 64px; padding: 8px 4px; border-radius: 20px; font-size: 13px; }
 }
+
+/* ---- hero en azul claro (sin azul oscuro) ---- */
+.hero-inicio {
+  background: linear-gradient(135deg, #e3f4ff 0%, #bfe5fb 100%);
+  color: #0a3a80;
+  border: 1px solid #b4daf3;
+}
+.hero-inicio::before { background: rgba(91,184,240,.28); }
+.hero-inicio::after  { background: rgba(255,255,255,.55); }
+.hero-etiqueta { background: #fff; color: var(--azul-fuerte); }
+main .hero-inicio h2 { color: #0a3a80; }
+.hero-inicio p { color: #1d4f86; }
+.hero-accesos button { border: 1px solid #b4daf3; }
+.hero-accesos button:hover { background: #f4faff; }
+
+/* botón de play y portada del reproductor también en azul claro/medio */
+.reproductor-portada { background: linear-gradient(135deg, #7cc8f5, #4aa9ea); }
+.reproductor .btn-play { background: var(--azul-medio); border-color: var(--azul-medio); }

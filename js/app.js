@@ -28,6 +28,8 @@ const ICONOS = {
   bolsa:      '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
   campana:    '<path d="M6 16v-5a6 6 0 1112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
   derecha:    '<path d="M9 6l6 6-6 6"/>',
+  izquierda:  '<path d="M15 6l-6 6 6 6"/>',
+  lupa:       '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
 };
 function ico(nombre, tam = 18) {
@@ -3811,37 +3813,64 @@ function mostrarEquipos() {
 
   if (adminActivo) {
     html += `
-      <button onclick="formNuevoClub()">Añadir club</button>
-      <button onclick="formNuevoEquipo()">Añadir equipo</button>
+      <div class="clubs-admin">
+        <button onclick="formNuevoClub()">Añadir club</button>
+        <button onclick="formNuevoEquipo()">Añadir equipo</button>
+      </div>
     `;
   }
 
   if (clubes.length === 0) {
-    html += `<p>No hay clubes creados</p>`;
-  }
-
-  clubes.forEach(c => {
-  html += `
-    <div class="club-card" role="button" tabindex="0" onclick="verClub(${c.id})">
-
-      <div class="club-info">
-        <img src="${c.escudo || PLACEHOLDER_ESCUDO}" class="club-escudo" alt="" loading="lazy" decoding="async">
-        <strong>${c.nombre}</strong>
+    html += `<p class="estado-vacio">No hay clubes creados</p>`;
+  } else {
+    html += `
+      <p class="pab-intro">${clubes.length} clubs · ${equipos.length} equipos. Toca un club para ver sus equipos.</p>
+      <label class="clubs-buscar">
+        ${ico("lupa", 18)}
+        <input type="search" id="buscar-club" placeholder="Buscar club" autocomplete="off"
+               aria-label="Buscar club" oninput="filtrarClubes()">
+      </label>
+      <div class="clubs-grid" id="clubs-grid">
+        ${clubes.map(c => {
+          const n = equipos.filter(e => e.club_id === c.id).length;
+          return `
+          <div class="club-card club-tile" role="button" tabindex="0" data-nombre="${escaparHtml(String(c.nombre || "").toLowerCase())}" onclick="verClub(${c.id})">
+            <div class="club-tile-fila">
+              <span class="club-tile-escudo"><img src="${escaparHtml(c.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
+              <div class="club-tile-texto">
+                <strong>${c.nombre}</strong>
+                <span>${n} ${n === 1 ? "equipo" : "equipos"}</span>
+              </div>
+              <span class="cat-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
+            </div>
+            ${adminActivo ? `
+              <div class="club-acciones">
+                <button onclick="event.stopPropagation(); editarClub(${c.id})">Editar</button>
+                <button onclick="event.stopPropagation(); borrarClub(${c.id})">Borrar</button>
+              </div>
+            ` : ""}
+          </div>`;
+        }).join("")}
       </div>
-
-      ${adminActivo ? `
-        <div class="club-acciones">
-          <button onclick="event.stopPropagation(); editarClub(${c.id})">Editar</button>
-          <button onclick="event.stopPropagation(); borrarClub(${c.id})">Borrar</button>
-        </div>
-      ` : ""}
-
-    </div>
-  `;
-});
+      <p class="estado-vacio" id="clubs-sin-resultados" hidden>No hay clubs que coincidan.</p>
+    `;
+  }
 
   contenido.innerHTML = html;
 }
+
+function filtrarClubes() {
+  const texto = (document.getElementById("buscar-club")?.value || "").trim().toLowerCase();
+  let visibles = 0;
+  document.querySelectorAll("#clubs-grid .club-tile").forEach(t => {
+    const coincide = !texto || (t.dataset.nombre || "").includes(texto);
+    t.hidden = !coincide;
+    if (coincide) visibles++;
+  });
+  const vacio = document.getElementById("clubs-sin-resultados");
+  if (vacio) vacio.hidden = visibles > 0;
+}
+window.filtrarClubes = filtrarClubes;
 
 async function verClub(id) {
   const club = clubes.find(c => c.id === id);
@@ -3857,12 +3886,19 @@ async function verClub(id) {
   const equiposClub = await obtenerEquiposPorClub(id);
 
   let html = `
-    <h2>${club.nombre}</h2>
-    <h3>Equipos</h3>
+    <button class="volver volver-arriba" onclick="mostrarEquipos()">${ico("izquierda", 16)} Todos los clubs</button>
+    <div class="club-hero">
+      <span class="club-hero-escudo"><img src="${escaparHtml(club.escudo || PLACEHOLDER_ESCUDO)}" alt=""></span>
+      <div>
+        <h2>${club.nombre}</h2>
+        <span class="pt-cuenta">${equiposClub.length} ${equiposClub.length === 1 ? "equipo" : "equipos"}</span>
+      </div>
+    </div>
+    <h3 class="bloque-titulo">Equipos</h3>
   `;
 
   if (equiposClub.length === 0) {
-    html += `<p>No hay equipos en este club</p>`;
+    html += `<p class="estado-vacio">No hay equipos en este club</p>`;
   }
 
   equiposClub.forEach(e => {
@@ -3900,8 +3936,6 @@ async function verClub(id) {
     </div>
   `;
 });
-
-  html += `<button class="volver" onclick="mostrarEquipos()">Volver</button>`;
 
   contenido.innerHTML = html;
 }

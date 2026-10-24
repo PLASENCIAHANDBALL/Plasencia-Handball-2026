@@ -3822,3 +3822,37 @@ p.estado-vacio { background: var(--surface); border: 1px dashed var(--border); b
 .pm-res { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-text); background: var(--surface); padding: 4px 10px; border-radius: 999px; }
 .cat-equipo .partidos-equipo.oculto { display: none; padding: 0; }
 .pm-fecha strong::first-letter { text-transform: uppercase; }
+
+/* ---------- clubs renovados ---------- */
+.clubs-admin { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.clubs-buscar { display: flex; align-items: center; gap: 10px; padding: 0 16px; margin-bottom: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 6px 18px rgba(27,111,184,.07); color: var(--muted); }
+.clubs-buscar input { flex: 1; min-width: 0; border: 0; background: transparent; box-shadow: none; padding: 13px 0; font-size: 16px; color: var(--text); outline: none; }
+.clubs-buscar:focus-within { border-color: var(--accent); }
+.clubs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.club-tile { display: block; margin: 0; padding: 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 8px 22px rgba(27,111,184,.09); transition: transform .2s, box-shadow .2s; }
+.club-tile[hidden] { display: none; }
+.club-tile:active { transform: scale(.98); }
+@media (hover: hover) { .club-tile:hover { background: var(--surface); transform: translateY(-3px); box-shadow: 0 14px 30px rgba(27,111,184,.18); } .club-tile:hover .cat-flecha { background: var(--azul-fuerte); color: #fff; } }
+.club-tile-fila { display: grid; justify-items: center; gap: 10px; text-align: center; position: relative; }
+.club-tile-escudo { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 22px; background: var(--ground); }
+.club-tile-escudo img { width: 62px; height: 62px; object-fit: contain; }
+.club-tile-texto { display: grid; gap: 3px; min-width: 0; }
+.club-tile-texto strong { font-size: 15px; font-weight: 600; line-height: 1.2; }
+.club-tile-texto span { font-size: 13px; color: var(--accent-text); font-weight: 500; }
+.club-tile .cat-flecha { position: absolute; top: 0; right: 0; width: 28px; height: 28px; }
+.club-tile .club-acciones { display: flex; gap: 8px; margin-top: 12px; }
+.club-tile .club-acciones button { flex: 1; }
+@media (min-width: 760px) { .clubs-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+.club-hero { display: flex; align-items: center; gap: 16px; padding: 18px; margin: 4px 0 18px; border-radius: 22px; background: linear-gradient(135deg, var(--tile), var(--brillo)); }
+.club-hero-escudo { flex: none; display: grid; place-items: center; width: 88px; height: 88px; border-radius: 24px; background: #fff; box-shadow: 0 8px 20px rgba(27,111,184,.2); }
+.club-hero-escudo img { width: 66px; height: 66px; object-fit: contain; }
+.club-hero h2 { margin: 0 0 8px; font-size: 22px; line-height: 1.15; color: var(--tile-ink); }
+.club-hero .pt-cuenta { background: rgba(255,255,255,.75); }
+.volver-arriba { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 6px; padding: 8px 14px; font-size: 14px; background: var(--surface); color: var(--accent-text); border: 1px solid var(--border); border-radius: 999px; box-shadow: none; }
+.team-ios-card.team-clicable { border-radius: 20px; box-shadow: 0 8px 22px rgba(27,111,184,.09); }
+.team-ios-card .team-cat { background: var(--tile); color: var(--tile-ink); padding: 3px 10px; border-radius: 999px; }
+.team-ios-card .team-gen { color: var(--muted); font-weight: 500; align-self: center; }
+.team-ios-card .team-name { font-size: 17px; font-weight: 600; }
+.club-tile-texto, .club-tile-texto strong, .club-hero > div { min-width: 0; max-width: 100%; }
+.club-tile-texto strong, .club-hero h2 { overflow-wrap: anywhere; }

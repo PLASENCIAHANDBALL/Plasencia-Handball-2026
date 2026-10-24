@@ -569,6 +569,12 @@ function mostrarHome() {
 
     <h3 class="titulo-seccion">Fotos del torneo</h3>
     <div class="fotos-grid">
+      <section class="galeria2027">
+        <div id="galeria2027-scroll" class="galeria2026-scroll">
+          <div class="galeria2026-loading">Cargando imágenes…</div>
+        </div>
+      </section>
+
       <section class="galeria2026">
         <div id="galeria2026-scroll" class="galeria2026-scroll">
           <div class="galeria2026-loading">Cargando imágenes…</div>
@@ -671,6 +677,7 @@ setTimeout(renderActualizacionesHome, 0);
   requestAnimationFrame(() => {
     cargarGaleria2025();
     cargarGaleria2026();
+    cargarGaleria2027();
   });
 }
 
@@ -1073,6 +1080,23 @@ async function iniciarApp() {
 }
 
 /* ================== GALERÍA ================== */
+function cargarGaleria2027() {
+  const contenedor = document.getElementById("galeria2027-scroll");
+  if (!contenedor) return;
+
+  const urlCarpeta = "https://www.amazon.es/photos/share/KXGh7Cy7vuudvBxrWVuoY35LBAPWx7eMIZBOdLmFBbF";
+
+  contenedor.innerHTML = `
+  <a href="${urlCarpeta}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
+    <div class="badge-icon">${ico("camara", 24)}</div>
+    <div class="badge-texto">
+      <strong>Torneo 2027</strong>
+      <span>Ver carpeta de fotos</span>
+    </div>
+  </a>
+`;
+}
+
 function cargarGaleria2026() {
   const contenedor = document.getElementById("galeria2026-scroll");
   if (!contenedor) return;

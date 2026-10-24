@@ -1161,7 +1161,8 @@ function renderBloquesPorFecha(lista, tipo) {
     html += `
       <div class="fecha-bloque ${abierta}">
         <div class="fecha-header" role="button" tabindex="0" aria-expanded="${esHoy}" onclick="toggleFecha(this)">
-          <span>${fechaBonita}</span>
+          <span class="fecha-texto">${fechaBonita}${esHoy ? ` <em class="chip-hoy">Hoy</em>` : ""}</span>
+          <span class="fecha-cuenta">${partidosDia.length} ${partidosDia.length === 1 ? "partido" : "partidos"}</span>
           <span class="flecha" aria-hidden="true">⌄</span>
         </div>
 
@@ -1440,17 +1441,25 @@ const finalizados = ordenados
   .filter(p => calcularEstadoPartido(p) === "finalizado")
   .reverse();
 
+  const enJuego = proximos.filter(p => calcularEstadoPartido(p) === "en_juego").length;
+  html += `
+    <div class="pt-resumen">
+      <div class="pt-dato ${enJuego ? "vivo" : ""}"><strong>${enJuego}</strong><span>En juego</span></div>
+      <div class="pt-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>
+      <div class="pt-dato"><strong>${finalizados.length}</strong><span>Finalizados</span></div>
+    </div>`;
+
   /* ===== PRÓXIMOS ===== */
-html += `<h3 class="bloque-titulo">Próximos partidos</h3>`;
+html += `<h3 class="bloque-titulo pt-titulo">Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
 html += proximos.length
   ? renderBloquesPorFecha(proximos, "proximos")
-  : `<p>No hay próximos partidos</p>`;
+  : `<p class="estado-vacio">No hay próximos partidos</p>`;
 
 /* ===== FINALIZADOS ===== */
-html += `<h3 class="bloque-titulo">Partidos finalizados</h3>`;
+html += `<h3 class="bloque-titulo pt-titulo">Partidos finalizados <span class="pt-cuenta">${finalizados.length}</span></h3>`;
 html += finalizados.length
   ? renderBloquesPorFecha(finalizados, "finalizados")
-  : `<p>No hay partidos finalizados</p>`;
+  : `<p class="estado-vacio">No hay partidos finalizados</p>`;
 
   contenido.innerHTML = html;
 }
@@ -1804,86 +1813,54 @@ function renderPartidoCard(p) {
   const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
   const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
   
-  const fechaBonita = formatearFecha(p.fecha);
-  
+  const fin = p.estado === "finalizado";
+  const gl = Number(p.goles_local), gv = Number(p.goles_visitante);
+  const escudo = c => c?.escudo
+    ? `<img src="${escaparHtml(c.escudo)}" class="pc-escudo" alt="" loading="lazy" decoding="async">`
+    : `<span class="pc-escudo pc-escudo-vacio"></span>`;
+  const textoEstado = estadoReal === "finalizado" ? "Finalizado"
+    : estadoReal === "en_juego" ? "En juego" : "Pendiente";
+
   return `
-    <div class="card partido-card">
+    <article class="card partido-card pc ${estadoReal}">
 
-      <!-- 📅 FECHA ARRIBA -->
-<div class="partido-fecha">
-  <strong>${fechaBonita}</strong>
-</div>
-
-<!-- 🏷️ CATEGORÍA -->
-<div class="partido-categoria">
-  ${p.categoria} · ${p.genero}
-</div>
-
-${p.fase !== "grupos" ? `
-  <div class="badge-fase">
-    ${textoFase(p.fase)}
-  </div>
-` : ""}
-
-      <div class="partido-equipos">
-
-  <div class="equipo-partido">
-    ${clubLocal?.escudo
-      ? `<img src="${clubLocal.escudo}" class="escudo-partido" alt="" loading="lazy" decoding="async">`
-      : ""
-    }
-    <span class="nombre-equipo">
-      ${equipoLocal?.nombre || "-"}
-    </span>
-  </div>
-
-  <div class="resultado-centro">
-    ${
-      p.estado === "finalizado"
-        ? `${p.goles_local} – ${p.goles_visitante}`
-        : "vs"
-    }
-  </div>
-
-  <div class="equipo-partido">
-    ${clubVisitante?.escudo
-      ? `<img src="${clubVisitante.escudo}" class="escudo-partido" alt="" loading="lazy" decoding="async">`
-      : ""
-    }
-    <span class="nombre-equipo">
-      ${equipoVisitante?.nombre || "-"}
-    </span>
-  </div>
-
-</div>
-
-      <div class="badge-estado ${estadoReal}">
-  ${
-    estadoReal === "finalizado"
-      ? "Finalizado"
-      : estadoReal === "en_juego"
-      ? "En juego"
-      : "Pendiente"
-  }
-</div>
-      
-      <div class="partido-info">
-        ${formatearHora(p.hora)} · ${p.pabellon || "-"}
+      <div class="pc-cab">
+        <span class="pc-hora">${formatearHora(p.hora)}</span>
+        <span class="badge-estado ${estadoReal}">${textoEstado}</span>
       </div>
 
-      <div class="partido-grupo">${p.grupo}</div>
+      ${p.fase !== "grupos" ? `<div class="badge-fase">${textoFase(p.fase)}</div>` : ""}
 
-      <button onclick="abrirPartido(${p.id})">Abrir partido</button>
+      <div class="pc-duelo">
+        <div class="pc-equipo">
+          ${escudo(clubLocal)}
+          <span class="pc-nombre">${equipoLocal?.nombre || "-"}</span>
+        </div>
 
-      ${
-        adminActivo
-          ? `
-            <button onclick="editarPartido(${p.id})">Editar</button>
-            <button onclick="borrarPartido(${p.id})">Borrar</button>
-          `
-          : ""
-      }
-    </div>
+        <div class="pc-centro">
+          ${fin
+            ? `<span class="pc-marcador"><b class="${gl > gv ? "gana" : ""}">${p.goles_local}</b><i>–</i><b class="${gv > gl ? "gana" : ""}">${p.goles_visitante}</b></span>`
+            : `<span class="pc-vs">VS</span>`}
+        </div>
+
+        <div class="pc-equipo">
+          ${escudo(clubVisitante)}
+          <span class="pc-nombre">${equipoVisitante?.nombre || "-"}</span>
+        </div>
+      </div>
+
+      <div class="pc-pie">
+        <span class="pc-dato">${ico("pabellon", 14)} ${p.pabellon || "-"}</span>
+        <span class="pc-dato pc-cat">${p.categoria} · ${p.genero}${p.grupo ? " · " + p.grupo : ""}</span>
+      </div>
+
+      <div class="pc-acciones">
+        <button type="button" class="pc-abrir" onclick="abrirPartido(${p.id})">Ver partido ${ico("derecha", 16)}</button>
+        ${adminActivo ? `
+          <button type="button" onclick="editarPartido(${p.id})">Editar</button>
+          <button type="button" onclick="borrarPartido(${p.id})">Borrar</button>` : ""}
+      </div>
+    </article>
   `;
 }
 

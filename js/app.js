@@ -1581,121 +1581,182 @@ function renderMatchBracket(partido, esFinal = false) {
   `;
 }
 
+/* ---- piezas comunes de los formularios de partido (modo admin) ---- */
+const POSICIONES_FASE_FINAL = [
+  "1º / 2º", "3º / 4º", "5º / 6º", "7º / 8º", "9º / 10º", "11º / 12º", "13º / 14º",
+  "7º / 9º", "9º / 12º", "1º / 8º", "5º / 8º", "1º / 4º"
+];
+
+function seccionFormulario(numero, titulo, contenidoHtml) {
+  return `
+    <section class="fa-seccion">
+      <h3 class="fa-titulo"><span class="fa-num">${numero}</span>${titulo}</h3>
+      ${contenidoHtml}
+    </section>`;
+}
+
+function campoFormulario(id, etiqueta, controlHtml, extra = "") {
+  return `<div class="fa-campo ${extra}"><label for="${id}">${etiqueta}</label>${controlHtml}</div>`;
+}
+
+function bloqueEquiposFormulario() {
+  return `
+    <div class="fa-equipos">
+      ${campoFormulario("equipoLocal", "Equipo local", `<select id="equipoLocal"></select>`)}
+      <span class="fa-vs" aria-hidden="true">VS</span>
+      ${campoFormulario("equipoVisitante", "Equipo visitante", `<select id="equipoVisitante"></select>`)}
+    </div>`;
+}
+
+function bloqueFechaFormulario() {
+  return `
+    <div class="fa-grid">
+      ${campoFormulario("fecha", "Fecha", `<input type="date" id="fecha">`)}
+      ${campoFormulario("hora", "Hora", `<input type="time" id="hora">`)}
+      ${campoFormulario("pabellon", "Pabellón", `
+        <select id="pabellon">${LISTA_PABELLONES.map(p => `<option value="${p}">${p}</option>`).join("")}</select>`, "fa-ancho")}
+    </div>`;
+}
+
+// Resumen en vivo para comprobar el partido antes de guardarlo
+function actualizarResumenPartido() {
+  const caja = document.getElementById("fa-resumen");
+  if (!caja) return;
+
+  const texto = id => {
+    const el = document.getElementById(id);
+    return el && el.selectedIndex >= 0 ? el.options[el.selectedIndex].textContent.trim() : "";
+  };
+  const local = texto("equipoLocal"), visitante = texto("equipoVisitante");
+  const fecha = document.getElementById("fecha")?.value;
+  const hora = document.getElementById("hora")?.value;
+  const cat = document.getElementById("categoria")?.value || "";
+  const gen = document.getElementById("genero")?.value || "";
+  const fase = document.getElementById("fase");
+  const etiquetaFase = fase ? fase.options[fase.selectedIndex].textContent.trim() : (document.getElementById("grupo")?.value || "");
+
+  const duelo = local && visitante ? `${escaparHtml(local)} <b>vs</b> ${escaparHtml(visitante)}` : "Elige los dos equipos";
+  const cuando = fecha ? `${escaparHtml(textoFecha(fecha) || fecha)}${hora ? " · " + escaparHtml(hora) : ""}` : "Falta la fecha";
+
+  caja.innerHTML = `
+    <span class="fa-resumen-etiqueta">Resumen</span>
+    <strong>${duelo}</strong>
+    <span>${escaparHtml(cat)} ${escaparHtml(gen)} · ${escaparHtml(etiquetaFase)}</span>
+    <span>${cuando} · ${escaparHtml(document.getElementById("pabellon")?.value || "")}</span>`;
+}
+
+// Devuelve un texto de error o "" si el partido es válido
+function validarPartidoFormulario() {
+  const local = document.getElementById("equipoLocal")?.value;
+  const visitante = document.getElementById("equipoVisitante")?.value;
+  if (!local || !visitante) return "No hay equipos para esa selección: cambia la categoría, el género o el grupo.";
+  if (local === visitante) return "El equipo local y el visitante no pueden ser el mismo.";
+  if (!document.getElementById("fecha")?.value) return "Elige la fecha del partido.";
+  if (!document.getElementById("hora")?.value) return "Elige la hora del partido.";
+  return "";
+}
+
+function activarResumenFormulario() {
+  const caja = document.getElementById("form-partido");
+  if (!caja) return;
+  caja.addEventListener("input", actualizarResumenPartido);
+  caja.addEventListener("change", actualizarResumenPartido);
+  actualizarResumenPartido();
+}
+
 function formCrearFaseFinal() {
   contenido.innerHTML = `
-    <h2>Crear partido fase final</h2>
+    <button class="volver volver-arriba" onclick="mostrarPartidos()">${ico("izquierda", 16)} Volver a partidos</button>
+    <h2>Partido de fase final</h2>
+    <p class="pab-intro">Elige la categoría y la fase, después los equipos y por último cuándo y dónde se juega.</p>
 
-    <label>Equipo local</label>
-    <select id="equipoLocal"></select>
+    <div id="form-partido" class="fa-form">
+      ${seccionFormulario(1, "Categoría y fase", `
+        <div class="fa-grid">
+          ${campoFormulario("categoria", "Categoría", `<select id="categoria"><option>Infantil</option><option>Cadete</option><option>Juvenil</option></select>`)}
+          ${campoFormulario("genero", "Género", `<select id="genero"><option>Masculino</option><option>Femenino</option></select>`)}
+          ${campoFormulario("fase", "Fase", `
+            <select id="fase">
+              <option value="playoff">Playoff</option>
+              <option value="grupo_unico">Grupo único</option>
+              <option value="cuartos">Cuartos de final</option>
+              <option value="semifinal">Semifinal</option>
+              <option value="final">Final</option>
+              <option value="serie1">Serie 1</option>
+              <option value="serie2">Serie 2</option>
+            </select>`)}
+          ${campoFormulario("posicion", "Posición en juego (opcional)", `
+            <select id="posicion">
+              <option value="">Sin posición concreta</option>
+              ${POSICIONES_FASE_FINAL.map(x => `<option>${x}</option>`).join("")}
+            </select>`)}
+        </div>`)}
 
-    <label>Equipo visitante</label>
-    <select id="equipoVisitante"></select>
+      ${seccionFormulario(2, "Equipos", bloqueEquiposFormulario())}
+      ${seccionFormulario(3, "Fecha y pabellón", bloqueFechaFormulario())}
 
-    <label>Categoría</label>
-    <select id="categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
+      <div id="fa-resumen" class="fa-resumen" aria-live="polite"></div>
 
-    <label>Género</label>
-    <select id="genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <select id="fase">
-
-  <option value="playoff">Playoff</option>
-
-  <option value="grupo_unico">
-    Grupo único
-  </option>
-
-  <option value="cuartos">
-    Cuartos de final
-  </option>
-
-  <option value="semifinal">
-    Semifinal
-  </option>
-
-  <option value="final">
-    Final
-  </option>
-
-  <option value="serie1">
-    Serie 1
-  </option>
-
-  <option value="serie2">
-    Serie 2
-  </option>
-
-</select>
-
-    <label>Posición</label>
-<select id="posicion">
-  <option value="">-- Seleccionar posición --</option>
-
-  <option>Serie 1</option>
-  <option>Serie 2</option>
-
-  <option>1º / 2º</option>
-  <option>3º / 4º</option>
-  <option>5º / 6º</option>
-  <option>7º / 8º</option>
-  <option>9º / 10º</option>
-  <option>11º / 12º</option>
-  <option>13º / 14º</option>
-
-  <option>7º / 9º</option>
-  <option>9º / 12º</option>
-  <option>1º / 8º</option>
-  <option>5º / 8º</option>
-  <option>1º / 4º</option>
-</select>
-    
-    <label>Fecha</label>
-    <input type="date" id="fecha">
-
-    <label>Hora</label>
-    <input type="time" id="hora">
-
-    <label>Pabellón</label>
-    <select id="pabellon">
-      ${LISTA_PABELLONES.map(p => `<option>${p}</option>`).join("")}
-    </select>
-
-    <button onclick="guardarFaseFinal()">Crear partido</button>
-    <button class="volver" onclick="mostrarPartidos()">Volver</button>
+      <div class="fa-botones">
+        <button type="button" class="fa-guardar" onclick="guardarFaseFinal()">Crear partido</button>
+        <button type="button" class="volver" onclick="mostrarPartidos()">Cancelar</button>
+      </div>
+    </div>
   `;
 
+  // la posición solo tiene sentido si la fase no es una serie
+  const alternarPosicion = () => {
+    const serie = /^serie/.test(document.getElementById("fase").value);
+    const campo = document.getElementById("posicion").closest(".fa-campo");
+    campo.hidden = serie;
+    if (serie) document.getElementById("posicion").value = "";
+  };
+  document.getElementById("fase").addEventListener("change", alternarPosicion);
+  alternarPosicion();
+
+  // los equipos se filtran por la categoría y el género elegidos
+  document.getElementById("categoria").addEventListener("change", cargarTodosEquipos);
+  document.getElementById("genero").addEventListener("change", cargarTodosEquipos);
+
+  activarResumenFormulario();
   cargarTodosEquipos();
 }
 
+let equiposFaseFinalCache = null;
+
 async function cargarTodosEquipos() {
-  const lista = await obtenerEquiposSupabase();
+  if (!equiposFaseFinalCache) equiposFaseFinalCache = await obtenerEquiposSupabase();
+  const lista = equiposFaseFinalCache;
 
   const local = document.getElementById("equipoLocal");
   const visitante = document.getElementById("equipoVisitante");
+  if (!local || !visitante) return;
+
+  const cat = document.getElementById("categoria")?.value;
+  const gen = document.getElementById("genero")?.value;
+  const filtrados = lista.filter(e => (!cat || e.categoria === cat) && (!gen || e.genero === gen));
 
   local.innerHTML = "";
   visitante.innerHTML = "";
 
-  lista.forEach(e => {
+  filtrados.forEach(e => {
     const opt1 = document.createElement("option");
     opt1.value = e.id;
-    opt1.textContent = `${e.nombre} (${e.categoria} ${e.genero})`;
-
-    const opt2 = opt1.cloneNode(true);
+    opt1.textContent = e.grupo ? `${e.nombre} (${e.grupo})` : e.nombre;
 
     local.appendChild(opt1);
-    visitante.appendChild(opt2);
+    visitante.appendChild(opt1.cloneNode(true));
   });
+
+  // por defecto, visitante = segundo equipo para que no coincidan
+  if (filtrados.length > 1) visitante.selectedIndex = 1;
+  actualizarResumenPartido();
 }
 
 async function guardarFaseFinal() {
+  const errorForm = validarPartidoFormulario();
+  if (errorForm) { avisar(errorForm, "error"); return; }
+
   const fase = document.getElementById("fase").value;
 
 const posicion = document.getElementById("posicion").value;
@@ -1868,57 +1929,40 @@ function renderPartidoCard(p) {
 
 function formNuevoPartido() {
   contenido.innerHTML = `
+    <button class="volver volver-arriba" onclick="mostrarPartidos()">${ico("izquierda", 16)} Volver a partidos</button>
     <h2>Nuevo partido</h2>
+    <p class="pab-intro">Elige la categoría y el grupo, después los equipos y por último cuándo y dónde se juega.</p>
 
-    <label>Equipo local</label>
-    <select id="equipoLocal"></select>
+    <div id="form-partido" class="fa-form">
+      ${seccionFormulario(1, "Categoría y grupo", `
+        <div class="fa-grid">
+          ${campoFormulario("categoria", "Categoría", `<select id="categoria"><option>Infantil</option><option>Cadete</option><option>Juvenil</option></select>`)}
+          ${campoFormulario("genero", "Género", `<select id="genero"><option>Masculino</option><option>Femenino</option></select>`)}
+          ${campoFormulario("grupo", "Grupo", `
+            <select id="grupo">
+              <option>Grupo A</option><option>Grupo B</option><option>Grupo C</option>
+              <option>Grupo D</option><option>Grupo Único</option>
+            </select>`, "fa-ancho")}
+        </div>`)}
 
-    <label>Equipo visitante</label>
-    <select id="equipoVisitante"></select>
+      ${seccionFormulario(2, "Equipos", bloqueEquiposFormulario())}
+      ${seccionFormulario(3, "Fecha y pabellón", bloqueFechaFormulario())}
 
-    <label>Categoría</label>
-    <select id="categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
+      <div id="fa-resumen" class="fa-resumen" aria-live="polite"></div>
 
-    <label>Género</label>
-    <select id="genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <label>Grupo</label>
-    <select id="grupo">
-      <option>Grupo A</option>
-      <option>Grupo B</option>
-      <option>Grupo C</option>
-      <option>Grupo D</option>
-      <option>Grupo Único</option>
-    </select>
-
-    <label>Fecha</label>
-    <input type="date" id="fecha">
-
-    <label>Hora</label>
-    <input type="time" id="hora">
-
-    <label>Pabellón</label>
-<select id="pabellon">
-  ${LISTA_PABELLONES.map(p => `
-    <option value="${p}">${p}</option>
-  `).join("")}
-</select>
-
-    <button onclick="guardarNuevoPartido()">Guardar partido</button>
-    <button class="volver" onclick="mostrarPartidos()">Volver</button>
+      <div class="fa-botones">
+        <button type="button" class="fa-guardar" onclick="guardarNuevoPartido()">Guardar partido</button>
+        <button type="button" class="volver" onclick="mostrarPartidos()">Cancelar</button>
+      </div>
+    </div>
   `;
 
   // 🔥 LISTENERS (FUERA del HTML)
   document.getElementById("categoria").addEventListener("change", cargarEquiposParaPartido);
   document.getElementById("genero").addEventListener("change", cargarEquiposParaPartido);
   document.getElementById("grupo").addEventListener("change", cargarEquiposParaPartido);
+
+  activarResumenFormulario();
 
   // 🔥 Primera carga
   cargarEquiposParaPartido();
@@ -2740,6 +2784,9 @@ async function cargarEquiposParaPartido() {
     local.appendChild(opt1);
     visitante.appendChild(opt2);
   });
+
+  if (equipos.length > 1) visitante.selectedIndex = 1;
+  actualizarResumenPartido();
 }
 
 async function crearEquipoSupabase(equipo) {
@@ -2819,6 +2866,9 @@ async function borrarPartidoSupabase(id) {
 }
 
 async function guardarNuevoPartido() {
+  const errorForm = validarPartidoFormulario();
+  if (errorForm) { avisar(errorForm, "error"); return; }
+
   const nuevoPartido = {
     local_id: Number(document.getElementById("equipoLocal").value),
     visitante_id: Number(document.getElementById("equipoVisitante").value),

@@ -3856,3 +3856,32 @@ p.estado-vacio { background: var(--surface); border: 1px dashed var(--border); b
 .team-ios-card .team-name { font-size: 17px; font-weight: 600; }
 .club-tile-texto, .club-tile-texto strong, .club-hero > div { min-width: 0; max-width: 100%; }
 .club-tile-texto strong, .club-hero h2 { overflow-wrap: anywhere; }
+
+/* ---------- formularios de partido (admin) ---------- */
+.fa-form { display: grid; gap: 14px; }
+.fa-seccion { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 16px; box-shadow: 0 8px 22px rgba(27,111,184,.08); }
+.fa-titulo { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 16px; }
+.fa-titulo::before { display: none; }
+.fa-num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--azul-medio)); color: #fff; font-size: 13px; font-weight: 700; }
+.fa-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.fa-ancho { grid-column: 1 / -1; }
+.fa-campo { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.fa-campo[hidden] { display: none; }
+.fa-campo label { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0; }
+.fa-campo select, .fa-campo input { width: 100%; min-height: 48px; margin: 0; box-sizing: border-box; font-size: 16px; }
+.fa-equipos { display: grid; gap: 10px; }
+.fa-vs { justify-self: center; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--accent-text); background: var(--tile); padding: 5px 12px; border-radius: 999px; }
+.fa-resumen { display: grid; gap: 4px; padding: 14px 16px; border-radius: 20px; background: linear-gradient(135deg, var(--tile), var(--brillo)); color: var(--tile-ink); font-size: 14px; }
+.fa-resumen strong { font-size: 16px; }
+.fa-resumen b { font-weight: 600; opacity: .6; }
+.fa-resumen-etiqueta { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.fa-botones { display: grid; gap: 10px; }
+.fa-guardar { width: 100%; min-height: 52px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--accent), var(--azul-medio)); color: #fff; font-size: 16px; font-weight: 700; box-shadow: 0 8px 18px rgba(43,134,217,.35); }
+.fa-botones .volver { margin: 0; }
+@media (min-width: 760px) {
+  .fa-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fa-ancho { grid-column: span 2; }
+  .fa-equipos { grid-template-columns: 1fr auto 1fr; align-items: end; }
+  .fa-vs { margin-bottom: 14px; }
+  .fa-botones { grid-template-columns: 2fr 1fr; }
+}

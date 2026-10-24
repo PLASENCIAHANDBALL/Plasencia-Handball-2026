@@ -1010,12 +1010,15 @@ async function iniciarApp() {
   try { history.replaceState({ vista: "inicio", params: {} }, ""); } catch (e) { /* sin historial */ }
 
   let splashOculto = false;
+  const inicioSplash = Date.now();
+  const SPLASH_MIN_MS = 2800; // el vídeo se ve al menos este tiempo
 
   const ocultarSplash = () => {
     if (splashOculto) return;
     splashOculto = true;
 
     completarBarraSplash();
+    const espera = Math.max(0, SPLASH_MIN_MS - (Date.now() - inicioSplash));
 
     setTimeout(() => {
       document.body.classList.remove("splash-activo");
@@ -1025,7 +1028,7 @@ async function iniciarApp() {
         splash.classList.add("splash-hide");
         setTimeout(() => splash.remove(), 600);
       }
-    }, 200);
+    }, 200 + espera);
   };
 
   // Si la red va muy lenta, se enseña la app igualmente en vez de dejar el splash eternamente

@@ -26,6 +26,7 @@
 
   <!-- El logo del splash es lo primero que se ve -->
   <link rel="preload" as="image" href="img/logo-torneo.webp" />
+  <link rel="preload" as="image" href="img/splash-poster.webp" />
 
   <!-- Manrope: la tipografía de la app (si no carga, se usa la del sistema) -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" />
@@ -35,6 +36,11 @@
 <body>
 
   <div id="splash">
+
+    <!-- VÍDEO DE FONDO (silenciado; si no se puede reproducir se ve el póster) + velo azul claro -->
+    <video class="splash-video" src="video/splash.mp4" poster="img/splash-poster.webp"
+           autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+    <div class="splash-velo"></div>
 
     <!-- LOGO (centrado) -->
     <img src="img/logo-torneo.webp" alt="Plasencia Handball" width="400" height="274" fetchpriority="high" />

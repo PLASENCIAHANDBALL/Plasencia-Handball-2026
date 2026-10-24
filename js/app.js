@@ -20,6 +20,7 @@ const ICONOS = {
   pause: '<path d="M8 5v14M16 5v14"/>',
   prev:  '<path d="M6 5v14M19 5.5v13L9 12z"/>',
   up:    '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  chev:  '<path d="M6 9l6 6 6-6"/>',
   down:  '<path d="M12 5v14M6 13l6 6 6-6"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   calendario: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
@@ -1241,84 +1242,67 @@ function obtenerIconoGenero(genero) {
   return "";
 }
 
+function textoNumPartidos(n) {
+  return `${n} ${n === 1 ? "partido" : "partidos"}`;
+}
+
 function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
-
   const categorias = agruparPorCategoria(partidosDia);
-
   let html = "";
 
   Object.entries(categorias).forEach(([categoria, listaCategoria]) => {
-
     const idCategoria = slug("categoria", tipo, fecha, categoria);
 
     html += `
-  <div class="bloque-categoria-principal">
-
-    <div class="categoria-principal-header" role="button" tabindex="0"
-         aria-expanded="false" aria-controls="${idCategoria}"
-         onclick="toggleCategoriaDia('${idCategoria}', this)">
-
-      <span class="badge-categoria ${obtenerClaseCategoria(categoria)}">
-        ${categoria}
-      </span>
-
-      <span class="flecha">⌄</span>
-
-    </div>
-
-    <div id="${idCategoria}" class="categoria-partidos oculto">
-      ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
-    </div>
-
-  </div>
-`;
-
+      <section class="pj-cat ${obtenerClaseCategoria(categoria).replace("badge-", "pj-")}">
+        <div class="pj-cab pj-cab-cat" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="${idCategoria}"
+             onclick="toggleCategoriaDia('${idCategoria}', this)">
+          <span class="pj-barra" aria-hidden="true"></span>
+          <span class="pj-nombre">${categoria}</span>
+          <span class="pj-num">${textoNumPartidos(listaCategoria.length)}</span>
+          <span class="pj-flecha" aria-hidden="true">${ico("chev", 18)}</span>
+        </div>
+        <div id="${idCategoria}" class="categoria-partidos oculto">
+          <div class="pj-interior">
+            ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
+          </div>
+        </div>
+      </section>
+    `;
   });
 
   return html;
 }
 
 function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
-
   const generos = listaCategoria.reduce((acc, p) => {
-
     const genero = p.genero || "Sin género";
-
     if (!acc[genero]) acc[genero] = [];
-
     acc[genero].push(p);
-
     return acc;
-
   }, {});
 
   let html = "";
 
   Object.entries(generos).forEach(([genero, listaGenero]) => {
-
     const idGenero = slug("genero", tipo, fecha, listaGenero[0].categoria, genero);
 
     html += `
-      <div class="bloque-genero">
-
-        <div class="genero-header" role="button" tabindex="0"
+      <div class="pj-gen ${obtenerClaseGenero(genero).replace("badge-", "pj-")}">
+        <div class="pj-cab pj-cab-gen" role="button" tabindex="0"
              aria-expanded="false" aria-controls="${idGenero}"
              onclick="toggleCategoriaDia('${idGenero}', this)">
-
-          <span class="badge-genero ${obtenerClaseGenero(genero)}">
-            ${obtenerIconoGenero(genero)} ${genero}
-           </span>
-
-          <span class="flecha">⌄</span>
-
+          <span class="pj-punto" aria-hidden="true"></span>
+          <span class="pj-nombre">${genero}</span>
+          <span class="pj-num">${textoNumPartidos(listaGenero.length)}</span>
+          <span class="pj-flecha" aria-hidden="true">${ico("chev", 16)}</span>
         </div>
-
         <div id="${idGenero}" class="categoria-partidos oculto">
-
-          ${renderGruposDentroGenero(listaGenero, fecha, tipo)}
-
+          <div class="pj-interior">
+            ${renderGruposDentroGenero(listaGenero, fecha, tipo)}
+          </div>
         </div>
-
       </div>
     `;
   });
@@ -1327,44 +1311,32 @@ function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
 }
 
 function renderGruposDentroGenero(listaGenero, fecha, tipo) {
-
   const grupos = listaGenero.reduce((acc, p) => {
-
     const grupo = p.grupo || "Sin grupo";
-
     if (!acc[grupo]) acc[grupo] = [];
-
     acc[grupo].push(p);
-
     return acc;
-
   }, {});
 
   let html = "";
 
   Object.entries(grupos).forEach(([grupo, lista]) => {
-
     const id = slug("grupo", tipo, fecha, lista[0].categoria, lista[0].genero, grupo);
 
     html += `
-      <div class="bloque-categoria-dia">
-
-        <div class="categoria-header" role="button" tabindex="0"
+      <div class="pj-grupo">
+        <div class="pj-cab pj-cab-grupo" role="button" tabindex="0"
              aria-expanded="false" aria-controls="${id}"
              onclick="toggleCategoriaDia('${id}', this)">
-
-          <span>${grupo}</span>
-
-          <span class="flecha">⌄</span>
-
+          <span class="pj-nombre">${grupo}</span>
+          <span class="pj-num">${textoNumPartidos(lista.length)}</span>
+          <span class="pj-flecha" aria-hidden="true">${ico("chev", 14)}</span>
         </div>
-
         <div id="${id}" class="categoria-partidos oculto">
-
-          ${lista.map(p => renderPartidoCard(p)).join("")}
-
+          <div class="pj-interior pj-partidos">
+            ${lista.map(p => renderPartidoCard(p)).join("")}
+          </div>
         </div>
-
       </div>
     `;
   });
@@ -3934,7 +3906,7 @@ async function verClub(id) {
       </div>
 
       <div class="team-ver-partidos">
-        <span>Ver partidos</span>${ico("down", 16)}
+        <span>Ver partidos</span>${ico("chev", 16)}
       </div>
 
       ${
@@ -4725,7 +4697,7 @@ function pintarEquiposAvisos(filtro = "") {
           <img class="avisos-escudo" src="${club?.escudo || "img/club-placeholder.svg"}" alt="" width="26" height="26" loading="lazy" decoding="async">
           <span class="avisos-club-nombre">${nombre}</span>
           <span class="avisos-contador">${textoContadorClub(elegidos)}</span>
-          ${ico("down", 18)}
+          ${ico("chev", 18)}
         </summary>
         <div class="avisos-club-equipos">
           ${lista.map(e => `

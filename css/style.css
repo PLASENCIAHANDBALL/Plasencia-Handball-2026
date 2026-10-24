@@ -3969,3 +3969,42 @@ p.estado-vacio { background: var(--surface); border: 1px dashed var(--border); b
 .idioma-opcion.activo { background: var(--tile); color: var(--tile-ink); }
 body.splash-activo .idioma-fab { display: none; }
 html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spacing: -.01em; }
+
+/* ===== Partidos: desplegables de categoría > género > grupo ===== */
+.pj-cat { margin: 12px 0 0; }
+.pj-cab { display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+.pj-cab:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
+.pj-nombre { flex: 1; min-width: 0; font-weight: 700; }
+.pj-num { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.pj-flecha { display: inline-flex; color: var(--accent-text); transition: transform .3s ease; flex: none; }
+.pj-cab.abierto .pj-flecha { transform: rotate(180deg); }
+.pj-interior { padding-top: 6px; }
+
+/* categoría: tarjeta con barra de color */
+.pj-cab-cat { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 13px 16px 13px 0; box-shadow: 0 6px 18px rgba(27,111,184,.07); overflow: hidden; }
+.pj-cab-cat .pj-nombre { font-size: 17px; color: var(--text); }
+.pj-barra { align-self: stretch; width: 6px; border-radius: 0 6px 6px 0; background: var(--azul-medio); margin: -13px 0 -13px 0; flex: none; }
+.pj-cab-cat .pj-nombre { margin-left: 4px; }
+.pj-cat.pj-infantil .pj-barra { background: #5bb8f0; }
+.pj-cat.pj-cadete .pj-barra { background: #2b86d9; }
+.pj-cat.pj-juvenil .pj-barra { background: #0a3a80; }
+.pj-cab-cat.abierto { background: var(--tile); border-color: transparent; }
+
+/* género: sangrado con línea guía */
+.pj-cat > .categoria-partidos > .pj-interior { margin-left: 14px; padding-left: 14px; border-left: 2px solid var(--brillo); }
+.pj-gen { margin-top: 8px; }
+.pj-cab-gen { padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.pj-cab-gen .pj-nombre { font-size: 15px; color: var(--text); }
+.pj-punto { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
+.pj-gen.pj-masculino .pj-punto { background: #2b86d9; }
+.pj-gen.pj-femenino .pj-punto { background: #e0578a; }
+.pj-gen.pj-masculino .pj-cab-gen.abierto { background: var(--tile); border-color: transparent; color: var(--tile-ink); }
+.pj-gen.pj-femenino .pj-cab-gen.abierto { background: #fde4ee; border-color: transparent; }
+
+/* grupo: etiqueta ligera */
+.pj-gen > .categoria-partidos > .pj-interior { padding-top: 4px; }
+.pj-grupo { margin-top: 6px; }
+.pj-cab-grupo { padding: 8px 4px; border-bottom: 1px dashed var(--border); }
+.pj-cab-grupo .pj-nombre { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); }
+.pj-partidos { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+.pj-cab-grupo ~ .categoria-partidos .pj-partidos { margin: 0; }

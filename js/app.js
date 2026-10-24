@@ -504,15 +504,6 @@ function mostrarHome() {
   setNavActivoPorVista("inicio");
   registrarNavegacion("inicio");
 
-  // el botón y la barra reflejan el estado real de la canción (antes se reiniciaban a ▶️ al volver a Inicio)
-  const reproduciendo = !audioTorneo.paused;
-  const progresoCancion =
-    isFinite(audioTorneo.duration) && audioTorneo.duration > 0
-      ? (audioTorneo.currentTime / audioTorneo.duration) * 100
-      : 0;
-
-  const duracion = isFinite(audioTorneo.duration) ? audioTorneo.duration : 0;
-
   let html = `
     <h2 class="sr-only">Inicio</h2>
 
@@ -526,46 +517,6 @@ function mostrarHome() {
       </span>
       ${ico("derecha", 20)}
     </button>
-
-    <section class="reproductor ${reproduciendo ? "sonando" : ""}" id="reproductor" aria-label="Canción del torneo">
-      <div class="reproductor-portada" aria-hidden="true">${ico("musica", 34)}</div>
-
-      <div class="reproductor-cabecera">
-        <div>
-          <span class="reproductor-etiqueta">Suena en Plasencia</span>
-          <strong class="reproductor-titulo">Canción del torneo</strong>
-        </div>
-        <div class="ecualizador" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
-
-      <input
-        type="range"
-        id="barra-cancion"
-        value="${progresoCancion}"
-        min="0"
-        max="100"
-        step="0.1"
-        style="--p:${progresoCancion}%"
-        aria-label="Posición de la canción"
-        oninput="moverBarraCancion()"
-      >
-
-      <div class="reproductor-pie">
-        <span id="tiempo-actual">${formatearTiempo(audioTorneo.currentTime)}</span>
-
-        <div class="controles-cancion">
-          <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
-            ${ico("prev", 20)}
-          </button>
-          <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control btn-play"
-                  aria-label="${reproduciendo ? "Pausar canción" : "Reproducir canción"}">
-            ${reproduciendo ? ico("pause", 26) : ico("play", 26)}
-          </button>
-        </div>
-
-        <span id="tiempo-total">${duracion ? formatearTiempo(duracion) : "--:--"}</span>
-      </div>
-    </section>
 
     <h3 class="titulo-seccion">Fotos del torneo</h3>
     <div class="fotos-grid">
@@ -847,6 +798,27 @@ function abrirWeb(url) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+function toggleReproductor(forzarCerrar) {
+  const fab = document.getElementById("music-fab");
+  if (!fab) return;
+
+  const abrir = forzarCerrar === true ? false : !fab.classList.contains("open");
+  fab.classList.toggle("open", abrir);
+  fab.querySelector(".music-main")?.setAttribute("aria-expanded", abrir ? "true" : "false");
+
+  // si se abre, se cierra el menú de redes para que no se pisen
+  if (abrir && typeof toggleSocial === "function") toggleSocial(true);
+}
+window.toggleReproductor = toggleReproductor;
+
+document.addEventListener("click", (e) => {
+  const fab = document.getElementById("music-fab");
+  if (fab && fab.classList.contains("open") && !fab.contains(e.target)) toggleReproductor(true);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") toggleReproductor(true);
+});
+
 function formatearTiempo(seg) {
   if (!isFinite(seg) || seg < 0) return "0:00";
   const m = Math.floor(seg / 60);
@@ -932,8 +904,8 @@ function sincronizarBotonCancion() {
   const boton = document.getElementById("btn-play");
   if (!boton) return;
 
-  boton.innerHTML = audioTorneo.paused ? ico("play", 26) : ico("pause", 26);
-  document.getElementById("reproductor")?.classList.toggle("sonando", !audioTorneo.paused);
+  boton.innerHTML = audioTorneo.paused ? ico("play", 24) : ico("pause", 24);
+  document.getElementById("music-fab")?.classList.toggle("sonando", !audioTorneo.paused);
   boton.setAttribute("aria-label", audioTorneo.paused ? "Reproducir canción" : "Pausar canción");
 }
 

@@ -14,7 +14,7 @@
    se refresca sola en la siguiente visita (estrategia "stale-while-revalidate").
    ============================================================ */
 
-const VERSION = "2026-10-24-1";
+const VERSION = "2026-10-24-2";
 
 const CACHE_APP = `ph-app-${VERSION}`;
 const CACHE_IMG = "ph-img-v1";
@@ -33,8 +33,6 @@ const PRECARGA = [
   "manifest.json",
   "img/club-placeholder.svg",
   "img/logo-torneo.webp",
-  "img/header.webp",
-  "img/header-m.webp",
   "img/redes.webp",
   "img/instagram.webp",
   "img/facebook.webp",

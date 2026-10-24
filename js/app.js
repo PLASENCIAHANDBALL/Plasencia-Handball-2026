@@ -25,6 +25,7 @@ const ICONOS = {
   tabla:      '<path d="M5 20V11M12 20V4M19 20v-6"/>',
   pabellon:   '<path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   musica:     '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+  bolsa:      '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
   camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
 };
 function ico(nombre, tam = 18) {
@@ -237,6 +238,9 @@ let rolUsuario = lsGet("rol") || null;
 let adminActivo = rolUsuario === "admin";
 let mesaActiva = rolUsuario === "mesa";
 
+// El PIN de administrador solo vive en memoria: la tienda lo envía al servidor para validar cada cambio
+let pinAdmin = null;
+
 let progresoSplash = 0;
 let intervaloSplash = null;
 
@@ -321,6 +325,7 @@ function restaurarVista(estado) {
     case "clubs":       mostrarEquipos(); break;
     case "tabla":       mostrarClasificacion(); break;
     case "pabellones":  mostrarPabellones(); break;
+    case "tienda":      mostrarTienda(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
     case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
     case "pabellon":    if (params.nombre) window.mostrarPartidosPorPabellon(params.nombre); else mostrarPabellones(); break;
@@ -506,16 +511,7 @@ function mostrarHome() {
   const duracion = isFinite(audioTorneo.duration) ? audioTorneo.duration : 0;
 
   let html = `
-    <section class="hero-inicio">
-      <span class="hero-etiqueta">Torneo internacional</span>
-      <h2>Vive el torneo<br>minuto a minuto</h2>
-      <p>Resultados en directo, clasificaciones y pabellones, todo en tu bolsillo.</p>
-      <div class="hero-accesos">
-        <button type="button" onclick="mostrarPartidos()">${ico("calendario", 20)}<span>Partidos</span></button>
-        <button type="button" onclick="mostrarClasificacion()">${ico("tabla", 20)}<span>Tabla</span></button>
-        <button type="button" onclick="mostrarPabellones()">${ico("pabellon", 20)}<span>Pabellones</span></button>
-      </div>
-    </section>
+    <h2 class="sr-only">Inicio</h2>
 
     <div id="bloque-instalar"></div>
 
@@ -949,7 +945,8 @@ const VISTAS_INICIALES = {
   categorias: () => mostrarCategorias(),
   clubs: () => mostrarEquipos(),
   tabla: () => mostrarClasificacion(),
-  pabellones: () => mostrarPabellones()
+  pabellones: () => mostrarPabellones(),
+  tienda: () => mostrarTienda()
 };
 
 // Los accesos directos de la app instalada abren con ?vista=partidos, ?vista=tabla…
@@ -2514,6 +2511,7 @@ async function toggleAdmin() {
     rolUsuario = null;
     adminActivo = false;
     mesaActiva = false;
+    pinAdmin = null;
     lsRemove("rol");
     document.getElementById("admin-fab")?.classList.remove("admin-activo");
     avisar("Sesión cerrada");
@@ -2534,6 +2532,7 @@ async function toggleAdmin() {
   rolUsuario = rol;
   adminActivo = rol === "admin";
   mesaActiva = rol === "mesa";
+  pinAdmin = rol === "admin" ? pin : null;
 
   lsSet("rol", rol);
   document.getElementById("admin-fab")?.classList.add("admin-activo");
@@ -4079,6 +4078,288 @@ function mostrarPabellones() {
   `;
 }
 
+
+/* ================== TIENDA (SUPABASE) ================== */
+
+let productos = [];
+let tiendaCargada = false;
+
+const FORMATO_EUROS = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+
+async function cargarProductos() {
+  const { data, error } = await supabase
+    .from("productos")
+    .select("id,nombre,descripcion,precio,imagen,disponible")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error cargando productos:", error);
+    return false;
+  }
+
+  productos = data || [];
+  tiendaCargada = true;
+  return true;
+}
+
+function tarjetaProducto(p) {
+  const nombre = escaparHtml(p.nombre);
+  const imagen = escaparHtml(urlSegura(p.imagen));
+  const agotado = p.disponible === false;
+
+  return `
+    <article class="producto-card ${agotado ? "agotado" : ""}">
+      <div class="producto-foto">
+        ${imagen
+          ? `<img src="${imagen}" alt="${nombre}" width="400" height="400" loading="lazy" decoding="async">`
+          : `<span class="producto-sin-foto">${ico("bolsa", 40)}</span>`}
+        ${agotado ? `<span class="producto-agotado">Agotado</span>` : ""}
+      </div>
+
+      <div class="producto-info">
+        <div class="producto-nombre">${nombre}</div>
+        ${p.descripcion ? `<p class="producto-desc">${escaparHtml(p.descripcion)}</p>` : ""}
+        <div class="producto-precio">${FORMATO_EUROS.format(Number(p.precio) || 0)}</div>
+      </div>
+
+      ${adminActivo ? `
+        <div class="producto-admin">
+          <button type="button" class="secundario" onclick="editarProducto(${Number(p.id)})">Editar</button>
+          <button type="button" class="peligro" onclick="borrarProducto(${Number(p.id)})">Eliminar</button>
+        </div>` : ""}
+    </article>
+  `;
+}
+
+async function mostrarTienda() {
+  setNavActivoPorVista("tienda");
+  registrarNavegacion("tienda");
+
+  const pintar = (cuerpo) => {
+    if (vistaActual !== "tienda") return;
+    contenido.innerHTML = `
+      <h2>Tienda del torneo</h2>
+      <p class="tienda-intro">Productos oficiales a la venta en el <strong>Pabellón Municipal</strong> durante el torneo.</p>
+      ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoProducto()">Añadir producto</button>` : ""}
+      ${cuerpo}
+    `;
+  };
+
+  if (!tiendaCargada) {
+    pintar(`<div class="tienda-vacia">Cargando productos…</div>`);
+    const ok = await cargarProductos();
+    if (!ok) {
+      pintar(`<div class="tienda-vacia">No se han podido cargar los productos. Comprueba tu conexión e inténtalo de nuevo.</div>`);
+      return;
+    }
+  }
+
+  if (!productos.length) {
+    pintar(`<div class="tienda-vacia">${ico("bolsa", 36)}<strong>Muy pronto</strong><span>Aquí verás los productos del torneo.</span></div>`);
+    return;
+  }
+
+  pintar(`<div class="productos-grid">${productos.map(tarjetaProducto).join("")}</div>`);
+}
+
+// El PIN solo está en memoria: si la sesión de administrador venía guardada, se vuelve a pedir una vez
+function obtenerPinAdmin() {
+  if (pinAdmin) return pinAdmin;
+  const pin = prompt("Introduce el PIN de administrador para guardar los cambios:");
+  if (pin) pinAdmin = pin.trim();
+  return pinAdmin;
+}
+
+function mensajeErrorProducto(error) {
+  if (error && (error.code === "42501" || /PIN/i.test(error.message || ""))) {
+    pinAdmin = null;
+    return "PIN de administrador no válido";
+  }
+  return "No se ha podido guardar el cambio";
+}
+
+// Reduce la foto antes de subirla: un móvil genera 4-8 MB y en la tienda basta con 900 px
+function reducirImagen(file, max = 900, calidad = 0.82) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const escala = Math.min(1, max / Math.max(img.width, img.height));
+      const lienzo = document.createElement("canvas");
+      lienzo.width = Math.round(img.width * escala);
+      lienzo.height = Math.round(img.height * escala);
+      lienzo.getContext("2d").drawImage(img, 0, 0, lienzo.width, lienzo.height);
+      lienzo.toBlob(b => b ? resolve(b) : reject(new Error("No se pudo procesar la imagen")), "image/jpeg", calidad);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Imagen no válida")); };
+    img.src = url;
+  });
+}
+
+function formularioProducto(p) {
+  const editando = !!p;
+  return `
+    <div class="form-producto">
+    <h2>${editando ? "Editar producto" : "Nuevo producto"}</h2>
+
+    <label for="prod-nombre">Nombre</label>
+    <input id="prod-nombre" maxlength="80" value="${editando ? escaparHtml(p.nombre) : ""}">
+
+    <label for="prod-desc">Descripción (opcional)</label>
+    <textarea id="prod-desc" rows="3" maxlength="400">${editando ? escaparHtml(p.descripcion || "") : ""}</textarea>
+
+    <label for="prod-precio">Precio (€)</label>
+    <input id="prod-precio" type="number" inputmode="decimal" min="0" step="0.01" value="${editando ? Number(p.precio) : ""}">
+
+    ${editando ? `
+      <label class="check-linea"><input id="prod-disponible" type="checkbox" ${p.disponible === false ? "" : "checked"}> Disponible (desmarca si se agota)</label>
+    ` : `
+      <label for="prod-foto">Foto</label>
+      <input id="prod-foto" type="file" accept="image/*">
+    `}
+
+    <button type="button" id="prod-guardar" onclick="${editando ? `guardarEdicionProducto(${Number(p.id)})` : "guardarNuevoProducto()"}">Guardar</button>
+    <button type="button" class="volver" onclick="mostrarTienda()">Cancelar</button>
+    </div>
+  `;
+}
+
+function formNuevoProducto() {
+  if (!adminActivo) return;
+  contenido.innerHTML = formularioProducto(null);
+}
+
+function editarProducto(id) {
+  if (!adminActivo) return;
+  const p = productos.find(x => Number(x.id) === Number(id));
+  if (!p) return;
+  contenido.innerHTML = formularioProducto(p);
+}
+
+function leerFormularioProducto() {
+  const nombre = document.getElementById("prod-nombre").value.trim();
+  const descripcion = document.getElementById("prod-desc").value.trim();
+  const precio = parseFloat(String(document.getElementById("prod-precio").value).replace(",", "."));
+
+  if (!nombre) { avisar("Escribe el nombre del producto", "error"); return null; }
+  if (!isFinite(precio) || precio < 0) { avisar("Escribe un precio válido", "error"); return null; }
+
+  return { nombre, descripcion, precio: Math.round(precio * 100) / 100 };
+}
+
+async function guardarNuevoProducto() {
+  if (!adminActivo) return;
+
+  const datos = leerFormularioProducto();
+  if (!datos) return;
+
+  const archivo = document.getElementById("prod-foto").files[0];
+  if (!archivo) { avisar("Elige una foto del producto", "error"); return; }
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const boton = document.getElementById("prod-guardar");
+  boton.disabled = true;
+  boton.textContent = "Guardando…";
+
+  let nombreArchivo = null;
+
+  try {
+    const foto = await reducirImagen(archivo);
+    nombreArchivo = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+
+    const { error: errorSubida } = await supabase.storage
+      .from("productos")
+      .upload(nombreArchivo, foto, { contentType: "image/jpeg", cacheControl: "31536000" });
+
+    if (errorSubida) throw errorSubida;
+
+    const { data } = supabase.storage.from("productos").getPublicUrl(nombreArchivo);
+
+    const { error } = await supabase.rpc("producto_crear", {
+      p_pin: pin,
+      p_nombre: datos.nombre,
+      p_descripcion: datos.descripcion,
+      p_precio: datos.precio,
+      p_imagen: data.publicUrl
+    });
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error guardando producto:", error);
+
+    // si falló el alta no se deja la foto huérfana en el almacenamiento
+    if (nombreArchivo) supabase.storage.from("productos").remove([nombreArchivo]).catch(() => {});
+
+    avisar(mensajeErrorProducto(error), "error");
+    boton.disabled = false;
+    boton.textContent = "Guardar";
+    return;
+  }
+
+  avisar("Producto añadido");
+  tiendaCargada = false;
+  mostrarTienda();
+}
+
+async function guardarEdicionProducto(id) {
+  if (!adminActivo) return;
+
+  const datos = leerFormularioProducto();
+  if (!datos) return;
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { error } = await supabase.rpc("producto_actualizar", {
+    p_pin: pin,
+    p_id: id,
+    p_nombre: datos.nombre,
+    p_descripcion: datos.descripcion,
+    p_precio: datos.precio,
+    p_disponible: document.getElementById("prod-disponible").checked
+  });
+
+  if (error) {
+    console.error("Error actualizando producto:", error);
+    avisar(mensajeErrorProducto(error), "error");
+    return;
+  }
+
+  avisar("Producto actualizado");
+  tiendaCargada = false;
+  mostrarTienda();
+}
+
+async function borrarProducto(id) {
+  if (!adminActivo) return;
+
+  const p = productos.find(x => Number(x.id) === Number(id));
+  if (!confirm(`¿Eliminar "${p ? p.nombre : "este producto"}"?`)) return;
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { data: imagen, error } = await supabase.rpc("producto_borrar", { p_pin: pin, p_id: id });
+
+  if (error) {
+    console.error("Error borrando producto:", error);
+    avisar(mensajeErrorProducto(error), "error");
+    return;
+  }
+
+  if (imagen) {
+    const archivo = String(imagen).split("/").pop();
+    supabase.storage.from("productos").remove([archivo]).catch(() => {});
+  }
+
+  avisar("Producto eliminado");
+  tiendaCargada = false;
+  mostrarTienda();
+}
+
 /* ================== EXPONER FUNCIONES A HTML ================== */
 
 // navegación principal
@@ -4088,6 +4369,12 @@ window.mostrarCategorias = mostrarCategorias;
 window.mostrarEquipos = mostrarEquipos;
 window.mostrarClasificacion = mostrarClasificacion;
 window.mostrarPabellones = mostrarPabellones; // aunque aún no exista, no pasa nada
+window.mostrarTienda = mostrarTienda;
+window.formNuevoProducto = formNuevoProducto;
+window.editarProducto = editarProducto;
+window.guardarNuevoProducto = guardarNuevoProducto;
+window.guardarEdicionProducto = guardarEdicionProducto;
+window.borrarProducto = borrarProducto;
 
 // admin
 window.toggleAdmin = toggleAdmin;

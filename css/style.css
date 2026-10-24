@@ -3788,3 +3788,37 @@ p.estado-vacio { background: var(--surface); border: 1px dashed var(--border); b
 .pc-dato { display: inline-flex; align-items: center; gap: 5px; }
 .pc-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .pc-abrir { flex: 1 1 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* ---------- categorías renovadas ---------- */
+.tabs { display: flex; gap: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 6px 18px rgba(27,111,184,.07); }
+.tabs .tab { flex: 1; border: 0; background: transparent; color: var(--muted); font-weight: 600; border-radius: 999px; padding: 11px 6px; transition: background .2s, color .2s, box-shadow .2s; }
+.tabs .tab.active { background: linear-gradient(135deg, var(--accent), var(--azul-medio)); color: #fff; box-shadow: 0 6px 14px rgba(43,134,217,.35); }
+.cat-equipos { display: grid; gap: 12px; }
+@media (min-width: 760px) { .cat-equipos { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+.cat-equipo { display: block; padding: 0; overflow: hidden; border-radius: 20px; box-shadow: 0 8px 22px rgba(27,111,184,.09); }
+.cat-equipo.abierto { border-color: var(--accent); }
+.cat-cab { display: flex; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; }
+.cat-cab:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.cat-escudo { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--ground); }
+.cat-escudo img { width: 40px; height: 40px; object-fit: contain; }
+.cat-info { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.cat-info strong { font-size: 16px; font-weight: 600; line-height: 1.2; }
+.cat-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cat-grupo { font-size: 12px; font-weight: 600; color: var(--tile-ink); background: var(--tile); padding: 3px 10px; border-radius: 999px; }
+.cat-n { font-size: 13px; color: var(--muted); }
+.cat-flecha { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--tile); color: var(--tile-ink); transition: transform .25s ease, background .2s; }
+.cat-equipo.abierto .cat-flecha { transform: rotate(90deg); background: var(--azul-fuerte); color: #fff; }
+.cat-equipo .partidos-equipo { padding: 0 14px 14px; }
+.cat-equipo .bloque-partidos { margin: 14px 2px 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); }
+.cat-equipo .partido-vacio { margin: 0; padding: 12px; border-radius: 14px; background: var(--ground); color: var(--muted); font-size: 14px; text-align: center; }
+.pm { padding: 12px 14px; margin: 0 0 8px; border-radius: 14px; box-shadow: none; background: var(--ground); border-color: transparent; cursor: pointer; display: grid; gap: 8px; }
+.pm:hover { border-color: var(--accent); }
+.pm-fecha { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; font-size: 13px; color: var(--muted); }
+.pm-fecha strong { font-weight: 600; color: var(--text); }
+.pm-duelo { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; font-size: 14px; }
+.pm-eq { font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.pm-eq:last-child { text-align: right; }
+.pm-eq.gana { font-weight: 700; color: var(--tile-ink); }
+.pm-res { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-text); background: var(--surface); padding: 4px 10px; border-radius: 999px; }
+.cat-equipo .partidos-equipo.oculto { display: none; padding: 0; }
+.pm-fecha strong::first-letter { text-transform: uppercase; }

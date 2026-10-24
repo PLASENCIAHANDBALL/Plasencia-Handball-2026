@@ -2910,7 +2910,6 @@ function filtrarCategorias() {
   let html = "";
 
   /* ====== EQUIPOS ====== */
-  html += `<h3>Equipos</h3>`;
 
   const equiposFiltrados = equipos.filter(e =>
     e.categoria === categoria &&
@@ -2918,25 +2917,37 @@ function filtrarCategorias() {
     (!grupo || e.grupo === grupo)
   );
 
+  html += `<h3 class="bloque-titulo pt-titulo">Equipos <span class="pt-cuenta">${equiposFiltrados.length}</span></h3>`;
+
   if (equiposFiltrados.length === 0) {
-    html += `<p>No hay equipos en esta categoría</p>`;
+    html += `<p class="estado-vacio">No hay equipos en esta categoría</p>`;
   }
 
+  html += `<div class="cat-equipos">`;
   equiposFiltrados.forEach(e => {
   const club = clubes.find(c => c.id === e.club_id);
+  const nPartidos = partidos.filter(p => p.local_id === e.id || p.visitante_id === e.id).length;
 
   html += `
-  <div class="card equipo-card" role="button" tabindex="0" onclick="togglePartidosEquipo(${e.id})">
-  <img src="${club?.escudo || PLACEHOLDER_ESCUDO}" class="escudo-equipo-mini" alt="" loading="lazy" decoding="async">
-  <div class="equipo-info">
-    <strong>${e.nombre}</strong>
-    <div class="equipo-grupo">${e.grupo}</div>
-  </div>
+  <div class="card equipo-card cat-equipo">
+    <div class="cat-cab" role="button" tabindex="0" aria-expanded="false" aria-controls="partidos-equipo-${e.id}"
+         onclick="togglePartidosEquipo(${e.id})">
+      <span class="cat-escudo"><img src="${escaparHtml(club?.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
+      <div class="cat-info">
+        <strong>${escaparHtml(e.nombre)}</strong>
+        <div class="cat-meta">
+          <span class="cat-grupo">${escaparHtml(e.grupo || "Sin grupo")}</span>
+          <span class="cat-n">${nPartidos} ${nPartidos === 1 ? "partido" : "partidos"}</span>
+        </div>
+      </div>
+      <span class="cat-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
+    </div>
 
-  <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
-</div>
+    <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
+  </div>
   `;
 });
+  html += `</div>`;
 
   document.getElementById("listaCategorias").innerHTML = html;
 }
@@ -2947,6 +2958,7 @@ function togglePartidosEquipo(idEquipo) {
     if (el.id !== `partidos-equipo-${idEquipo}`) {
       el.classList.add("oculto");
       el.innerHTML = "";
+      marcarEquipoAbierto(el, false);
     }
   });
 
@@ -2957,6 +2969,7 @@ function togglePartidosEquipo(idEquipo) {
   if (!contenedor.classList.contains("oculto")) {
     contenedor.classList.add("oculto");
     contenedor.innerHTML = "";
+    marcarEquipoAbierto(contenedor, false);
     return;
   }
 
@@ -3005,28 +3018,33 @@ function togglePartidosEquipo(idEquipo) {
 
   contenedor.innerHTML = html;
   contenedor.classList.remove("oculto");
+  marcarEquipoAbierto(contenedor, true);
+}
+
+function marcarEquipoAbierto(contenedor, abierto) {
+  const tarjeta = contenedor.closest(".cat-equipo");
+  if (!tarjeta) return;
+  tarjeta.classList.toggle("abierto", abierto);
+  tarjeta.querySelector(".cat-cab")?.setAttribute("aria-expanded", abierto ? "true" : "false");
 }
 
 function renderMiniPartido(p, finalizado = false) {
   const local = equipos.find(e => e.id === p.local_id);
   const visitante = equipos.find(e => e.id === p.visitante_id);
+  const gl = Number(p.goles_local), gv = Number(p.goles_visitante);
 
   return `
-    <div class="card partido-card-mini ${finalizado ? "finalizado" : ""}" role="button" tabindex="0"
+    <div class="card partido-card-mini pm ${finalizado ? "finalizado" : ""}" role="button" tabindex="0"
          onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <strong>${formatearFecha(p.fecha)}</strong>
-      <div>
-        ${
-          finalizado
-            ? `${local?.nombre} ${p.goles_local} - ${p.goles_visitante} ${visitante?.nombre}`
-            : `${local?.nombre} vs ${visitante?.nombre}`
-        }
+      <div class="pm-fecha">
+        <strong>${formatearFecha(p.fecha)}</strong>
+        ${!finalizado ? `<span>${formatearHora(p.hora)} · ${p.pabellon || "-"}</span>` : ""}
       </div>
-      ${!finalizado ? `
-        <div class="mini-info">
-          ${formatearHora(p.hora)} · ${p.pabellon || "-"}
-        </div>` : ""
-      }
+      <div class="pm-duelo">
+        <span class="pm-eq ${finalizado && gl > gv ? "gana" : ""}">${local?.nombre || "-"}</span>
+        <span class="pm-res">${finalizado ? `${p.goles_local} – ${p.goles_visitante}` : "vs"}</span>
+        <span class="pm-eq ${finalizado && gv > gl ? "gana" : ""}">${visitante?.nombre || "-"}</span>
+      </div>
     </div>
   `;
 }

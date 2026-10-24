@@ -2180,112 +2180,76 @@ function abrirPartido(id) {
   const clubLocal = clubes.find(c => c.id === equipoLocal?.club_id);
   const clubVisitante = clubes.find(c => c.id === equipoVisitante?.club_id);
 
-  let adminBloque = adminActivo ? `
-    <label>Hora</label>
-    <input type="time" id="hora" value="${partidoActual.hora || ""}">
+  const fechaBonita = textoFecha(partidoActual.fecha) || "-";
+  const estadoReal = calcularEstadoPartido(partidoActual);
+  const textoEstado = estadoReal === "finalizado" ? "Finalizado" : estadoReal === "en_juego" ? "En juego" : "Pendiente";
+  const nombreLocal = equipoLocal?.nombre || "Equipo local";
+  const nombreVisitante = equipoVisitante?.nombre || "Equipo visitante";
+  const gl = partidoActual.goles_local ?? 0;
+  const gv = partidoActual.goles_visitante ?? 0;
 
-    <label>Lugar</label>
-    <input id="pabellon" value="${partidoActual.pabellon || ""}">
+  const puedeEditar = adminActivo || mesaActiva;
+  const stepper = (lado, inputId, valor, nombre) => `
+    <div class="ap-stepper ${lado}">
+      <button type="button" class="ap-mas-menos" onclick="cambiarGol('${lado}', -1)" aria-label="Quitar un gol a ${nombre}">−</button>
+      <input type="number" inputmode="numeric" min="0" id="${inputId}" value="${valor}" aria-label="Goles de ${nombre}">
+      <button type="button" class="ap-mas-menos mas" onclick="cambiarGol('${lado}', 1)" aria-label="Añadir un gol a ${nombre}">+</button>
+    </div>`;
 
-    <button onclick="guardarDatosPartido()">Guardar datos</button>
-  ` : `
-  `;
+  const bloqueDatos = adminActivo ? `
+    <section class="ap-panel">
+      <h3 class="ap-titulo">Datos del partido</h3>
+      <div class="fa-grid">
+        ${campoFormulario("hora", "Hora", `<input type="time" id="hora" value="${partidoActual.hora || ""}">`)}
+        ${campoFormulario("pabellon", "Lugar", `<input type="text" id="pabellon" value="${partidoActual.pabellon || ""}">`)}
+      </div>
+      <button type="button" class="ap-secundario" onclick="guardarDatosPartido()">Guardar datos</button>
+    </section>` : "";
 
-const fechaBonita = textoFecha(partidoActual.fecha) || "-";
+  const bloqueResultado = puedeEditar ? `
+    <section class="ap-panel ap-resultado">
+      <h3 class="ap-titulo">Resultado</h3>
+      <div class="ap-steppers">
+        <div class="ap-lado"><span>${nombreLocal}</span>${stepper("local", "inputLocal", partidoActual.goles_local, nombreLocal)}</div>
+        <div class="ap-lado"><span>${nombreVisitante}</span>${stepper("visitante", "inputVisitante", partidoActual.goles_visitante, nombreVisitante)}</div>
+      </div>
+      <button type="button" class="fa-guardar" onclick="guardarResultado()">Guardar resultado</button>
+      <button type="button" class="btn-finalizar ap-finalizar" onclick="finalizarPartido()">Finalizar partido</button>
+      <p class="ap-nota">Finalizar cierra el partido y actualiza la clasificación.</p>
+    </section>` : "";
 
   contenido.innerHTML = `
-  <h2 class="sr-only">${equipoLocal?.nombre || "Equipo local"} contra ${equipoVisitante?.nombre || "Equipo visitante"}</h2>
+  <button class="volver volver-arriba" onclick="mostrarPartidos()">${ico("izquierda", 16)} Volver a partidos</button>
+  <h2 class="sr-only">${nombreLocal} contra ${nombreVisitante}</h2>
 
-  <div class="info-partido-detalle">
+  <section class="ap-cabecera">
+    <div class="ap-chips">
+      <span class="ap-chip">${partidoActual.categoria} · ${partidoActual.genero}</span>
+      ${partidoActual.fase !== "grupos" ? `<span class="ap-chip fase">${textoFase(partidoActual.fase)}</span>` : ""}
+      <span class="badge-estado ${estadoReal}">${textoEstado}</span>
+    </div>
+    <div class="ap-cuando"><strong>${fechaBonita}</strong> · ${formatearHora(partidoActual.hora)}</div>
+    <div class="ap-donde">${ico("pabellon", 15)} ${partidoActual.pabellon || "-"}</div>
+  </section>
 
-  <div class="detalle-fecha-hora">
-    <strong>${fechaBonita}</strong> · ${formatearHora(partidoActual.hora)}
-  </div>
+  <div class="marcador-ios ap-marcador">
+    <div class="equipo-ios local">
+      <img src="${clubLocal?.escudo || PLACEHOLDER_ESCUDO}" class="escudo-ios" alt="Escudo de ${nombreLocal}">
+      <div class="nombre-ios">${nombreLocal}</div>
+      <div class="goles-ios local" id="golesLocal">${gl}</div>
+    </div>
 
-  <div class="detalle-categoria">
-    ${partidoActual.categoria} · ${partidoActual.genero}
-  </div>
+    <div class="vs-ios"><span>–</span></div>
 
-${partidoActual.fase !== "grupos" ? `
-  <div class="badge-fase">
-    ${textoFase(partidoActual.fase)}
-  </div>
-` : ""}
-
-  <div class="detalle-lugar">
-    ${partidoActual.pabellon || "-"}
-  </div>
-
-</div>
-
-  <div class="marcador-ios">
-
-  <div class="equipo-ios local">
-    <img 
-      src="${clubLocal?.escudo || PLACEHOLDER_ESCUDO}"
-      class="escudo-ios"
-      alt="Escudo de ${equipoLocal?.nombre || "equipo local"}"
-    >
-    <div class="nombre-ios">${equipoLocal?.nombre || "Equipo local"}</div>
-    <div class="goles-ios local" id="golesLocal">
-      ${partidoActual.goles_local ?? 0}
+    <div class="equipo-ios visitante">
+      <img src="${clubVisitante?.escudo || PLACEHOLDER_ESCUDO}" class="escudo-ios" alt="Escudo de ${nombreVisitante}">
+      <div class="nombre-ios">${nombreVisitante}</div>
+      <div class="goles-ios visitante" id="golesVisitante">${gv}</div>
     </div>
   </div>
 
-  <div class="vs-ios">
-    <span>–</span>
-  </div>
-
-  <div class="equipo-ios visitante">
-    <img 
-      src="${clubVisitante?.escudo || PLACEHOLDER_ESCUDO}"
-      class="escudo-ios"
-      alt="Escudo de ${equipoVisitante?.nombre || "equipo visitante"}"
-    >
-    <div class="nombre-ios">${equipoVisitante?.nombre || "Equipo visitante"}</div>
-    <div class="goles-ios visitante" id="golesVisitante">
-      ${partidoActual.goles_visitante ?? 0}
-    </div>
-  </div>
-
-</div>
-
-  ${adminBloque}
-
-  ${(adminActivo || mesaActiva) ? `
-  <div class="marcador-edicion">
-
-    <div class="resultado-directo">
-      <label>Resultado</label>
-      <input 
-        type="number" 
-        min="0"
-        id="inputLocal"
-        value="${partidoActual.goles_local}"
-      >
-      <span> - </span>
-      <input 
-        type="number" 
-        min="0"
-        id="inputVisitante"
-        value="${partidoActual.goles_visitante}"
-      >
-    </div>
-
-    <div class="marcador-botones">
-      <button class="btn-local" onclick="cambiarGol('local', 1)">+ Local</button>
-      <button class="btn-visitante" onclick="cambiarGol('visitante', 1)">+ Visitante</button>
-      <button class="btn-local" onclick="cambiarGol('local', -1)">− Local</button>
-      <button class="btn-visitante" onclick="cambiarGol('visitante', -1)">− Visitante</button>
-    </div>
-
-    <button onclick="guardarResultado()">Guardar resultado</button>
-    <button class="btn-finalizar" onclick="finalizarPartido()">Finalizar partido</button>
-
-  </div>
-` : ""}
-
-  <button class="volver" onclick="mostrarPartidos()">Volver</button>
+  ${bloqueResultado}
+  ${bloqueDatos}
 `;
 }
 

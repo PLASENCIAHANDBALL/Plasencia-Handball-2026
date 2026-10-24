@@ -20,7 +20,12 @@ const ICONOS = {
   prev:  '<path d="M6 5v14M19 5.5v13L9 12z"/>',
   up:    '<path d="M12 19V5M6 11l6-6 6 6"/>',
   down:  '<path d="M12 5v14M6 13l6 6 6-6"/>',
-  close: '<path d="M6 6l12 12M18 6L6 18"/>'
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  calendario: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  tabla:      '<path d="M5 20V11M12 20V4M19 20v-6"/>',
+  pabellon:   '<path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  musica:     '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+  camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
 };
 function ico(nombre, tam = 18) {
   return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
@@ -498,62 +503,76 @@ function mostrarHome() {
       ? (audioTorneo.currentTime / audioTorneo.duration) * 100
       : 0;
 
+  const duracion = isFinite(audioTorneo.duration) ? audioTorneo.duration : 0;
+
   let html = `
-    <h2>Inicio</h2>
+    <section class="hero-inicio">
+      <span class="hero-etiqueta">Torneo internacional</span>
+      <h2>Vive el torneo<br>minuto a minuto</h2>
+      <p>Resultados en directo, clasificaciones y pabellones, todo en tu bolsillo.</p>
+      <div class="hero-accesos">
+        <button type="button" onclick="mostrarPartidos()">${ico("calendario", 20)}<span>Partidos</span></button>
+        <button type="button" onclick="mostrarClasificacion()">${ico("tabla", 20)}<span>Tabla</span></button>
+        <button type="button" onclick="mostrarPabellones()">${ico("pabellon", 20)}<span>Pabellones</span></button>
+      </div>
+    </section>
 
     <div id="bloque-instalar"></div>
 
-    <section class="cancion-torneo">
+    <section class="reproductor ${reproduciendo ? "sonando" : ""}" id="reproductor" aria-label="Canción del torneo">
+      <div class="reproductor-portada" aria-hidden="true">${ico("musica", 34)}</div>
 
-  <div class="galeria-badge reproductor-cancion">
+      <div class="reproductor-cabecera">
+        <div>
+          <span class="reproductor-etiqueta">Suena en Plasencia</span>
+          <strong class="reproductor-titulo">Canción del torneo</strong>
+        </div>
+        <div class="ecualizador" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
 
-    <div class="badge-icon">
-      <img src="img/iconos/musica.webp" alt="" width="44" height="44">
-    </div>
+      <input
+        type="range"
+        id="barra-cancion"
+        value="${progresoCancion}"
+        min="0"
+        max="100"
+        step="0.1"
+        style="--p:${progresoCancion}%"
+        aria-label="Posición de la canción"
+        oninput="moverBarraCancion()"
+      >
 
-    <div class="badge-texto">
-      <strong>Canción del torneo</strong>
-    </div>
+      <div class="reproductor-pie">
+        <span id="tiempo-actual">${formatearTiempo(audioTorneo.currentTime)}</span>
 
-    <div class="controles-cancion">
+        <div class="controles-cancion">
+          <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
+            ${ico("prev", 20)}
+          </button>
+          <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control btn-play"
+                  aria-label="${reproduciendo ? "Pausar canción" : "Reproducir canción"}">
+            ${reproduciendo ? ico("pause", 26) : ico("play", 26)}
+          </button>
+        </div>
 
-      <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
-        ${ico("prev")}
-      </button>
-
-      <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control"
-              aria-label="${reproduciendo ? "Pausar canción" : "Reproducir canción"}">
-        ${reproduciendo ? ico("pause") : ico("play")}
-      </button>
-
-    </div>
-
-  </div>
-
-  <input
-    type="range"
-    id="barra-cancion"
-    value="${progresoCancion}"
-    min="0"
-    max="100"
-    step="1"
-    aria-label="Posición de la canción"
-    oninput="moverBarraCancion()"
-  >
-
-</section>
-    
-    <section class="galeria2026">
-      <div id="galeria2026-scroll" class="galeria2026-scroll">
-        <div class="galeria2026-loading">Cargando imágenes…</div>
+        <span id="tiempo-total">${duracion ? formatearTiempo(duracion) : "--:--"}</span>
       </div>
     </section>
 
-    <section class="galeria">
-      <div id="galeria-scroll" class="galeria-scroll">
-        <div class="galeria-loading">Cargando imágenes…</div>
-      </div>
-    </section>
+    <h3 class="titulo-seccion">Fotos del torneo</h3>
+    <div class="fotos-grid">
+      <section class="galeria2026">
+        <div id="galeria2026-scroll" class="galeria2026-scroll">
+          <div class="galeria2026-loading">Cargando imágenes…</div>
+        </div>
+      </section>
+
+      <section class="galeria">
+        <div id="galeria-scroll" class="galeria-scroll">
+          <div class="galeria-loading">Cargando imágenes…</div>
+        </div>
+      </section>
+    </div>
 
     <!-- 🔴 ACTUALIZACIONES EN VIVO -->
     <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
@@ -813,6 +832,26 @@ function abrirWeb(url) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+function formatearTiempo(seg) {
+  if (!isFinite(seg) || seg < 0) return "0:00";
+  const m = Math.floor(seg / 60);
+  const r = Math.floor(seg % 60);
+  return `${m}:${String(r).padStart(2, "0")}`;
+}
+
+function pintarProgresoCancion(porcentaje) {
+  const barra = document.getElementById("barra-cancion");
+  if (!barra) return;
+  barra.value = porcentaje;
+  barra.style.setProperty("--p", `${porcentaje}%`);
+
+  const actual = document.getElementById("tiempo-actual");
+  if (actual) actual.textContent = formatearTiempo(audioTorneo.currentTime);
+
+  const total = document.getElementById("tiempo-total");
+  if (total && isFinite(audioTorneo.duration)) total.textContent = formatearTiempo(audioTorneo.duration);
+}
+
 function toggleCancionTorneo() {
 
   if (audioTorneo.paused) {
@@ -843,7 +882,7 @@ function reiniciarCancion() {
 
   audioTorneo.currentTime = 0;
 
-  if (barra) barra.value = 0;
+  if (barra) pintarProgresoCancion(0);
 
 }
 
@@ -865,6 +904,8 @@ function moverBarraCancion() {
   audioTorneo.currentTime =
     (barra.value / 100) * audioTorneo.duration;
 
+  pintarProgresoCancion(Number(barra.value));
+
   clearTimeout(moverBarraCancion.t);
   moverBarraCancion.t = setTimeout(() => { arrastrandoBarra = false; }, 300);
 
@@ -876,7 +917,8 @@ function sincronizarBotonCancion() {
   const boton = document.getElementById("btn-play");
   if (!boton) return;
 
-  boton.innerHTML = audioTorneo.paused ? ico("play") : ico("pause");
+  boton.innerHTML = audioTorneo.paused ? ico("play", 26) : ico("pause", 26);
+  document.getElementById("reproductor")?.classList.toggle("sonando", !audioTorneo.paused);
   boton.setAttribute("aria-label", audioTorneo.paused ? "Reproducir canción" : "Pausar canción");
 }
 
@@ -892,8 +934,13 @@ audioTorneo.addEventListener("timeupdate", () => {
 
   if (!barra || !isFinite(audioTorneo.duration) || audioTorneo.duration <= 0) return;
 
-  barra.value = (audioTorneo.currentTime / audioTorneo.duration) * 100;
+  pintarProgresoCancion((audioTorneo.currentTime / audioTorneo.duration) * 100);
 
+});
+
+audioTorneo.addEventListener("loadedmetadata", () => {
+  const total = document.getElementById("tiempo-total");
+  if (total) total.textContent = formatearTiempo(audioTorneo.duration);
 });
 
 const VISTAS_INICIALES = {
@@ -1018,9 +1065,7 @@ function cargarGaleria2026() {
 
   contenedor.innerHTML = `
   <a href="${urlCarpeta}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
-    <div class="badge-icon">
-      <img src="img/iconos/fotos.webp" alt="" width="44" height="44">
-    </div>
+    <div class="badge-icon">${ico("camara", 24)}</div>
     <div class="badge-texto">
       <strong>Torneo 2026</strong>
       <span>Ver carpeta de fotos</span>
@@ -1037,9 +1082,7 @@ function cargarGaleria2025() {
 
   contenedor.innerHTML = `
   <a href="${urlCarpeta2025}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
-    <div class="badge-icon">
-      <img src="img/iconos/fotos.webp" alt="" width="44" height="44">
-    </div>
+    <div class="badge-icon">${ico("camara", 24)}</div>
     <div class="badge-texto">
       <strong>Torneo 2025</strong>
       <span>Ver carpeta de fotos</span>

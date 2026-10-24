@@ -13,12 +13,15 @@
    va en PATRONES.
    ============================================================ */
 
-const CODIGOS = ["es", "en", "pt", "fr"];
-const NOMBRES = { es: "Español", en: "English", pt: "Português", fr: "Français" };
-const INDICE = { en: 0, pt: 1, fr: 2 };
+import { DE } from "./i18n-de.js";
+
+const CODIGOS = ["es", "en", "pt", "fr", "de"];
+const NOMBRES = { es: "Español", en: "English", pt: "Português", fr: "Français", de: "Deutsch" };
+const INDICE = { en: 0, pt: 1, fr: 2, de: 3 };
 
 /* ------------------------- banderas (SVG) ------------------------- */
 const BANDERAS = {
+  de: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="20" fill="#000"/><rect y="20" width="60" height="20" fill="#dd0000"/><rect y="40" width="60" height="20" fill="#ffce00"/></svg>`,
   es: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="60" fill="#c60b1e"/><rect y="15" width="60" height="30" fill="#ffc400"/></svg>`,
   fr: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="20" height="60" fill="#0055a4"/><rect x="20" width="20" height="60" fill="#fff"/><rect x="40" width="20" height="60" fill="#ef4135"/></svg>`,
   pt: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><rect width="60" height="60" fill="#ff0000"/><rect width="24" height="60" fill="#006600"/><circle cx="24" cy="30" r="8" fill="#ffcc00"/><circle cx="24" cy="30" r="5" fill="#fff"/><rect x="21.5" y="26.5" width="5" height="6" rx="1.5" fill="#ff0000"/></svg>`,
@@ -355,12 +358,14 @@ const SEMANA = {
   es: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
   en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
   pt: ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"],
+  de: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
   fr: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]
 };
 const MESES = {
   es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
   en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
   pt: ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"],
+  de: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
   fr: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
 };
 
@@ -368,6 +373,7 @@ const plural = (n, un, varios) => (Number(n) === 1 ? un : varios);
 
 function ordinal(n, i) {
   n = Number(n);
+  if (i === 3) return `${n}.`;
   if (i === 0) {
     const r = n % 100;
     if (r >= 11 && r <= 13) return `${n}th`;
@@ -422,13 +428,50 @@ const PATRONES = [
   }]
 ];
 
+
+// Patrones en alemán (mismas expresiones, resultado en alemán)
+const PATRONES_DE = [
+  [/^(\d+) partidos?$/, m => `${m[1]} ${plural(m[1], "Spiel", "Spiele")}`],
+  [/^(\d+) equipos?$/, m => `${m[1]} ${plural(m[1], "Team", "Teams")}`],
+  [/^(\d+) clubs?$/, m => `${m[1]} ${plural(m[1], "Verein", "Vereine")}`],
+  [/^(\d+) categorías?$/, m => `${m[1]} ${plural(m[1], "Kategorie", "Kategorien")}`],
+  [/^(\d+) (?:elegido|elegidos)$/, m => `${m[1]} ${plural(m[1], "ausgewählt", "ausgewählt")}`],
+  [/^(\d+) clubs · (\d+) equipos\. Toca un club para ver sus equipos\.$/, m => `${m[1]} Vereine · ${m[2]} Teams. Tippe auf einen Verein, um seine Teams zu sehen.`],
+  [/^(\d+) pabellones · (\d+) partidos\. Toca uno para ver su programación\.$/, m => `${m[1]} Hallen · ${m[2]} Spiele. Tippe auf eine Halle, um ihren Spielplan zu sehen.`],
+  [/^Empezó hace (\d+) min$/, m => `Begann vor ${m[1]} Min.`],
+  [/^Grupo ([A-D])$/, m => `Gruppe ${m[1]}`],
+  [/^Serie (\d)$/, m => `Serie ${m[1]}`],
+  [/^Torneo (\d{4})$/, m => `Turnier ${m[1]}`],
+  [/^(.+) \(Grupo ([A-D]|Único)\)$/, m => `${m[1]} (Gruppe ${m[2] === "Único" ? "einzeln" : m[2]})`],
+  [/^(Infantil|Cadete|Juvenil) (Masculino|Femenino)$/, m => `${m[1]} ${traducirExacto(m[2], 3)}`],
+  [/^(\d+)º \/ (\d+)º$/, m => `${m[1]}. / ${m[2]}.`],
+  [/^(\d+)\.º y (\d+)\.º puesto$/, m => `Platz ${m[1]} und ${m[2]}`],
+  [/^Escudo de (.+)$/, m => `Wappen von ${m[1]}`],
+  [/^Marcador (\d+) a (\d+)$/, m => `Spielstand ${m[1]} zu ${m[2]}`],
+  [/^Pabellón (.+): (\d+) partidos?$/, m => `Halle ${m[1]}: ${m[2]} ${plural(m[2], "Spiel", "Spiele")}`],
+  [/^Añadir un gol a (.+)$/, m => `Ein Tor für ${m[1]} hinzufügen`],
+  [/^Quitar un gol a (.+)$/, m => `Ein Tor von ${m[1]} abziehen`],
+  [/^Goles de (.+)$/, m => `Tore von ${m[1]}`],
+  [/^(.+) contra (.+)$/, m => `${m[1]} gegen ${m[2]}`],
+  [/^Modo (\S+) activado$/, m => `Modus ${m[1]} aktiviert`],
+  [/^Activados · (.+)$/, m => `Aktiviert · ${m[1].split(" y ").map(p => traducirExacto(p, 3)).join(" und ")}`],
+  [/^¿Eliminar el club "(.+)"\?$/, m => `Den Verein „${m[1]}“ löschen?`],
+  [/^¿Eliminar "(.+)"\?$/, m => `„${m[1]}“ löschen?`],
+  [/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo), (\d{1,2}) de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)$/i, m =>
+    `${SEMANA.de[SEMANA.es.indexOf(m[1].toLowerCase())]}, ${Number(m[2])}. ${MESES.de[MESES.es.indexOf(m[3].toLowerCase())]}`]
+];
+
 /* ------------------------- motor de traducción ------------------------- */
 let idioma = "es";
 
 function traducirExacto(clave, i) {
-  const fila = TEXTOS[clave];
-  if (fila) return fila[i];
-  for (const [re, fn] of PATRONES) {
+  if (i === 3) {
+    if (DE[clave] !== undefined) return DE[clave];
+  } else {
+    const fila = TEXTOS[clave];
+    if (fila) return fila[i];
+  }
+  for (const [re, fn] of (i === 3 ? PATRONES_DE : PATRONES)) {
     const m = re.exec(clave);
     if (m) return fn(m, i);
   }

@@ -41,7 +41,10 @@ const ICONOS = {
   rayo:       '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',
   claqueta:   '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l2-4 3 1.5L11 3l3 1.5L16 3l2 3.5L20 9"/>',
   subir:      '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/>',
-  bandera:    '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>'
+  bandera:    '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>',
+  trofeo:     '<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M8 6H5v1.5A3 3 0 008 10.5M16 6h3v1.5a3 3 0 01-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/>',
+  menos:      '<path d="M5 12h14"/>',
+  check:      '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
 };
 function ico(nombre, tam = 18) {
   return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
@@ -342,6 +345,8 @@ function restaurarVista(estado) {
     case "pabellones":  mostrarPabellones(); break;
     case "tienda":      mostrarTienda(); break;
     case "highlights":  mostrarHighlights(); break;
+    case "porra":       mostrarPorra(); break;
+    case "zona":        mostrarZona(); break;
     case "avisos":      mostrarAvisos(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
     case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
@@ -951,6 +956,8 @@ const VISTAS_INICIALES = {
   pabellones: () => mostrarPabellones(),
   tienda: () => mostrarTienda(),
   highlights: () => mostrarHighlights(),
+  porra: () => mostrarPorra(),
+  zona: () => mostrarZona(),
   avisos: () => mostrarAvisos()
 };
 
@@ -1126,6 +1133,7 @@ function setNavActivoPorVista(vista) {
     .querySelectorAll('.nav-principal button')
     .forEach(b => b.classList.remove('activo'));
 
+  if (["tienda", "highlights", "porra"].includes(vista)) vista = "zona";
   const btn = document.querySelector(`.nav-principal button[data-view="${vista}"]`);
   if (btn) btn.classList.add('activo');
 }
@@ -4240,6 +4248,7 @@ async function mostrarTienda() {
   const pintar = (cuerpo) => {
     if (vistaActual !== "tienda") return;
     contenido.innerHTML = `
+      ${barraZona("tienda")}
       <h2>Tienda del torneo</h2>
       <p class="tienda-intro">Productos oficiales a la venta en el <strong>Pabellón Municipal</strong> durante el torneo.</p>
       ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoProducto()">Añadir producto</button>` : ""}
@@ -4666,6 +4675,7 @@ function pintarHighlights() {
     </section>` : "";
 
   contenido.innerHTML = `
+    ${barraZona("highlights")}
     <div class="hl-cab">
       <h2>PH Highlights</h2>
       <p class="pab-intro">Goles, paradas y jugadas subidos por jugadores y entrenadores. ¡Valora tus favoritos con estrellas!</p>
@@ -4700,14 +4710,14 @@ async function mostrarHighlights() {
 
   if (!highlightsCargados) {
     contenido.innerHTML = `
-      <div class="hl-cab"><h2>PH Highlights</h2></div>
+      ${barraZona("highlights")}<div class="hl-cab"><h2>PH Highlights</h2></div>
       <div class="estado-vacio">Cargando vídeos…</div>`;
 
     const ok = await cargarHighlights();
     if (vistaActual !== "highlights") return;
     if (!ok) {
       contenido.innerHTML = `
-        <div class="hl-cab"><h2>PH Highlights</h2></div>
+        ${barraZona("highlights")}<div class="hl-cab"><h2>PH Highlights</h2></div>
         <div class="estado-vacio"><strong>No se han podido cargar los vídeos. Comprueba tu conexión e inténtalo de nuevo.</strong>
         <button type="button" class="hl-subir" onclick="mostrarHighlights()">Reintentar</button></div>`;
       return;
@@ -4930,6 +4940,373 @@ window.hlModerar = hlModerar;
 window.formSubirHighlight = formSubirHighlight;
 window.enviarHighlight = enviarHighlight;
 
+
+/* ================== ZONA FAN: HIGHLIGHTS · TIENDA · PORRA ================== */
+
+const SECCIONES_ZONA = [
+  { id: "highlights", nombre: "Highlights", icono: "play", abrir: () => mostrarHighlights() },
+  { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() },
+  { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() }
+];
+
+// Barra de secciones que se ve arriba en las tres pantallas de la Zona Fan
+function barraZona(actual) {
+  lsSet("zona_seccion", actual);
+  return `
+    <div class="zona-barra" role="tablist" aria-label="Zona Fan">
+      ${SECCIONES_ZONA.map(s => `
+        <button type="button" role="tab" class="${s.id === actual ? "activo" : ""}" aria-selected="${s.id === actual}"
+          onclick="mostrarSeccionZona('${s.id}')">${ico(s.icono, 18)}<span>${s.nombre}</span></button>`).join("")}
+    </div>`;
+}
+
+function mostrarSeccionZona(id) {
+  const s = SECCIONES_ZONA.find(x => x.id === id) || SECCIONES_ZONA[0];
+  s.abrir();
+}
+
+// Entrada de la barra inferior: abre la última sección que se estaba viendo
+function mostrarZona() {
+  mostrarSeccionZona(lsGet("zona_seccion") || "highlights");
+}
+
+/* ================== PH PORRA ================== */
+
+let porraAlias = lsGet("porra_alias") || "";
+let porraFilas = [];
+let porraRanking = [];
+let porraSeccion = "pronosticar";
+const porraBorrador = {};
+
+const REGLAS_PORRA = [
+  ["Resultado exacto (ej. 25-23)", 10],
+  ["Ganador correcto y diferencia exacta de goles", 6],
+  ["Empate acertado, sin marcador exacto", 6],
+  ["Ganador correcto, sin acertar diferencia", 3],
+  ["Pronóstico incorrecto", 0]
+];
+
+function porraAbierto(p) {
+  return !!p && calcularEstadoPartido(p) === "pendiente" && !!inicioPartido(p);
+}
+
+async function cargarPorra() {
+  const [lista, ranking] = await Promise.all([
+    supabase.rpc("porra_lista", { p_device: idDispositivo() }),
+    supabase.rpc("porra_ranking")
+  ]);
+
+  if (lista.error || ranking.error) {
+    console.error("Error cargando la porra:", lista.error || ranking.error);
+    return false;
+  }
+
+  porraFilas = lista.data || [];
+  porraRanking = ranking.data || [];
+  return true;
+}
+
+function mensajeErrorPorra(error) {
+  const m = (error && error.message) || "";
+  if (/Alias ocupado/i.test(m)) return "Ese alias ya está en uso";
+  if (/Alias no válido/i.test(m)) return "Usa de 3 a 16 letras, números o _";
+  if (/cerrados/i.test(m)) return "Los pronósticos de este partido ya están cerrados";
+  if (/PIN/i.test(m) || (error && error.code === "42501")) { pinAdmin = null; return "PIN de administrador no válido"; }
+  return "No se ha podido guardar el pronóstico";
+}
+
+function tarjetaPorra(fila) {
+  const p = partidos.find(x => Number(x.id) === Number(fila.partido_id));
+  if (!p) return "";
+
+  const local = equipos.find(e => e.id === p.local_id);
+  const visit = equipos.find(e => e.id === p.visitante_id);
+  const clubL = clubes.find(c => c.id === local?.club_id);
+  const clubV = clubes.find(c => c.id === visit?.club_id);
+  const escudo = c => c?.escudo
+    ? `<img src="${escaparHtml(c.escudo)}" class="pc-escudo" alt="" loading="lazy" decoding="async">`
+    : `<span class="pc-escudo pc-escudo-vacio"></span>`;
+
+  const abierto = porraAbierto(p);
+  const fin = p.estado === "finalizado";
+  const tengo = fila.mi_local !== null && fila.mi_local !== undefined;
+  const b = porraBorrador[p.id] || (porraBorrador[p.id] = { l: tengo ? fila.mi_local : 20, v: tengo ? fila.mi_visit : 20 });
+
+  const paso = (lado, valor) => `
+    <div class="po-paso">
+      <button type="button" aria-label="Quitar un gol" onclick="porraPaso(${Number(p.id)}, '${lado}', -1)">${ico("menos", 18)}</button>
+      <output id="po-${lado}-${Number(p.id)}">${valor}</output>
+      <button type="button" aria-label="Añadir un gol" onclick="porraPaso(${Number(p.id)}, '${lado}', 1)">${ico("mas", 18)}</button>
+    </div>`;
+
+  let cuerpo = "";
+  if (abierto) {
+    cuerpo = porraAlias ? `
+      <p class="po-pregunta">¿Cuál crees que será el resultado final?</p>
+      <div class="po-marcador">${paso("l", b.l)}<span class="po-guion">–</span>${paso("v", b.v)}</div>
+      <button type="button" class="po-guardar" onclick="porraGuardar(${Number(p.id)})">${tengo ? "Actualizar mi pronóstico" : "Guardar mi pronóstico"}</button>
+      ${tengo ? `<p class="po-hecho">${ico("check", 14)}Pronóstico guardado: ${fila.mi_local} – ${fila.mi_visit}</p>` : ""}`
+      : `<p class="po-pregunta">Elige un alias para poder pronosticar.</p>`;
+  } else {
+    const puntos = fila.puntos;
+    cuerpo = `
+      ${fin ? `<div class="po-real">Resultado: <b>${p.goles_local} – ${p.goles_visitante}</b></div>` : `<div class="po-real">Pronósticos cerrados</div>`}
+      <div class="po-mio ${tengo ? "" : "vacio"}">
+        ${tengo ? `Tu pronóstico: <b>${fila.mi_local} – ${fila.mi_visit}</b>` : "No pronosticaste este partido"}
+        ${tengo && puntos !== null && puntos !== undefined ? `<span class="po-pts p${puntos}">+${puntos} pts</span>` : ""}
+      </div>`;
+  }
+
+  const total = Number(fila.n_total) || 0;
+  const tendencia = (!abierto && total > 0) ? (() => {
+    const pc = n => Math.round((Number(n) / total) * 100);
+    return `
+      <div class="po-tendencia" aria-label="Tendencia de los pronósticos">
+        <div class="po-barra"><i class="l" style="width:${pc(fila.n_local)}%"></i><i class="e" style="width:${pc(fila.n_empate)}%"></i><i class="v" style="width:${pc(fila.n_visit)}%"></i></div>
+        <div class="po-leyenda"><span>${pc(fila.n_local)}% local</span><span>${pc(fila.n_empate)}% empate</span><span>${pc(fila.n_visit)}% visitante</span></div>
+      </div>`;
+  })() : "";
+
+  return `
+    <article class="po-card ${abierto ? "abierta" : "cerrada"}">
+      <div class="po-cab">
+        <span>${textoFecha(p.fecha)} · ${formatearHora(p.hora)}</span>
+        <span class="po-cat">${p.categoria} · ${p.genero}</span>
+      </div>
+      <div class="pc-duelo">
+        <div class="pc-equipo">${escudo(clubL)}<span class="pc-nombre">${local?.nombre || "-"}</span></div>
+        <div class="pc-centro"><span class="pc-vs">VS</span></div>
+        <div class="pc-equipo">${escudo(clubV)}<span class="pc-nombre">${visit?.nombre || "-"}</span></div>
+      </div>
+      ${cuerpo}
+      ${tendencia}
+    </article>`;
+}
+
+function htmlPronosticarPorra() {
+  const filas = porraFilas
+    .map(f => ({ f, p: partidos.find(x => Number(x.id) === Number(f.partido_id)) }))
+    .filter(x => x.p)
+    .sort((a, b) => marcaTiempo(a.p) - marcaTiempo(b.p));
+
+  const abiertos = filas.filter(x => porraAbierto(x.p));
+  const cerrados = filas.filter(x => !porraAbierto(x.p)).reverse();
+
+  if (!filas.length) {
+    return `<div class="estado-vacio">${ico("trofeo", 36)}<strong>Todavía no hay partidos en la porra</strong><span>La organización irá añadiendo partidos para pronosticar.</span></div>`;
+  }
+
+  return `
+    ${abiertos.length ? `<h3 class="po-titulo">Pronósticos abiertos <span class="pt-cuenta">${abiertos.length}</span></h3>${abiertos.map(x => tarjetaPorra(x.f)).join("")}` : ""}
+    ${cerrados.length ? `<h3 class="po-titulo">Cerrados <span class="pt-cuenta">${cerrados.length}</span></h3>${cerrados.map(x => tarjetaPorra(x.f)).join("")}` : ""}`;
+}
+
+function htmlRankingPorra() {
+  if (!porraRanking.length) {
+    return `<div class="estado-vacio">${ico("trofeo", 36)}<strong>La clasificación aparecerá cuando termine el primer partido</strong></div>`;
+  }
+
+  const max = Math.max(1, ...porraRanking.map(r => Number(r.puntos)));
+  const yo = porraAlias.toLowerCase();
+
+  return `
+    <div class="po-ranking">
+      ${porraRanking.map(r => `
+        <div class="po-fila ${String(r.alias).toLowerCase() === yo ? "yo" : ""}">
+          <span class="po-pos ${Number(r.pos) <= 3 ? "top" : ""}">${Number(r.pos) === 1 ? ico("trofeo", 18) : Number(r.pos)}</span>
+          <div class="po-quien">
+            <strong>${escaparHtml(r.alias)}</strong>
+            <div class="po-pbarra"><i style="width:${Math.round((Number(r.puntos) / max) * 100)}%"></i></div>
+            <small>${r.exactos} ${Number(r.exactos) === 1 ? "exacto" : "exactos"} · ${r.jugados} ${Number(r.jugados) === 1 ? "partido" : "partidos"}</small>
+          </div>
+          <span class="po-total">${r.puntos} pts</span>
+          ${adminActivo ? `<button type="button" class="po-ocultar" aria-label="Ocultar jugador" onclick="porraOcultar('${escaparHtml(r.alias)}')">${ico("close", 14)}</button>` : ""}
+        </div>`).join("")}
+    </div>`;
+}
+
+function htmlReglasPorra() {
+  return `
+    <div class="po-reglas">
+      <h3 class="po-titulo">Sistema de puntuación</h3>
+      <div class="po-tabla">
+        ${REGLAS_PORRA.map(([txt, pts]) => `<div><span>${txt}</span><b class="p${pts}">${pts}</b></div>`).join("")}
+      </div>
+      <p>Los puntos no se acumulan por varios criterios: se aplica únicamente la puntuación más alta que corresponda.</p>
+      <ul>
+        <li>Participación gratuita, sin apuestas ni premios en dinero.</li>
+        <li>Un pronóstico por persona y partido, que puedes cambiar hasta que empiece.</li>
+        <li>Cuenta el resultado final del partido.</li>
+        <li>La clasificación es pública y solo muestra alias: no uses tu nombre completo.</li>
+        <li>En caso de empate a puntos gana quien tenga más resultados exactos.</li>
+      </ul>
+    </div>`;
+}
+
+function htmlGestionPorra() {
+  const activos = new Set(porraFilas.map(f => Number(f.partido_id)));
+  const lista = partidos
+    .filter(p => p.estado !== "finalizado")
+    .sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
+
+  if (!lista.length) return `<div class="estado-vacio">No hay partidos pendientes.</div>`;
+
+  return `
+    <p class="pab-intro">Marca los partidos que entran en la porra. Los pronósticos se cierran solos cuando empieza cada partido.</p>
+    <div class="po-gestion">
+      ${lista.map(p => {
+        const l = equipos.find(e => e.id === p.local_id);
+        const v = equipos.find(e => e.id === p.visitante_id);
+        const on = activos.has(Number(p.id));
+        return `
+          <label class="po-gest ${on ? "on" : ""}">
+            <input type="checkbox" ${on ? "checked" : ""} onchange="porraActivar(${Number(p.id)}, this.checked)">
+            <span><strong>${l?.nombre || "-"} · ${v?.nombre || "-"}</strong>
+            <small>${textoFecha(p.fecha)} · ${formatearHora(p.hora)} · ${p.categoria} ${p.genero}</small></span>
+          </label>`;
+      }).join("")}
+    </div>`;
+}
+
+function pintarPorra() {
+  if (vistaActual !== "porra") return;
+
+  const secciones = [
+    ["pronosticar", "Pronosticar"], ["ranking", "Clasificación"], ["reglas", "Reglas"],
+    ...(adminActivo ? [["gestion", "Gestionar"]] : [])
+  ];
+
+  const aliasHtml = porraAlias ? `
+    <div class="po-yo">${ico("estrella", 16)}<span>Jugando como <strong>${escaparHtml(porraAlias)}</strong></span>
+      <button type="button" class="po-cambiar" onclick="porraPedirAlias()">Cambiar</button></div>` : `
+    <div class="po-alias">
+      <strong>Elige tu alias</strong>
+      <p>Será tu nombre en la clasificación. Usa un apodo, no tu nombre completo.</p>
+      <div class="po-alias-fila">
+        <input id="po-alias" maxlength="16" autocomplete="off" autocapitalize="off" placeholder="Ej.: HandballFan">
+        <button type="button" onclick="porraRegistrar()">Entrar</button>
+      </div>
+    </div>`;
+
+  const cuerpo = porraSeccion === "ranking" ? htmlRankingPorra()
+    : porraSeccion === "reglas" ? htmlReglasPorra()
+    : porraSeccion === "gestion" && adminActivo ? htmlGestionPorra()
+    : htmlPronosticarPorra();
+
+  contenido.innerHTML = `
+    ${barraZona("porra")}
+    <h2>PH Porra</h2>
+    <p class="pab-intro">¿Serás el mejor pronosticador del torneo? Adivina los resultados y sube en la clasificación.</p>
+    ${aliasHtml}
+    <div class="hl-filtros" role="tablist" aria-label="Porra">
+      ${secciones.map(([id, nombre]) => `<button type="button" role="tab" class="hl-chip ${porraSeccion === id ? "activo" : ""}" aria-selected="${porraSeccion === id}" onclick="porraVer('${id}')">${nombre}</button>`).join("")}
+    </div>
+    ${cuerpo}`;
+}
+
+async function mostrarPorra() {
+  setNavActivoPorVista("porra");
+  registrarNavegacion("porra");
+
+  contenido.innerHTML = `${barraZona("porra")}<h2>PH Porra</h2><div class="estado-vacio">Cargando…</div>`;
+
+  const ok = await cargarPorra();
+  if (vistaActual !== "porra") return;
+
+  if (!ok) {
+    contenido.innerHTML = `${barraZona("porra")}<h2>PH Porra</h2>
+      <div class="estado-vacio"><strong>No se han podido cargar los datos</strong>
+      <button type="button" class="hl-subir" onclick="mostrarPorra()">Reintentar</button></div>`;
+    return;
+  }
+
+  pintarPorra();
+}
+
+function porraVer(id) { porraSeccion = id; pintarPorra(); }
+
+function porraPaso(id, lado, delta) {
+  const b = porraBorrador[id];
+  if (!b) return;
+  b[lado] = Math.max(0, Math.min(99, b[lado] + delta));
+  const el = document.getElementById(`po-${lado}-${id}`);
+  if (el) el.textContent = b[lado];
+}
+
+async function porraRegistrar() {
+  const alias = (document.getElementById("po-alias")?.value || "").trim();
+  const { data, error } = await supabase.rpc("porra_registrar", { p_device: idDispositivo(), p_alias: alias });
+  if (error) { avisar(mensajeErrorPorra(error), "error"); return; }
+  porraAlias = data || alias;
+  lsSet("porra_alias", porraAlias);
+  avisar("¡Listo! Ya puedes pronosticar");
+  pintarPorra();
+}
+
+function porraPedirAlias() {
+  const alias = prompt("Escribe tu nuevo alias:", porraAlias);
+  if (!alias) return;
+  supabase.rpc("porra_registrar", { p_device: idDispositivo(), p_alias: alias.trim() }).then(({ data, error }) => {
+    if (error) { avisar(mensajeErrorPorra(error), "error"); return; }
+    porraAlias = data || alias.trim();
+    lsSet("porra_alias", porraAlias);
+    cargarPorra().then(pintarPorra);
+  });
+}
+
+async function porraGuardar(id) {
+  const b = porraBorrador[id];
+  if (!b) return;
+
+  const { error } = await supabase.rpc("porra_pronosticar", {
+    p_device: idDispositivo(), p_partido: id, p_local: b.l, p_visit: b.v
+  });
+
+  if (error) {
+    console.error("Error guardando pronóstico:", error);
+    avisar(mensajeErrorPorra(error), "error");
+    return;
+  }
+
+  const fila = porraFilas.find(f => Number(f.partido_id) === Number(id));
+  if (fila) { fila.mi_local = b.l; fila.mi_visit = b.v; }
+  avisar("Pronóstico guardado");
+  pintarPorra();
+}
+
+async function porraActivar(id, activo) {
+  if (!adminActivo) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) { await cargarPorra(); pintarPorra(); return; }
+
+  const { error } = await supabase.rpc("porra_activar", { p_pin: pin, p_partido: id, p_activo: activo });
+  if (error) { avisar(mensajeErrorPorra(error), "error"); }
+  await cargarPorra();
+  pintarPorra();
+}
+
+async function porraOcultar(alias) {
+  if (!adminActivo) return;
+  if (!confirm(`¿Ocultar a "${alias}" de la clasificación?`)) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { error } = await supabase.rpc("porra_moderar", { p_pin: pin, p_alias: alias, p_oculto: true });
+  if (error) { avisar(mensajeErrorPorra(error), "error"); return; }
+  await cargarPorra();
+  pintarPorra();
+}
+
+window.mostrarZona = mostrarZona;
+window.mostrarSeccionZona = mostrarSeccionZona;
+window.mostrarPorra = mostrarPorra;
+window.porraVer = porraVer;
+window.porraPaso = porraPaso;
+window.porraRegistrar = porraRegistrar;
+window.porraPedirAlias = porraPedirAlias;
+window.porraGuardar = porraGuardar;
+window.porraActivar = porraActivar;
+window.porraOcultar = porraOcultar;
 
 /* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */
 

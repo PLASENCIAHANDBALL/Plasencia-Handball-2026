@@ -394,7 +394,7 @@ export const DE = {
   "Descanso": "Pause",
   "Próximo": "Demnächst",
   "Sin partidos hoy": "Heute keine Spiele",
-  "Mapa esquemático de posiciones. Pulsa \"Cómo llegar\" para la ubicación real.": "Schematische Karte der Positionen. Tippe auf „Anfahrt“ für den echten Standort.",
+  "Desliza el mapa para ver toda la ciudad. Pulsa \"Cómo llegar\" para la ruta.": "Wische über die Karte, um die ganze Stadt zu sehen. Tippe auf „Anfahrt“ für die Route.",
   "Seleccionar pabellón": "Halle auswählen",
   "Ahora": "Jetzt",
   "Próximo encuentro": "Nächstes Spiel",

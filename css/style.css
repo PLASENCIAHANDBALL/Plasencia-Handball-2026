@@ -4189,15 +4189,16 @@ body.splash-activo .avisos-fab { display: none; }
 .rd-live{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:rgba(91,209,106,.14);color:#5bd16a;font-size:12px;font-weight:800}
 .rd-live i{width:8px;height:8px;border-radius:50%;background:#5bd16a;animation:rdpulso 1.6s infinite}
 @keyframes rdpulso{50%{opacity:.25}}
-.rd-mapa{position:relative;width:100%;aspect-ratio:1.25/1;background:#101f31;border-radius:16px;overflow:hidden}
+.rd-mapa-scroll{overflow-x:auto;border-radius:16px;-webkit-overflow-scrolling:touch}
+.rd-mapa{position:relative;width:max(100%,620px);aspect-ratio:1100/650;background:#101f31 url('../img/radar-mapa.webp') center/cover no-repeat}
 .rd-calles{position:absolute;inset:0;width:100%;height:100%}
 .rd-calles polygon{fill:#1a2e45;stroke:#2f5069;stroke-width:.6}
 .rd-calles path{fill:none;stroke:#2f5069;stroke-width:1.1;stroke-linecap:round}
 .rd-punto{position:absolute;transform:translate(-50%,-50%);width:auto;margin:0;padding:0;min-height:0;background:transparent;box-shadow:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff;cursor:pointer}
-.rd-punto i{display:block;width:22px;height:22px;border-radius:50%;background:var(--c);border:2px solid #fff;box-shadow:0 0 0 7px color-mix(in srgb,var(--c) 28%,transparent)}
+.rd-punto i{display:block;width:20px;height:20px;border-radius:50%;background:var(--c);border:2px solid #fff;box-shadow:0 0 0 7px color-mix(in srgb,var(--c) 28%,transparent)}
 .rd-punto.en_juego i{animation:rdhalo 1.8s infinite}
 @keyframes rdhalo{50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--c) 10%,transparent)}}
-.rd-punto span{font-size:11px;font-weight:700;text-shadow:0 1px 3px #000;white-space:nowrap}
+.rd-punto span{font-size:12px;font-weight:800;text-shadow:0 0 3px #000,0 1px 4px #000;white-space:nowrap}
 .rd-punto.sel i{transform:scale(1.25)}
 .rd-nota{margin:8px 0;font-size:12px;color:#9fb3c8}
 .rd-leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#c5d4e4;margin-bottom:12px}

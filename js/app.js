@@ -4198,15 +4198,15 @@ function mostrarPabellones() {
 
 /* ================== PH RADAR (PABELLONES EN TIEMPO REAL) ================== */
 
-// Posiciones esquemáticas (en % del recuadro); no son coordenadas reales
+// Posiciones sobre la foto aérea de Plasencia (en % de la imagen)
 const POSICIONES_RADAR = {
-  "Municipal":     [24.6, 26.6],
-  "Escuela":       [70.5, 21],
-  "San Miguel":    [83, 41],
-  "Universitario": [57, 47],
-  "Miralvalle":    [17.8, 62.5],
-  "Multipista":    [42, 80],
-  "San Calixto":   [77, 71]
+  "Municipal":     [47.5, 15.5],
+  "San Calixto":   [59.2, 31.2],
+  "Multipista":    [87.0, 28.8],
+  "Escuela":       [69.5, 37.5],
+  "Miralvalle":    [68.0, 59.7],
+  "Universitario": [56.4, 64.8],
+  "San Miguel":    [9.6, 81.2]
 };
 
 const ESTADOS_RADAR = {
@@ -4221,6 +4221,7 @@ let radarSeleccion = "Municipal";
 let radarCategoria = "todas";
 let radarGenero = "todos";
 let radarTimer = null;
+let radarScroll = null;
 
 function barraPabellones(actual) {
   const items = [["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"], ["radar", "PH Radar", "diana", "mostrarRadar()"]];
@@ -4296,6 +4297,8 @@ function fichaRadar(pabellon) {
 
 function pintarRadar() {
   if (vistaActual !== "radar") return;
+  const viejo = document.getElementById("rd-scroll");
+  if (viejo) radarScroll = viejo.scrollLeft;
 
   const estados = Object.fromEntries(LISTA_PABELLONES.map(p => [p, estadoRadar(partidosRadarDe(p))]));
   const cats = [["todas", "Todas"], ["Infantil", "Infantil"], ["Cadete", "Cadete"], ["Juvenil", "Juvenil"]];
@@ -4310,19 +4313,15 @@ function pintarRadar() {
         <div><h2>PH RADAR</h2><p>El torneo en tiempo real</p></div>
         <span class="rd-live"><i></i>LIVE</span>
       </div>
-      <div class="rd-mapa" role="group" aria-label="Mapa de pabellones">
-        <svg class="rd-calles" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <polygon points="12,62 22,45 38,38 58,40 62,30 74,22 86,36 92,38 86,60 82,82 60,86 40,82 25,80"/>
-          <path d="M22 18L34 92M62 10L72 94M10 52L96 56M12 22L60 40L90 66M8 90L56 52L92 36"/>
-        </svg>
+      <div class="rd-mapa-scroll" id="rd-scroll"><div class="rd-mapa" role="group" aria-label="Mapa de pabellones">
         ${LISTA_PABELLONES.map(p => {
           const [x, y] = POSICIONES_RADAR[p] || [50, 50];
           const e = ESTADOS_RADAR[estados[p]];
           return `<button type="button" class="rd-punto ${radarSeleccion === p ? "sel" : ""} ${estados[p]}" style="left:${x}%;top:${y}%;--c:${e.color}"
             aria-label="${p}: ${e.texto}" aria-pressed="${radarSeleccion === p}" onclick="radarElegir('${p}')"><i></i><span>${p}</span></button>`;
         }).join("")}
-      </div>
-      <p class="rd-nota">Mapa esquemático de posiciones. Pulsa "Cómo llegar" para la ubicación real.</p>
+      </div></div>
+      <p class="rd-nota">Desliza el mapa para ver toda la ciudad. Pulsa "Cómo llegar" para la ruta.</p>
       <div class="rd-leyenda">${["en_juego", "descanso", "proximo", "finalizado"].map(k => `<span><i style="background:${ESTADOS_RADAR[k].color}"></i>${ESTADOS_RADAR[k].texto}</span>`).join("")}</div>
       <div class="rd-filtros"><div class="hl-filtros" role="group" aria-label="Categoría">${chips(cats, radarCategoria, "radarCategoriaElegir")}</div>
       <div class="hl-filtros" role="group" aria-label="Género">${chips(gens, radarGenero, "radarGeneroElegir")}</div></div>
@@ -4335,6 +4334,11 @@ function pintarRadar() {
       </div>
       ${fichaRadar(radarSeleccion)}
     </div>`;
+
+  // conserva el desplazamiento del mapa al refrescar; la primera vez lo centra
+  const sc = document.getElementById("rd-scroll");
+  if (sc) sc.scrollLeft = radarScroll !== null ? radarScroll : (sc.scrollWidth - sc.clientWidth) * 0.45;
+  if (sc) sc.addEventListener("scroll", () => { radarScroll = sc.scrollLeft; }, { passive: true });
 }
 
 function mostrarRadar() {

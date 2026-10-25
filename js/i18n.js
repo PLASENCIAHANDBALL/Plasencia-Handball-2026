@@ -469,7 +469,7 @@ const TEXTOS = {
   "Descanso": ["Break", "Intervalo", "Pause"],
   "Próximo": ["Upcoming", "Próximo", "À venir"],
   "Sin partidos hoy": ["No matches today", "Sem jogos hoje", "Aucun match aujourd'hui"],
-  "Mapa esquemático de posiciones. Pulsa \"Cómo llegar\" para la ubicación real.": ["Schematic map of positions. Tap \"How to get there\" for the real location.", "Mapa esquemático das posições. Toca em \"Como chegar\" para a localização real.", "Plan schématique des positions. Touchez « Itinéraire » pour l'emplacement réel."],
+  "Desliza el mapa para ver toda la ciudad. Pulsa \"Cómo llegar\" para la ruta.": ["Swipe the map to see the whole city. Tap \"How to get there\" for directions.", "Desliza o mapa para ver toda a cidade. Toca em \"Como chegar\" para o caminho.", "Faites glisser la carte pour voir toute la ville. Touchez « Itinéraire » pour le trajet."],
   "Seleccionar pabellón": ["Select venue", "Selecionar pavilhão", "Choisir un gymnase"],
   "Ahora": ["Now", "Agora", "En cours"],
   "Próximo encuentro": ["Next match", "Próximo jogo", "Prochain match"],

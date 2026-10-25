@@ -464,6 +464,21 @@ const TEXTOS = {
   "Marca los partidos que entran en la porra. Los pronósticos se cierran solos cuando empieza cada partido.": ["Select the matches included in the predictor. Predictions close automatically when each match starts.", "Marca os jogos que entram no bolão. Os palpites fecham sozinhos quando cada jogo começa.", "Cochez les matchs inclus. Les pronostics se ferment automatiquement au début de chaque match."],
   "No hay partidos pendientes.": ["There are no pending matches.", "Não há jogos pendentes.", "Aucun match en attente."],
   "exacto": ["exact", "exato", "exact"],
+  "PH Radar": ["PH Radar", "PH Radar", "PH Radar"],
+  "El torneo en tiempo real": ["The tournament in real time", "O torneio em tempo real", "Le tournoi en temps réel"],
+  "Descanso": ["Break", "Intervalo", "Pause"],
+  "Próximo": ["Upcoming", "Próximo", "À venir"],
+  "Sin partidos hoy": ["No matches today", "Sem jogos hoje", "Aucun match aujourd'hui"],
+  "Mapa esquemático de posiciones. Pulsa \"Cómo llegar\" para la ubicación real.": ["Schematic map of positions. Tap \"How to get there\" for the real location.", "Mapa esquemático das posições. Toca em \"Como chegar\" para a localização real.", "Plan schématique des positions. Touchez « Itinéraire » pour l'emplacement réel."],
+  "Seleccionar pabellón": ["Select venue", "Selecionar pavilhão", "Choisir un gymnase"],
+  "Ahora": ["Now", "Agora", "En cours"],
+  "Próximo encuentro": ["Next match", "Próximo jogo", "Prochain match"],
+  "Último resultado": ["Latest result", "Último resultado", "Dernier résultat"],
+  "No hay partidos hoy con estos filtros.": ["No matches today with these filters.", "Não há jogos hoje com estes filtros.", "Aucun match aujourd'hui avec ces filtres."],
+  "Cómo llegar": ["How to get there", "Como chegar", "Itinéraire"],
+  "Ver programación": ["View schedule", "Ver programação", "Voir le programme"],
+  "Todas": ["All", "Todas", "Toutes"],
+  "Mapa de pabellones": ["Venue map", "Mapa de pavilhões", "Plan des gymnases"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

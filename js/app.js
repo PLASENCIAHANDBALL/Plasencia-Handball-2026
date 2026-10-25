@@ -346,6 +346,7 @@ function restaurarVista(estado) {
     case "tienda":      mostrarTienda(); break;
     case "highlights":  mostrarHighlights(); break;
     case "porra":       mostrarPorra(); break;
+    case "radar":       mostrarRadar(); break;
     case "zona":        mostrarZona(); break;
     case "avisos":      mostrarAvisos(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
@@ -429,6 +430,17 @@ function formatearHora(hora24) {
 
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
+
+// 🔹 enlaces Google Maps por pabellón
+const UBICACIONES_PABELLONES = {
+  "Municipal": "https://maps.app.goo.gl/gJ6VNo8LdWAxaFQY6?g_st=ic",
+  "Escuela": "https://maps.app.goo.gl/3M4jN1N14ffH8pKN7?g_st=ic",
+  "Universitario": "https://maps.app.goo.gl/bG1utwiJEu78Efxm7?g_st=ic",
+  "Miralvalle": "https://maps.app.goo.gl/JxhyUgo4sH8FadMEA?g_st=ic",
+  "San Calixto": "https://maps.app.goo.gl/yjwJzYRLtLHZ9xxh7?g_st=ic",
+  "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic",
+  "San Miguel": "https://maps.app.goo.gl/Z3c3yBWxjLXsSE3M6?g_st=ic"
+};
 
 const LISTA_PABELLONES = [
   "Municipal",
@@ -948,6 +960,7 @@ const VISTAS_INICIALES = {
   tienda: () => mostrarTienda(),
   highlights: () => mostrarHighlights(),
   porra: () => mostrarPorra(),
+  radar: () => mostrarRadar(),
   zona: () => mostrarZona(),
   avisos: () => mostrarAvisos()
 };
@@ -1125,6 +1138,7 @@ function setNavActivoPorVista(vista) {
     .forEach(b => b.classList.remove('activo'));
 
   if (["tienda", "highlights", "porra"].includes(vista)) vista = "zona";
+  if (vista === "radar") vista = "pabellones";
   const btn = document.querySelector(`.nav-principal button[data-view="${vista}"]`);
   if (btn) btn.classList.add('activo');
 }
@@ -4154,6 +4168,7 @@ function mostrarPabellones() {
   const total = partidos.length;
 
   document.getElementById("contenido").innerHTML = `
+    ${barraPabellones("pabellones")}
     <h2>Pabellones</h2>
     <p class="pab-intro">${pabellones.length} pabellones · ${total} partidos. Toca uno para ver su programación.</p>
     <div class="pab-grid">
@@ -4179,6 +4194,171 @@ function mostrarPabellones() {
   `;
 }
 
+
+
+/* ================== PH RADAR (PABELLONES EN TIEMPO REAL) ================== */
+
+// Posiciones esquemáticas (en % del recuadro); no son coordenadas reales
+const POSICIONES_RADAR = {
+  "Municipal":     [24.6, 26.6],
+  "Escuela":       [70.5, 21],
+  "San Miguel":    [83, 41],
+  "Universitario": [57, 47],
+  "Miralvalle":    [17.8, 62.5],
+  "Multipista":    [42, 80],
+  "San Calixto":   [77, 71]
+};
+
+const ESTADOS_RADAR = {
+  en_juego:   { texto: "En juego",        color: "#5bd16a" },
+  descanso:   { texto: "Descanso",        color: "#f0a53a" },
+  proximo:    { texto: "Próximo",         color: "#5bb8f0" },
+  finalizado: { texto: "Finalizado",      color: "#98a2b8" },
+  sin:        { texto: "Sin partidos hoy", color: "#5d6a82" }
+};
+
+let radarSeleccion = "Municipal";
+let radarCategoria = "todas";
+let radarGenero = "todos";
+let radarTimer = null;
+
+function barraPabellones(actual) {
+  const items = [["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"], ["radar", "PH Radar", "diana", "mostrarRadar()"]];
+  return `
+    <div class="zona-barra" role="tablist" aria-label="Pabellones">
+      ${items.map(([id, nombre, icono, fn]) => `
+        <button type="button" role="tab" class="${id === actual ? "activo" : ""}" aria-selected="${id === actual}" onclick="${fn}">${ico(icono, 18)}<span>${nombre}</span></button>`).join("")}
+    </div>`;
+}
+
+function partidosRadarDe(pabellon) {
+  const hoy = hoyISO();
+  return partidos
+    .filter(p => p.pabellon === pabellon && p.fecha === hoy)
+    .filter(p => radarCategoria === "todas" || p.categoria === radarCategoria)
+    .filter(p => radarGenero === "todos" || p.genero === radarGenero)
+    .sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
+}
+
+function estadoRadar(lista) {
+  if (!lista.length) return "sin";
+  const estados = lista.map(calcularEstadoPartido);
+  if (estados.includes("en_juego")) return "en_juego";
+  const hayPend = estados.includes("pendiente");
+  const hayFin = estados.includes("finalizado");
+  if (hayPend) return hayFin ? "descanso" : "proximo";
+  return "finalizado";
+}
+
+function nombreEquipoRadar(id) {
+  return equipos.find(e => e.id === id)?.nombre || "-";
+}
+
+function lineaPartidoRadar(p, conMarcador) {
+  const marcador = conMarcador
+    ? `<b class="rd-marc">${p.goles_local ?? 0} – ${p.goles_visitante ?? 0}</b>`
+    : `<b class="rd-marc rd-hora">${formatearHora(p.hora)}</b>`;
+  return `
+    <div class="rd-partido">
+      <span class="rd-eq">${nombreEquipoRadar(p.local_id)}</span>${marcador}<span class="rd-eq der">${nombreEquipoRadar(p.visitante_id)}</span>
+      <small>${p.categoria} · ${p.genero}</small>
+    </div>`;
+}
+
+function fichaRadar(pabellon) {
+  const lista = partidosRadarDe(pabellon);
+  const clave = estadoRadar(lista);
+  const est = ESTADOS_RADAR[clave];
+  const enJuego = lista.filter(p => calcularEstadoPartido(p) === "en_juego");
+  const proximos = lista.filter(p => calcularEstadoPartido(p) === "pendiente");
+  const ultimos = lista.filter(p => calcularEstadoPartido(p) === "finalizado");
+
+  let cuerpo = "";
+  if (enJuego.length) cuerpo += `<h4>Ahora</h4>${enJuego.map(p => lineaPartidoRadar(p, true)).join("")}`;
+  if (proximos.length) cuerpo += `<h4>Próximo encuentro</h4>${lineaPartidoRadar(proximos[0], false)}`;
+  if (!enJuego.length && ultimos.length) cuerpo += `<h4>Último resultado</h4>${lineaPartidoRadar(ultimos[ultimos.length - 1], true)}`;
+  if (!cuerpo) cuerpo = `<p class="rd-nada">No hay partidos hoy con estos filtros.</p>`;
+
+  const directo = DIRECTOS_PABELLONES[pabellon] && enJuego.length
+    ? `<a class="rd-enlace" href="${DIRECTOS_PABELLONES[pabellon]}" target="_blank" rel="noopener noreferrer">Ver directo</a>` : "";
+
+  return `
+    <section class="rd-ficha">
+      <div class="rd-ficha-cab"><h3>${pabellon}</h3><span class="rd-pill" style="--c:${est.color}">${est.texto}</span></div>
+      ${cuerpo}
+      <div class="rd-acciones">
+        <a class="rd-enlace" href="${UBICACIONES_PABELLONES[pabellon] || "#"}" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+        <button type="button" class="rd-enlace" onclick="mostrarPartidosPorPabellon('${pabellon}')">Ver programación</button>
+        ${directo}
+      </div>
+    </section>`;
+}
+
+function pintarRadar() {
+  if (vistaActual !== "radar") return;
+
+  const estados = Object.fromEntries(LISTA_PABELLONES.map(p => [p, estadoRadar(partidosRadarDe(p))]));
+  const cats = [["todas", "Todas"], ["Infantil", "Infantil"], ["Cadete", "Cadete"], ["Juvenil", "Juvenil"]];
+  const gens = [["todos", "Todos"], ["Masculino", "Masculino"], ["Femenino", "Femenino"]];
+  const chips = (lista, actual, fn) => lista.map(([id, nombre]) =>
+    `<button type="button" class="hl-chip ${actual === id ? "activo" : ""}" aria-pressed="${actual === id}" onclick="${fn}('${id}')">${nombre}</button>`).join("");
+
+  contenido.innerHTML = `
+    ${barraPabellones("radar")}
+    <div class="rd-panel">
+      <div class="rd-cab">
+        <div><h2>PH RADAR</h2><p>El torneo en tiempo real</p></div>
+        <span class="rd-live"><i></i>LIVE</span>
+      </div>
+      <div class="rd-mapa" role="group" aria-label="Mapa de pabellones">
+        <svg class="rd-calles" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <polygon points="12,62 22,45 38,38 58,40 62,30 74,22 86,36 92,38 86,60 82,82 60,86 40,82 25,80"/>
+          <path d="M22 18L34 92M62 10L72 94M10 52L96 56M12 22L60 40L90 66M8 90L56 52L92 36"/>
+        </svg>
+        ${LISTA_PABELLONES.map(p => {
+          const [x, y] = POSICIONES_RADAR[p] || [50, 50];
+          const e = ESTADOS_RADAR[estados[p]];
+          return `<button type="button" class="rd-punto ${radarSeleccion === p ? "sel" : ""} ${estados[p]}" style="left:${x}%;top:${y}%;--c:${e.color}"
+            aria-label="${p}: ${e.texto}" aria-pressed="${radarSeleccion === p}" onclick="radarElegir('${p}')"><i></i><span>${p}</span></button>`;
+        }).join("")}
+      </div>
+      <p class="rd-nota">Mapa esquemático de posiciones. Pulsa "Cómo llegar" para la ubicación real.</p>
+      <div class="rd-leyenda">${["en_juego", "descanso", "proximo", "finalizado"].map(k => `<span><i style="background:${ESTADOS_RADAR[k].color}"></i>${ESTADOS_RADAR[k].texto}</span>`).join("")}</div>
+      <div class="rd-filtros"><div class="hl-filtros" role="group" aria-label="Categoría">${chips(cats, radarCategoria, "radarCategoriaElegir")}</div>
+      <div class="hl-filtros" role="group" aria-label="Género">${chips(gens, radarGenero, "radarGeneroElegir")}</div></div>
+      <h3 class="rd-sub">Seleccionar pabellón</h3>
+      <div class="rd-lista">
+        ${LISTA_PABELLONES.map(p => `
+          <button type="button" class="rd-item ${radarSeleccion === p ? "sel" : ""}" onclick="radarElegir('${p}')">
+            <strong><i style="background:${ESTADOS_RADAR[estados[p]].color}"></i>${p}</strong><small>${ESTADOS_RADAR[estados[p]].texto}</small>
+          </button>`).join("")}
+      </div>
+      ${fichaRadar(radarSeleccion)}
+    </div>`;
+}
+
+function mostrarRadar() {
+  setNavActivoPorVista("radar");
+  registrarNavegacion("radar");
+  if (!LISTA_PABELLONES.includes(radarSeleccion)) radarSeleccion = LISTA_PABELLONES[0];
+  pintarRadar();
+
+  // se refresca solo mientras se ve el radar
+  clearInterval(radarTimer);
+  radarTimer = setInterval(() => {
+    if (vistaActual !== "radar") { clearInterval(radarTimer); return; }
+    pintarRadar();
+  }, 30000);
+}
+
+function radarElegir(p) { radarSeleccion = p; pintarRadar(); }
+function radarCategoriaElegir(c) { radarCategoria = c; pintarRadar(); }
+function radarGeneroElegir(g) { radarGenero = g; pintarRadar(); }
+
+window.mostrarRadar = mostrarRadar;
+window.radarElegir = radarElegir;
+window.radarCategoriaElegir = radarCategoriaElegir;
+window.radarGeneroElegir = radarGeneroElegir;
 
 /* ================== TIENDA (SUPABASE) ================== */
 
@@ -5746,16 +5926,6 @@ const hayDirecto = partidosPabellon.some(
   p => calcularEstadoPartido(p) === "en_juego"
 );
 
-// 🔹 enlaces Google Maps por pabellón
-const UBICACIONES_PABELLONES = {
-  "Municipal": "https://maps.app.goo.gl/gJ6VNo8LdWAxaFQY6?g_st=ic",
-  "Escuela": "https://maps.app.goo.gl/3M4jN1N14ffH8pKN7?g_st=ic",
-  "Universitario": "https://maps.app.goo.gl/bG1utwiJEu78Efxm7?g_st=ic",
-  "Miralvalle": "https://maps.app.goo.gl/JxhyUgo4sH8FadMEA?g_st=ic",
-  "San Calixto": "https://maps.app.goo.gl/yjwJzYRLtLHZ9xxh7?g_st=ic",
-  "Multipista": "https://maps.app.goo.gl/NbHNQyXEhrVL379m9?g_st=ic",
-  "San Miguel": "https://maps.app.goo.gl/Z3c3yBWxjLXsSE3M6?g_st=ic"
-};
 
 let html = `
   <h2>${pabellon}</h2>

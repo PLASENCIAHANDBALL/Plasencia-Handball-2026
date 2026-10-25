@@ -4180,3 +4180,49 @@ body.splash-activo .hub { display: none !important; }
 
 .avisos-fab { position: absolute; top: 10px; left: 12px; z-index: 30; box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; min-height: 40px; max-height: 40px; aspect-ratio: 1 / 1; padding: 0; margin: 0; border-radius: 50%; border: 2px solid #fff; background: #fff; color: var(--azul-fuerte); box-shadow: 0 2px 10px rgba(10, 58, 128, .28); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 body.splash-activo .avisos-fab { display: none; }
+
+/* ================== PH RADAR ================== */
+.rd-panel{background:#0b1726;color:#e8f1fb;border-radius:22px;padding:16px;margin-bottom:8px}
+.rd-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+.rd-cab h2{color:#6fdcf5;margin:0;font-size:24px}
+.rd-cab p{margin:2px 0 0;color:#9fb3c8;font-size:13px}
+.rd-live{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:rgba(91,209,106,.14);color:#5bd16a;font-size:12px;font-weight:800}
+.rd-live i{width:8px;height:8px;border-radius:50%;background:#5bd16a;animation:rdpulso 1.6s infinite}
+@keyframes rdpulso{50%{opacity:.25}}
+.rd-mapa{position:relative;width:100%;aspect-ratio:1.25/1;background:#101f31;border-radius:16px;overflow:hidden}
+.rd-calles{position:absolute;inset:0;width:100%;height:100%}
+.rd-calles polygon{fill:#1a2e45;stroke:#2f5069;stroke-width:.6}
+.rd-calles path{fill:none;stroke:#2f5069;stroke-width:1.1;stroke-linecap:round}
+.rd-punto{position:absolute;transform:translate(-50%,-50%);width:auto;margin:0;padding:0;min-height:0;background:transparent;box-shadow:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff;cursor:pointer}
+.rd-punto i{display:block;width:22px;height:22px;border-radius:50%;background:var(--c);border:2px solid #fff;box-shadow:0 0 0 7px color-mix(in srgb,var(--c) 28%,transparent)}
+.rd-punto.en_juego i{animation:rdhalo 1.8s infinite}
+@keyframes rdhalo{50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--c) 10%,transparent)}}
+.rd-punto span{font-size:11px;font-weight:700;text-shadow:0 1px 3px #000;white-space:nowrap}
+.rd-punto.sel i{transform:scale(1.25)}
+.rd-nota{margin:8px 0;font-size:12px;color:#9fb3c8}
+.rd-leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#c5d4e4;margin-bottom:12px}
+.rd-leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.rd-filtros .hl-filtros{margin:0 0 8px}
+.rd-panel .hl-chip{background:#16293f;border-color:#27425d;color:#d8e6f4}
+.rd-panel .hl-chip.activo{background:#6fdcf5;color:#06223a;border-color:#6fdcf5}
+.rd-sub{margin:14px 0 8px;font-size:15px;color:#fff}
+.rd-lista{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rd-item{width:auto;margin:0;box-shadow:none;text-align:left;background:#16293f;border:1px solid #27425d;border-radius:14px;padding:10px 12px;color:#fff;min-height:0}
+.rd-item.sel{border-color:#6fdcf5;background:#1d3650}
+.rd-item strong{display:flex;align-items:center;gap:8px;font-size:14px}
+.rd-item strong i{width:9px;height:9px;border-radius:50%;flex:none}
+.rd-item small{color:#9fb3c8;font-size:12px}
+.rd-ficha{margin-top:14px;background:#16293f;border:1px solid #27425d;border-radius:16px;padding:14px}
+.rd-ficha-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rd-ficha h3{margin:0;font-size:20px;color:#fff}
+.rd-ficha h4{margin:12px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9fb3c8}
+.rd-pill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.rd-partido{display:grid;grid-template-columns:1fr auto 1fr;gap:4px 10px;align-items:center;font-size:14px;margin-bottom:6px}
+.rd-eq.der{text-align:right}
+.rd-marc{font-size:18px;color:#6fdcf5}
+.rd-hora{font-size:15px}
+.rd-partido small{grid-column:1/-1;color:#9fb3c8;font-size:12px}
+.rd-nada{color:#9fb3c8;font-size:14px;margin:10px 0 0}
+.rd-acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.rd-enlace{width:auto;margin:0;box-shadow:none;min-height:0;padding:9px 14px;border-radius:99px;background:#6fdcf5;color:#06223a;font-weight:700;font-size:13px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
+button.rd-enlace{background:transparent;color:#6fdcf5;border:1px solid #6fdcf5}

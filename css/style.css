@@ -4177,3 +4177,6 @@ body.splash-activo .hub { display: none !important; }
 .po-gest.on{border-color:var(--accent);background:var(--tile)}
 .po-gest input{width:20px;height:20px;flex:none}
 .po-gest small{display:block;color:var(--muted)}
+
+.avisos-fab { position: absolute; top: 10px; left: 12px; z-index: 30; box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; min-height: 40px; max-height: 40px; aspect-ratio: 1 / 1; padding: 0; margin: 0; border-radius: 50%; border: 2px solid #fff; background: #fff; color: var(--azul-fuerte); box-shadow: 0 2px 10px rgba(10, 58, 128, .28); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+body.splash-activo .avisos-fab { display: none; }

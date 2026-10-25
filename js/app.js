@@ -528,15 +528,6 @@ function mostrarHome() {
 
     <div id="bloque-instalar"></div>
 
-    <button type="button" class="tarjeta-avisos" onclick="mostrarAvisos()">
-      <span class="avisos-icono">${ico("campana", 24)}</span>
-      <span class="avisos-texto">
-        <strong>Avisos de partidos</strong>
-        <small>${textoEstadoAvisos()}</small>
-      </span>
-      ${ico("derecha", 20)}
-    </button>
-
     <h3 class="titulo-seccion">Fotos del torneo</h3>
     <div class="fotos-grid">
       <section class="galeria2027">

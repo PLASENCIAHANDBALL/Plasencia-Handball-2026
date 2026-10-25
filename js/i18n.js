@@ -526,7 +526,29 @@ const TEXTOS = {
   "Eliminar sorteo": ["Delete giveaway", "Eliminar sorteio", "Supprimer le tirage"],
   "Sorteo eliminado": ["Giveaway deleted", "Sorteio eliminado", "Tirage supprimé"],
   "¿Eliminar este sorteo? Dejará de verse en la app.": ["Delete this giveaway? It will no longer be shown in the app.", "Eliminar este sorteio? Deixará de aparecer na app.", "Supprimer ce tirage ? Il n'apparaîtra plus dans l'app."],
-  "¿Elegir otro ganador? El ganador actual quedará descartado.": ["Pick another winner? The current winner will be discarded.", "Escolher outro vencedor? O vencedor atual ficará descartado.", "Choisir un autre gagnant ? Le gagnant actuel sera écarté."]
+  "¿Elegir otro ganador? El ganador actual quedará descartado.": ["Pick another winner? The current winner will be discarded.", "Escolher outro vencedor? O vencedor atual ficará descartado.", "Choisir un autre gagnant ? Le gagnant actuel sera écarté."],
+  "Información del torneo": ["Tournament information", "Informação do torneio", "Informations du tournoi"],
+  "Añadir información": ["Add information", "Adicionar informação", "Ajouter une information"],
+  "Todavía no hay información publicada.": ["No information published yet.", "Ainda não há informação publicada.", "Aucune information publiée pour l'instant."],
+  "Información general": ["General information", "Informação geral", "Informations générales"],
+  "Autobuses": ["Buses", "Autocarros", "Bus"],
+  "Comida y cena": ["Lunch and dinner", "Almoço e jantar", "Déjeuner et dîner"],
+  "Aparcamiento": ["Parking", "Estacionamento", "Parking"],
+  "Horarios": ["Schedules", "Horários", "Horaires"],
+  "Aviso": ["Notice", "Aviso", "Avis"],
+  "Editar información": ["Edit information", "Editar informação", "Modifier l'information"],
+  "Nueva información": ["New information", "Nova informação", "Nouvelle information"],
+  "Tipo": ["Type", "Tipo", "Type"],
+  "Título": ["Title", "Título", "Titre"],
+  "Texto": ["Text", "Texto", "Texte"],
+  "Ej.: Autobuses a los pabellones": ["E.g.: Buses to the venues", "Ex.: Autocarros para os pavilhões", "Ex. : Bus vers les gymnases"],
+  "Destacado (aparece el primero)": ["Featured (shown first)", "Destaque (aparece primeiro)", "À la une (affiché en premier)"],
+  "Escribe un título": ["Enter a title", "Escreve um título", "Saisissez un titre"],
+  "Información guardada": ["Information saved", "Informação guardada", "Information enregistrée"],
+  "No se ha podido guardar": ["Could not be saved", "Não foi possível guardar", "Impossible d'enregistrer"],
+  "No se ha podido eliminar": ["Could not be deleted", "Não foi possível eliminar", "Impossible de supprimer"],
+  "¿Eliminar esta información?": ["Delete this information?", "Eliminar esta informação?", "Supprimer cette information ?"],
+  "Información eliminada": ["Information deleted", "Informação eliminada", "Information supprimée"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

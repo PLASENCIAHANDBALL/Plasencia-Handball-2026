@@ -45,6 +45,11 @@ const ICONOS = {
   trofeo:     '<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M8 6H5v1.5A3 3 0 008 10.5M16 6h3v1.5a3 3 0 01-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/>',
   menos:      '<path d="M5 12h14"/>',
   check:      '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  info:       '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.2"/>',
+  bus:        '<rect x="4" y="4" width="16" height="13" rx="3"/><path d="M4 11h16M7 20v-3M17 20v-3"/><circle cx="8" cy="14" r=".8"/><circle cx="16" cy="14" r=".8"/>',
+  comida:     '<path d="M7 3v8a2 2 0 002 2v8M11 3v8a2 2 0 01-2 2M9 3v6M17 21V3c-2 1.5-3 4-3 7v3h3"/>',
+  parking:    '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V8h3a2.5 2.5 0 010 5h-3"/>',
+  reloj:      '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   regalo:     '<rect x="3.5" y="9" width="17" height="4" rx="1"/><path d="M5 13v7h14v-7M12 9v11"/><path d="M12 9c-2.5 0-4.5-1-4.5-2.8C7.5 4.8 8.6 4 9.8 4 11.3 4 12 6 12 9zM12 9c2.5 0 4.5-1 4.5-2.8C16.5 4.8 15.4 4 14.2 4 12.7 4 12 6 12 9z"/>'
 };
 function ico(nombre, tam = 18) {
@@ -542,6 +547,8 @@ function mostrarHome() {
 
     <div id="bloque-instalar"></div>
 
+    <section id="bloque-info"></section>
+
     <h3 class="titulo-seccion">Fotos del torneo</h3>
     <div class="fotos-grid">
       <section class="galeria2027">
@@ -648,6 +655,7 @@ function mostrarHome() {
 
   // cargar galería
 setTimeout(renderActualizacionesHome, 0);
+renderInfoHome();
 
   requestAnimationFrame(() => {
     cargarGaleria2025();
@@ -5736,6 +5744,133 @@ window.guardarNuevoSorteo = guardarNuevoSorteo;
 window.sorteoRealizar = sorteoRealizar;
 window.sorteoCancelar = sorteoCancelar;
 window.sorteoRepetir = sorteoRepetir;
+
+/* ================== INFORMACIÓN DEL TORNEO (INICIO) ================== */
+
+const CATEGORIAS_INFO = {
+  general:      { nombre: "Información general", icono: "info" },
+  autobuses:    { nombre: "Autobuses",           icono: "bus" },
+  comida:       { nombre: "Comida y cena",       icono: "comida" },
+  aparcamiento: { nombre: "Aparcamiento",        icono: "parking" },
+  horarios:     { nombre: "Horarios",            icono: "reloj" },
+  aviso:        { nombre: "Aviso",               icono: "campana" }
+};
+
+let infoTorneo = [];
+
+async function cargarInfoTorneo() {
+  const { data, error } = await supabase
+    .from("info_torneo")
+    .select("id,categoria,titulo,texto,fijado,actualizado")
+    .order("fijado", { ascending: false })
+    .order("actualizado", { ascending: false });
+
+  if (error) { console.error("Error cargando información:", error); return false; }
+  infoTorneo = data || [];
+  return true;
+}
+
+function textoInfoHtml(texto) {
+  return escaparHtml(texto || "").replace(/\n/g, "<br>");
+}
+
+function tarjetaInfo(i) {
+  const cat = CATEGORIAS_INFO[i.categoria] || CATEGORIAS_INFO.general;
+  const id = Number(i.id);
+  return `
+    <article class="info-card ${i.categoria === "aviso" ? "aviso" : ""}">
+      <div class="info-icono">${ico(cat.icono, 22)}</div>
+      <div class="info-cuerpo">
+        <div class="info-etiqueta">${cat.nombre}${i.fijado ? ` · <span class="info-fijado">Destacado</span>` : ""}</div>
+        <h4>${escaparHtml(i.titulo)}</h4>
+        ${i.texto ? `<p>${textoInfoHtml(i.texto)}</p>` : ""}
+        ${adminActivo ? `
+          <div class="info-admin">
+            <button type="button" onclick="formInfo(${id})">Editar</button>
+            <button type="button" class="info-borrar" onclick="borrarInfo(${id})">Eliminar</button>
+          </div>` : ""}
+      </div>
+    </article>`;
+}
+
+async function renderInfoHome() {
+  const cont = document.getElementById("bloque-info");
+  if (!cont) return;
+
+  const ok = await cargarInfoTorneo();
+  if (!document.getElementById("bloque-info")) return;
+  if (!ok || (!infoTorneo.length && !adminActivo)) { cont.innerHTML = ""; return; }
+
+  cont.innerHTML = `
+    <h3 class="titulo-seccion">Información del torneo</h3>
+    ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formInfo()">Añadir información</button>` : ""}
+    <div class="info-lista">${infoTorneo.map(tarjetaInfo).join("") || `<p class="estado-vacio">Todavía no hay información publicada.</p>`}</div>`;
+}
+
+function formInfo(id) {
+  if (!adminActivo) return;
+  const i = id ? infoTorneo.find(x => Number(x.id) === Number(id)) : null;
+  contenido.innerHTML = `
+    <div class="form-producto">
+      <h2>${i ? "Editar información" : "Nueva información"}</h2>
+      <label for="info-cat">Tipo</label>
+      <select id="info-cat">${Object.entries(CATEGORIAS_INFO).map(([k, c]) => `<option value="${k}" ${i && i.categoria === k ? "selected" : ""}>${c.nombre}</option>`).join("")}</select>
+      <label for="info-titulo">Título</label>
+      <input id="info-titulo" maxlength="80" placeholder="Ej.: Autobuses a los pabellones" value="${i ? escaparHtml(i.titulo) : ""}">
+      <label for="info-texto">Texto</label>
+      <textarea id="info-texto" rows="6" maxlength="800">${i ? escaparHtml(i.texto || "") : ""}</textarea>
+      <label class="check-linea"><input id="info-fijado" type="checkbox" ${i && i.fijado ? "checked" : ""}> Destacado (aparece el primero)</label>
+      <button type="button" id="info-guardar" onclick="guardarInfo(${i ? Number(i.id) : "null"})">Guardar</button>
+      <button type="button" class="volver" onclick="mostrarHome()">Cancelar</button>
+    </div>`;
+}
+
+async function guardarInfo(id) {
+  if (!adminActivo) return;
+  const titulo = document.getElementById("info-titulo").value.trim();
+  if (titulo.length < 3) { avisar("Escribe un título", "error"); return; }
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const boton = document.getElementById("info-guardar");
+  boton.disabled = true;
+
+  const { error } = await supabase.rpc("info_guardar", {
+    p_pin: pin,
+    p_id: id,
+    p_categoria: document.getElementById("info-cat").value,
+    p_titulo: titulo,
+    p_texto: document.getElementById("info-texto").value.trim(),
+    p_fijado: document.getElementById("info-fijado").checked
+  });
+
+  if (error) {
+    console.error("Error guardando información:", error);
+    avisar(error.code === "42501" ? mensajeErrorProducto(error) : "No se ha podido guardar", "error");
+    boton.disabled = false;
+    return;
+  }
+
+  avisar("Información guardada");
+  mostrarHome();
+}
+
+async function borrarInfo(id) {
+  if (!adminActivo) return;
+  if (!confirm("¿Eliminar esta información?")) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { error } = await supabase.rpc("info_borrar", { p_pin: pin, p_id: id });
+  if (error) { avisar(error.code === "42501" ? mensajeErrorProducto(error) : "No se ha podido eliminar", "error"); return; }
+  avisar("Información eliminada");
+  mostrarHome();
+}
+
+window.formInfo = formInfo;
+window.guardarInfo = guardarInfo;
+window.borrarInfo = borrarInfo;
 
 /* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */
 

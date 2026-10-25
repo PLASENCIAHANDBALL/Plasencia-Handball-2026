@@ -4251,3 +4251,18 @@ button.rd-enlace{background:transparent;color:#6fdcf5;border:1px solid #6fdcf5}
 .sr-cancelar{background:transparent;color:#b3261e;border:1px solid #e3b4b0}
 .sr-ig{margin:-4px 0 14px;padding:10px 12px;border-radius:12px;background:var(--tile);color:var(--tile-ink);font-size:13px}
 .sr-ig a{color:var(--azul-fuerte);font-weight:800}
+
+/* ================== INFORMACIÓN DEL TORNEO ================== */
+.info-lista{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.info-card{display:flex;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px}
+.info-card.aviso{background:#fff7e6;border-color:#f3d9a4}
+.info-icono{flex:none;width:44px;height:44px;border-radius:14px;background:var(--tile);color:var(--tile-ink);display:flex;align-items:center;justify-content:center}
+.info-card.aviso .info-icono{background:#fde7b8;color:#9a5b00}
+.info-cuerpo{min-width:0;flex:1}
+.info-etiqueta{font-size:12px;font-weight:700;color:var(--accent-text);text-transform:uppercase;letter-spacing:.04em}
+.info-fijado{color:#c26a00}
+.info-cuerpo h4{margin:2px 0 4px;font-size:16px}
+.info-cuerpo p{margin:0;color:var(--text);font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.info-admin{display:flex;gap:8px;margin-top:10px}
+.info-admin button{margin:0;box-shadow:none;width:auto;min-height:0;padding:8px 14px;font-size:13px}
+.info-borrar{background:transparent;color:#b3261e;border:1px solid #e3b4b0}

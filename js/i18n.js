@@ -515,7 +515,18 @@ const TEXTOS = {
   "Sorteo creado": ["Giveaway created", "Sorteio criado", "Tirage créé"],
   "¿Realizar el sorteo ahora? El ganador se elige al azar y no se puede repetir.": ["Draw the winner now? The winner is chosen at random and can't be redone.", "Realizar o sorteio agora? O vencedor é escolhido ao acaso e não se pode repetir.", "Effectuer le tirage maintenant ? Le gagnant est choisi au hasard et ne peut pas être refait."],
   "¿Cancelar este sorteo? Dejará de verse en la app.": ["Cancel this giveaway? It will no longer be shown in the app.", "Cancelar este sorteio? Deixará de aparecer na app.", "Annuler ce tirage ? Il n'apparaîtra plus dans l'app."],
-  "Sorteo cancelado": ["Giveaway cancelled", "Sorteio cancelado", "Tirage annulé"]
+  "Sorteo cancelado": ["Giveaway cancelled", "Sorteio cancelado", "Tirage annulé"],
+  "Para que tu participación sea válida, síguenos en Instagram:": ["To make your entry valid, follow us on Instagram:", "Para a tua participação ser válida, segue-nos no Instagram:", "Pour que votre participation soit valable, suivez-nous sur Instagram :"],
+  "y participa con tu @ de Instagram.": ["and enter with your Instagram @.", "e participa com o teu @ do Instagram.", "et participez avec votre @ Instagram."],
+  "¡Has ganado! Enseña tu usuario de Instagram en el torneo para recoger tu premio.": ["You won! Show your Instagram username at the tournament to collect your prize.", "Ganhaste! Mostra o teu utilizador do Instagram no torneio para levantar o teu prémio.", "Vous avez gagné ! Montrez votre nom d'utilisateur Instagram au tournoi pour récupérer votre lot."],
+  "Escribe tu usuario de Instagram (por ejemplo @tuusuario). Tienes que seguir a @plasenciahandball para que tu participación sea válida:": ["Enter your Instagram username (e.g. @yourusername). You must follow @plasenciahandball for your entry to be valid:", "Escreve o teu utilizador do Instagram (por exemplo @oteuutilizador). Tens de seguir @plasenciahandball para a tua participação ser válida:", "Saisissez votre nom d'utilisateur Instagram (par exemple @votrepseudo). Vous devez suivre @plasenciahandball pour que votre participation soit valable :"],
+  "Usuario de Instagram no válido": ["Invalid Instagram username", "Utilizador do Instagram inválido", "Nom d'utilisateur Instagram non valide"],
+  "No quedan más participantes": ["No more participants left", "Não restam mais participantes", "Il ne reste plus de participants"],
+  "Elegir otro ganador": ["Pick another winner", "Escolher outro vencedor", "Choisir un autre gagnant"],
+  "Eliminar sorteo": ["Delete giveaway", "Eliminar sorteio", "Supprimer le tirage"],
+  "Sorteo eliminado": ["Giveaway deleted", "Sorteio eliminado", "Tirage supprimé"],
+  "¿Eliminar este sorteo? Dejará de verse en la app.": ["Delete this giveaway? It will no longer be shown in the app.", "Eliminar este sorteio? Deixará de aparecer na app.", "Supprimer ce tirage ? Il n'apparaîtra plus dans l'app."],
+  "¿Elegir otro ganador? El ganador actual quedará descartado.": ["Pick another winner? The current winner will be discarded.", "Escolher outro vencedor? O vencedor atual ficará descartado.", "Choisir un autre gagnant ? Le gagnant actuel sera écarté."]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */
@@ -550,6 +561,7 @@ function ordinal(n, i) {
 
 // Cada patrón: [expresión, función(coincidencia, i)] con i: 0 inglés, 1 portugués, 2 francés
 const PATRONES = [
+  [/^¡Nuevo ganador! (.+)$/, (m, i) => [`New winner! ${m[1]}`, `Novo vencedor! ${m[1]}`, `Nouveau gagnant ! ${m[1]}`][i]],
   [/^(\d+) participantes?$/, (m, i) => `${m[1]} ${[plural(m[1], "participant", "participants"), plural(m[1], "participante", "participantes"), plural(m[1], "participant", "participants")][i]}`],
   [/^¡Sorteo realizado! Ganador: (.+)$/, (m, i) => [`Draw done! Winner: ${m[1]}`, `Sorteio realizado! Vencedor: ${m[1]}`, `Tirage effectué ! Gagnant : ${m[1]}`][i]],
   [/^(\d+) exactos? · (\d+) partidos?$/, (m, i) => `${m[1]} ${[plural(m[1], "exact", "exact"), plural(m[1], "exato", "exatos"), plural(m[1], "exact", "exacts")][i]} · ${m[2]} ${[plural(m[2], "match", "matches"), plural(m[2], "jogo", "jogos"), plural(m[2], "match", "matchs")][i]}`],
@@ -605,6 +617,7 @@ const PATRONES = [
 
 // Patrones en alemán (mismas expresiones, resultado en alemán)
 const PATRONES_DE = [
+  [/^¡Nuevo ganador! (.+)$/, m => `Neuer Gewinner! ${m[1]}`],
   [/^(\d+) participantes?$/, m => `${m[1]} ${plural(m[1], "Teilnehmer", "Teilnehmer")}`],
   [/^¡Sorteo realizado! Ganador: (.+)$/, m => `Auslosung erfolgt! Gewinner: ${m[1]}`],
   [/^(\d+) exactos? · (\d+) partidos?$/, m => `${m[1]} ${plural(m[1], "genaues", "genaue")} · ${m[2]} ${plural(m[2], "Spiel", "Spiele")}`],

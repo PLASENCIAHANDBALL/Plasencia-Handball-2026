@@ -5531,6 +5531,8 @@ function mensajeErrorSorteo(error) {
   if (/cerrado/i.test(m)) return "Este sorteo ya ha cerrado";
   if (/no ha cerrado/i.test(m)) return "El sorteo aún no ha cerrado";
   if (/No hay participantes/i.test(m)) return "Nadie ha participado todavía";
+  if (/Instagram/i.test(m)) return "Usuario de Instagram no válido";
+  if (/No quedan/i.test(m)) return "No quedan más participantes";
   if (/futura/i.test(m)) return "La fecha de cierre debe ser futura";
   return "No se ha podido completar la acción";
 }
@@ -5551,13 +5553,14 @@ function tarjetaSorteo(s) {
       ${s.participo ? `<div class="sr-dentro">${ico("check", 16)}Estás participando</div>` : ""}`;
   } else {
     accion = `<div class="sr-ganador ${s.gane ? "yo" : ""}">${ico("trofeo", 20)}<span>Ganador</span><strong>${escaparHtml(s.ganador_alias || "")}</strong></div>
-      ${s.gane ? `<p class="sr-premio">¡Has ganado! Enseña tu alias en el torneo para recoger tu premio.</p>` : ""}`;
+      ${s.gane ? `<p class="sr-premio">¡Has ganado! Enseña tu usuario de Instagram en el torneo para recoger tu premio.</p>` : ""}`;
   }
 
   const admin = adminActivo ? `
     <div class="sr-admin">
       ${estado === "cerrado" ? `<button type="button" class="sr-realizar" onclick="sorteoRealizar(${id})">Realizar sorteo</button>` : ""}
-      ${estado !== "sorteado" ? `<button type="button" class="sr-cancelar" onclick="sorteoCancelar(${id})">Cancelar sorteo</button>` : ""}
+      ${estado === "sorteado" ? `<button type="button" class="sr-realizar" onclick="sorteoRepetir(${id})">Elegir otro ganador</button>` : ""}
+      <button type="button" class="sr-cancelar" onclick="sorteoCancelar(${id}, '${estado}')">${estado === "sorteado" ? "Eliminar sorteo" : "Cancelar sorteo"}</button>
     </div>` : "";
 
   return `
@@ -5583,6 +5586,7 @@ function pintarSorteos(cuerpo) {
     ${barraZona("sorteos")}
     <h2>PH Sorteos</h2>
     <p class="pab-intro">Participa gratis para ganar premios de los patrocinadores del torneo.</p>
+    <p class="sr-ig">Para que tu participación sea válida, síguenos en Instagram: <a href="https://www.instagram.com/plasenciahandball" target="_blank" rel="noopener noreferrer">@plasenciahandball</a> y participa con tu @ de Instagram.</p>
     ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoSorteo()">Crear sorteo</button>` : ""}
     ${cuerpo}`;
 }
@@ -5605,17 +5609,15 @@ async function mostrarSorteos() {
 }
 
 async function sorteoParticipar(id) {
-  if (!porraAlias) {
-    const alias = (prompt("Elige un alias para participar (3 a 16 caracteres, no uses tu nombre completo):") || "").trim();
-    if (!alias) return;
-    const { data, error } = await supabase.rpc("porra_registrar", { p_device: idDispositivo(), p_alias: alias });
-    if (error) { avisar(mensajeErrorPorra(error), "error"); return; }
-    porraAlias = data || alias;
-    lsSet("porra_alias", porraAlias);
-  }
+  const previo = lsGet("ph_instagram") || "";
+  const texto = prompt("Escribe tu usuario de Instagram (por ejemplo @tuusuario). Tienes que seguir a @plasenciahandball para que tu participación sea válida:", previo);
+  if (texto === null) return;
+  const usuario = texto.trim().replace(/^@?/, "@").toLowerCase();
+  if (!/^@[a-z0-9._]{1,30}$/.test(usuario)) { avisar("Usuario de Instagram no válido", "error"); return; }
 
-  const { error } = await supabase.rpc("sorteo_participar", { p_device: idDispositivo(), p_id: id });
+  const { error } = await supabase.rpc("sorteo_participar", { p_device: idDispositivo(), p_id: id, p_instagram: usuario });
   if (error) { console.error("Error participando:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+  lsSet("ph_instagram", usuario);
   avisar("¡Ya participas en el sorteo!");
   await cargarSorteos();
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
@@ -5701,15 +5703,29 @@ async function sorteoRealizar(id) {
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
 }
 
-async function sorteoCancelar(id) {
+async function sorteoRepetir(id) {
   if (!adminActivo) return;
-  if (!confirm("¿Cancelar este sorteo? Dejará de verse en la app.")) return;
+  if (!confirm("¿Elegir otro ganador? El ganador actual quedará descartado.")) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { data, error } = await supabase.rpc("sorteo_repetir", { p_pin: pin, p_id: id });
+  if (error) { console.error("Error repitiendo sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+
+  avisar(`¡Nuevo ganador! ${data}`, "info", { duracion: 9000 });
+  await cargarSorteos();
+  pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
+}
+
+async function sorteoCancelar(id, estado) {
+  if (!adminActivo) return;
+  if (!confirm(estado === "sorteado" ? "¿Eliminar este sorteo? Dejará de verse en la app." : "¿Cancelar este sorteo? Dejará de verse en la app.")) return;
   const pin = obtenerPinAdmin();
   if (!pin) return;
 
   const { error } = await supabase.rpc("sorteo_cancelar", { p_pin: pin, p_id: id });
   if (error) { avisar(mensajeErrorSorteo(error), "error"); return; }
-  avisar("Sorteo cancelado");
+  avisar(estado === "sorteado" ? "Sorteo eliminado" : "Sorteo cancelado");
   mostrarSorteos();
 }
 
@@ -5719,6 +5735,7 @@ window.formNuevoSorteo = formNuevoSorteo;
 window.guardarNuevoSorteo = guardarNuevoSorteo;
 window.sorteoRealizar = sorteoRealizar;
 window.sorteoCancelar = sorteoCancelar;
+window.sorteoRepetir = sorteoRepetir;
 
 /* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */
 

@@ -4945,8 +4945,8 @@ window.enviarHighlight = enviarHighlight;
 
 const SECCIONES_ZONA = [
   { id: "highlights", nombre: "Highlights", icono: "play", abrir: () => mostrarHighlights() },
-  { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() },
-  { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() }
+  { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() },
+  { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() }
 ];
 
 // Barra de secciones que se ve arriba en las tres pantallas de la Zona Fan

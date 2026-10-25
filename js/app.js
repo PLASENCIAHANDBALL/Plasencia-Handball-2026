@@ -4571,7 +4571,7 @@ function estrellasHighlight(h) {
   const propio = h.autor_device && h.autor_device === idDispositivo();
   return Array.from({ length: 5 }, (_, i) => {
     const n = i + 1;
-    return `<button type="button" class="hl-estrella ${n <= mio ? "llena" : ""}" ${propio ? "disabled" : ""}
+    return `<button type="button" class="hl-estrella ${n <= mio ? "llena" : ""} ${propio ? "propio" : ""}" ${propio ? 'aria-disabled="true"' : ""}
       aria-label="Valorar con ${n} ${n === 1 ? "estrella" : "estrellas"}" onclick="hlValorar(${Number(h.id)}, ${n})">${ico("estrella", 26)}</button>`;
   }).join("");
 }
@@ -4741,8 +4741,18 @@ async function hlValorar(id, n) {
   const h = highlights.find(x => Number(x.id) === Number(id));
   if (!h) return;
 
+  if (h.autor_device && h.autor_device === idDispositivo()) {
+    avisar("No puedes valorar tu propio vídeo", "error");
+    return;
+  }
+
   const anterior = Number(misVotosHighlights()[id]) || 0;
   if (anterior === n) return;
+
+  // las estrellas se pintan al instante; si falla, se restauran
+  const grupo = contenido.querySelector(`.hl-card[data-hl-id="${Number(id)}"] .hl-estrellas`);
+  const pintarEstrellas = v => grupo && grupo.querySelectorAll(".hl-estrella").forEach((b, i) => b.classList.toggle("llena", i < v));
+  pintarEstrellas(n);
 
   const { data, error } = await supabase.rpc("highlight_valorar", {
     p_id: id, p_device: idDispositivo(), p_estrellas: n
@@ -4750,6 +4760,7 @@ async function hlValorar(id, n) {
 
   if (error) {
     console.error("Error valorando:", error);
+    pintarEstrellas(anterior);
     avisar(/propio/i.test(error.message || "") ? "No puedes valorar tu propio vídeo" : "No se ha podido guardar la valoración", "error");
     return;
   }

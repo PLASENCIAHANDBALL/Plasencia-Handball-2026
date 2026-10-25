@@ -4043,7 +4043,7 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
 .hl-estrella { border: 0; background: transparent; padding: 5px 2px; color: #b9c9d6; cursor: pointer; line-height: 0; -webkit-tap-highlight-color: transparent; }
 .hl-estrella.llena { color: #f5a623; }
 .hl-estrella.llena .ico { fill: currentColor; }
-.hl-estrella:disabled { opacity: .35; cursor: default; }
+.hl-estrella.propio { opacity: .45; }
 .hl-pie { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; }
 .hl-enlace { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; padding: 8px 0; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
 .hl-enlace.peligro { color: #b3261e; }

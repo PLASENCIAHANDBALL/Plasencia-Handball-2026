@@ -4222,6 +4222,7 @@ let radarCategoria = "todas";
 let radarGenero = "todos";
 let radarTimer = null;
 let radarScroll = null;
+let radarCentrar = false;
 
 function barraPabellones(actual) {
   const items = [["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"], ["radar", "PH Radar", "diana", "mostrarRadar()"]];
@@ -4339,6 +4340,14 @@ function pintarRadar() {
   const sc = document.getElementById("rd-scroll");
   if (sc) sc.scrollLeft = radarScroll !== null ? radarScroll : (sc.scrollWidth - sc.clientWidth) * 0.45;
   if (sc) sc.addEventListener("scroll", () => { radarScroll = sc.scrollLeft; }, { passive: true });
+
+  // al elegir un pabellón el mapa se desliza hasta él
+  if (sc && radarCentrar) {
+    radarCentrar = false;
+    const x = (POSICIONES_RADAR[radarSeleccion] || [50])[0] / 100 * sc.firstElementChild.offsetWidth;
+    const destino = Math.max(0, Math.min(sc.scrollWidth - sc.clientWidth, x - sc.clientWidth / 2));
+    sc.scrollTo({ left: destino, behavior: "smooth" });
+  }
 }
 
 function mostrarRadar() {
@@ -4355,7 +4364,7 @@ function mostrarRadar() {
   }, 30000);
 }
 
-function radarElegir(p) { radarSeleccion = p; pintarRadar(); }
+function radarElegir(p) { radarSeleccion = p; radarCentrar = true; pintarRadar(); }
 function radarCategoriaElegir(c) { radarCategoria = c; pintarRadar(); }
 function radarGeneroElegir(g) { radarGenero = g; pintarRadar(); }
 

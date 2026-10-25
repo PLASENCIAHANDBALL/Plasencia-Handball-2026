@@ -4010,10 +4010,6 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
 .pj-cab-grupo ~ .categoria-partidos .pj-partidos { margin: 0; }
 
 /* ===== Botón "+" de la barra (PH Highlights) ===== */
-.nav-principal button.nav-mas { flex: 0 0 44px; min-width: 44px; max-width: 44px; padding: 0; justify-content: center; }
-.nav-principal button.nav-mas svg { width: 30px; height: 30px; padding: 5px; border-radius: 50%; background: var(--azul-fuerte); color: #fff; box-sizing: border-box; }
-.nav-principal button.nav-mas.activo { background: transparent; }
-.nav-principal button.nav-mas.activo svg { background: var(--tile-ink); box-shadow: 0 0 0 3px var(--tile); }
 
 /* ===== PH Highlights ===== */
 .hl-cab h2 { margin-bottom: 4px; }
@@ -4070,7 +4066,6 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
   .nav-principal { padding-left: 6px; padding-right: 6px; }
   .nav-principal button { padding-left: 0; padding-right: 0; }
   .nav-principal button span { font-size: 9.5px; letter-spacing: -.02em; }
-  .nav-principal button.nav-mas { flex: 0 0 40px; min-width: 40px; max-width: 40px; }
 }
 .hl-chip, .hl-orden button, .hl-estrella, .hl-enlace, .hl-btn, .hl-subir, .hl-mas { margin-bottom: 0; box-shadow: none; }
 .hl-chip, .hl-orden button, .hl-estrella, .hl-enlace { width: auto; }
@@ -4085,3 +4080,36 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
 .estado-vacio strong, .estado-vacio > span { display: block; }
 .estado-vacio .ico { display: block; margin: 0 auto 8px; }
 @media (max-width: 480px) { html[lang="de"] .nav-principal button span, html[lang="fr"] .nav-principal button span, html[lang="pt"] .nav-principal button span { font-size: 9px; letter-spacing: -.03em; } }
+
+/* ===== Botón "+" con abanico (canción, redes y acceso de organización) ===== */
+.hub { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: calc(60px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 1800; }
+@media (max-width: 768px) { .hub { bottom: calc(var(--alto-barra) + 16px + env(safe-area-inset-bottom)); } }
+body.splash-activo .hub { display: none !important; }
+
+.hub-main { position: absolute; inset: 0; width: 56px; height: 56px; min-height: 56px; max-height: 56px; margin: 0; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2;
+  background: linear-gradient(135deg, var(--azul-medio), var(--azul-fuerte)); color: #fff; box-shadow: 0 8px 22px rgba(27,111,184,.38);
+  transition: background .25s ease, box-shadow .25s ease, transform .15s ease; -webkit-tap-highlight-color: transparent; }
+.hub-main:active { transform: scale(.92); }
+.hub-main:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 3px; }
+.hub-main .ico { transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+.hub.open .hub-main { background: #e5566b; box-shadow: 0 8px 22px rgba(229,86,107,.4); }
+.hub.open .hub-main .ico { transform: rotate(135deg); }
+/* si la canción está sonando, el "+" lo avisa con un puntito */
+.hub:has(.music-fab.sonando) .hub-main::after { content: ""; position: absolute; top: 3px; right: 3px; width: 13px; height: 13px; border-radius: 50%; background: #3ddc84; border: 2px solid #fff; animation: hubLatido 1.4s ease-in-out infinite; }
+@keyframes hubLatido { 50% { transform: scale(1.25); } }
+
+/* los tres botones salen en abanico desde el "+" */
+.hub .music-fab, .hub .social-fab, .hub #admin-fab {
+  position: absolute; left: auto; right: 4px; bottom: 4px; top: auto; z-index: 1;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translate(0, 0) scale(.2);
+  transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), opacity .2s ease, visibility 0s linear .42s;
+}
+.hub .music-fab, .hub .social-fab { align-items: flex-end; width: auto; }
+.hub.open .music-fab, .hub.open .social-fab, .hub.open #admin-fab { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.hub.open #admin-fab  { transform: translate(-84px, 0) scale(1); transition-delay: .02s; }
+.hub.open .social-fab { transform: translate(-59px, -59px) scale(1); transition-delay: .07s; }
+.hub.open .music-fab  { transform: translate(0, -84px) scale(1); transition-delay: .12s; }
+.hub #admin-fab { display: flex; align-items: center; justify-content: center; }
+.hub .music-panel { transform-origin: bottom right; }
+@media (prefers-reduced-motion: reduce) { .hub .music-fab, .hub .social-fab, .hub #admin-fab, .hub-main .ico { transition-duration: .01s; } }

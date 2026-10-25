@@ -409,7 +409,9 @@ const TEXTOS = {
   "Gracias por avisar. Lo revisaremos.": ["Thanks for letting us know. We'll review it.", "Obrigado por avisar. Vamos rever.", "Merci pour le signalement. Nous allons vérifier."],
   "Vídeo aprobado": ["Video approved", "Vídeo aprovado", "Vidéo approuvée"],
   "Vídeo eliminado": ["Video deleted", "Vídeo eliminado", "Vidéo supprimée"],
-  "¿Eliminar este vídeo?": ["Delete this video?", "Eliminar este vídeo?", "Supprimer cette vidéo ?"]
+  "¿Eliminar este vídeo?": ["Delete this video?", "Eliminar este vídeo?", "Supprimer cette vidéo ?"],
+  "Más opciones": ["More options", "Mais opções", "Plus d'options"],
+  "Cerrar menú": ["Close menu", "Fechar menu", "Fermer le menu"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

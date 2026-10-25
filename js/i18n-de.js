@@ -335,4 +335,6 @@ export const DE = {
   "Vídeo aprobado": "Video freigegeben",
   "Vídeo eliminado": "Video gelöscht",
   "¿Eliminar este vídeo?": "Dieses Video löschen?",
+  "Más opciones": "Weitere Optionen",
+  "Cerrar menú": "Menü schließen",
 };

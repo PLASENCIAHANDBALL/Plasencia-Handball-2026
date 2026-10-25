@@ -478,7 +478,44 @@ const TEXTOS = {
   "Cómo llegar": ["How to get there", "Como chegar", "Itinéraire"],
   "Ver programación": ["View schedule", "Ver programação", "Voir le programme"],
   "Todas": ["All", "Todas", "Toutes"],
-  "Mapa de pabellones": ["Venue map", "Mapa de pavilhões", "Plan des gymnases"]
+  "Mapa de pabellones": ["Venue map", "Mapa de pavilhões", "Plan des gymnases"],
+  "Sorteos": ["Giveaways", "Sorteios", "Tirages"],
+  "PH Sorteos": ["PH Giveaways", "PH Sorteios", "PH Tirages"],
+  "Participa gratis para ganar premios de los patrocinadores del torneo.": ["Join for free to win prizes from the tournament sponsors.", "Participa gratuitamente para ganhar prémios dos patrocinadores do torneio.", "Participez gratuitement pour gagner des lots des sponsors du tournoi."],
+  "Crear sorteo": ["Create giveaway", "Criar sorteio", "Créer un tirage"],
+  "Todavía no hay sorteos": ["There are no giveaways yet", "Ainda não há sorteios", "Aucun tirage pour l'instant"],
+  "Vuelve pronto: habrá premios durante el torneo.": ["Come back soon: there will be prizes during the tournament.", "Volta em breve: haverá prémios durante o torneio.", "Revenez bientôt : il y aura des lots pendant le tournoi."],
+  "Sorteo activo": ["Active giveaway", "Sorteio ativo", "Tirage en cours"],
+  "Sorteado": ["Drawn", "Sorteado", "Tiré au sort"],
+  "Participación gratuita": ["Free to enter", "Participação gratuita", "Participation gratuite"],
+  "Cierre:": ["Closes:", "Fecho:", "Clôture :"],
+  "Cerró:": ["Closed:", "Fechou:", "Clos :"],
+  "Ya estás participando": ["You're already in", "Já estás a participar", "Vous participez déjà"],
+  "Estás participando": ["You're in", "Estás a participar", "Vous participez"],
+  "Participar en el sorteo": ["Enter the giveaway", "Participar no sorteio", "Participer au tirage"],
+  "Sorteo cerrado. Pronto se anunciará el ganador.": ["Giveaway closed. The winner will be announced soon.", "Sorteio fechado. O vencedor será anunciado em breve.", "Tirage clos. Le gagnant sera annoncé bientôt."],
+  "Ganador": ["Winner", "Vencedor", "Gagnant"],
+  "¡Has ganado! Enseña tu alias en el torneo para recoger tu premio.": ["You won! Show your alias at the tournament to collect your prize.", "Ganhaste! Mostra o teu alias no torneio para levantar o teu prémio.", "Vous avez gagné ! Montrez votre pseudo au tournoi pour récupérer votre lot."],
+  "Realizar sorteo": ["Draw winner", "Realizar sorteio", "Effectuer le tirage"],
+  "Cancelar sorteo": ["Cancel giveaway", "Cancelar sorteio", "Annuler le tirage"],
+  "Este sorteo ya ha cerrado": ["This giveaway has already closed", "Este sorteio já fechou", "Ce tirage est déjà clos"],
+  "El sorteo aún no ha cerrado": ["The giveaway hasn't closed yet", "O sorteio ainda não fechou", "Le tirage n'est pas encore clos"],
+  "Nadie ha participado todavía": ["Nobody has entered yet", "Ainda ninguém participou", "Personne n'a encore participé"],
+  "La fecha de cierre debe ser futura": ["The closing date must be in the future", "A data de fecho deve ser futura", "La date de clôture doit être future"],
+  "No se ha podido completar la acción": ["The action could not be completed", "Não foi possível concluir a ação", "L'action n'a pas pu être effectuée"],
+  "Elige un alias para participar (3 a 16 caracteres, no uses tu nombre completo):": ["Choose an alias to take part (3 to 16 characters, don't use your full name):", "Escolhe um alias para participar (3 a 16 caracteres, não uses o teu nome completo):", "Choisissez un pseudo pour participer (3 à 16 caractères, pas votre nom complet) :"],
+  "¡Ya participas en el sorteo!": ["You're now in the giveaway!", "Já estás no sorteio!", "Vous participez au tirage !"],
+  "Nuevo sorteo": ["New giveaway", "Novo sorteio", "Nouveau tirage"],
+  "Título del sorteo": ["Giveaway title", "Título do sorteio", "Titre du tirage"],
+  "Ej.: ¡Gana un pack PH!": ["E.g.: Win a PH pack!", "Ex.: Ganha um pack PH!", "Ex. : Gagnez un pack PH !"],
+  "Fecha y hora de cierre": ["Closing date and time", "Data e hora de fecho", "Date et heure de clôture"],
+  "Foto del premio (opcional)": ["Prize photo (optional)", "Foto do prémio (opcional)", "Photo du lot (facultatif)"],
+  "Escribe el título del sorteo": ["Enter the giveaway title", "Escreve o título do sorteio", "Saisissez le titre du tirage"],
+  "Elige la fecha de cierre": ["Choose the closing date", "Escolhe a data de fecho", "Choisissez la date de clôture"],
+  "Sorteo creado": ["Giveaway created", "Sorteio criado", "Tirage créé"],
+  "¿Realizar el sorteo ahora? El ganador se elige al azar y no se puede repetir.": ["Draw the winner now? The winner is chosen at random and can't be redone.", "Realizar o sorteio agora? O vencedor é escolhido ao acaso e não se pode repetir.", "Effectuer le tirage maintenant ? Le gagnant est choisi au hasard et ne peut pas être refait."],
+  "¿Cancelar este sorteo? Dejará de verse en la app.": ["Cancel this giveaway? It will no longer be shown in the app.", "Cancelar este sorteio? Deixará de aparecer na app.", "Annuler ce tirage ? Il n'apparaîtra plus dans l'app."],
+  "Sorteo cancelado": ["Giveaway cancelled", "Sorteio cancelado", "Tirage annulé"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */
@@ -513,6 +550,8 @@ function ordinal(n, i) {
 
 // Cada patrón: [expresión, función(coincidencia, i)] con i: 0 inglés, 1 portugués, 2 francés
 const PATRONES = [
+  [/^(\d+) participantes?$/, (m, i) => `${m[1]} ${[plural(m[1], "participant", "participants"), plural(m[1], "participante", "participantes"), plural(m[1], "participant", "participants")][i]}`],
+  [/^¡Sorteo realizado! Ganador: (.+)$/, (m, i) => [`Draw done! Winner: ${m[1]}`, `Sorteio realizado! Vencedor: ${m[1]}`, `Tirage effectué ! Gagnant : ${m[1]}`][i]],
   [/^(\d+) exactos? · (\d+) partidos?$/, (m, i) => `${m[1]} ${[plural(m[1], "exact", "exact"), plural(m[1], "exato", "exatos"), plural(m[1], "exact", "exacts")][i]} · ${m[2]} ${[plural(m[2], "match", "matches"), plural(m[2], "jogo", "jogos"), plural(m[2], "match", "matchs")][i]}`],
   [/^(\d+)% (local|empate|visitante)$/, (m, i) => `${m[1]}% ${{ local: ["home", "casa", "domicile"], empate: ["draw", "empate", "nul"], visitante: ["away", "fora", "extérieur"] }[m[2]][i]}`],
   [/^Pronóstico guardado: (\d+) – (\d+)$/, (m, i) => `${["Prediction saved", "Palpite guardado", "Pronostic enregistré"][i]}: ${m[1]} – ${m[2]}`],
@@ -566,6 +605,8 @@ const PATRONES = [
 
 // Patrones en alemán (mismas expresiones, resultado en alemán)
 const PATRONES_DE = [
+  [/^(\d+) participantes?$/, m => `${m[1]} ${plural(m[1], "Teilnehmer", "Teilnehmer")}`],
+  [/^¡Sorteo realizado! Ganador: (.+)$/, m => `Auslosung erfolgt! Gewinner: ${m[1]}`],
   [/^(\d+) exactos? · (\d+) partidos?$/, m => `${m[1]} ${plural(m[1], "genaues", "genaue")} · ${m[2]} ${plural(m[2], "Spiel", "Spiele")}`],
   [/^(\d+)% (local|empate|visitante)$/, m => `${m[1]}% ${{ local: "Heim", empate: "Remis", visitante: "Gast" }[m[2]]}`],
   [/^Pronóstico guardado: (\d+) – (\d+)$/, m => `Tipp gespeichert: ${m[1]} – ${m[2]}`],

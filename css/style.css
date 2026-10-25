@@ -4227,3 +4227,25 @@ body.splash-activo .avisos-fab { display: none; }
 .rd-acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .rd-enlace{width:auto;margin:0;box-shadow:none;min-height:0;padding:9px 14px;border-radius:99px;background:#6fdcf5;color:#06223a;font-weight:700;font-size:13px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
 button.rd-enlace{background:transparent;color:#6fdcf5;border:1px solid #6fdcf5}
+
+/* ================== PH SORTEOS ================== */
+@media (max-width: 480px){ .zona-barra button{padding:9px 2px;font-size:12.5px;gap:4px} .zona-barra button .ico{display:none} }
+.sr-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:14px}
+.sr-foto img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.sr-cuerpo{padding:14px}
+.sr-fila{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.sr-pill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;background:var(--tile);color:var(--tile-ink)}
+.sr-pill.ok{background:#dff5e3;color:#1c7a33}.sr-pill.espera{background:#fdeccf;color:#9a5b00}.sr-pill.fin{background:#e7ebf1;color:#55657a}
+.sr-gratis{font-size:12px;font-weight:700;color:var(--accent-text)}
+.sr-card h3{margin:0 0 6px;font-size:20px}
+.sr-desc{margin:0 0 10px;color:var(--muted);font-size:14px}
+.sr-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:12px}
+.sr-participar{margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.sr-dentro,.sr-espera{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:14px;background:var(--tile);color:var(--tile-ink);font-weight:700;font-size:14px;text-align:center;margin-top:6px}
+.sr-ganador{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:14px;background:var(--tile);color:var(--tile-ink)}
+.sr-ganador strong{margin-left:auto;font-size:18px}
+.sr-ganador.yo{background:var(--azul-fuerte);color:#fff}
+.sr-premio{margin:10px 0 0;font-weight:700;color:var(--azul-fuerte);text-align:center}
+.sr-admin{display:flex;gap:8px;margin-top:12px}
+.sr-admin button{margin:0;box-shadow:none;width:auto;flex:1;padding:11px 8px;min-height:0;font-size:13px}
+.sr-cancelar{background:transparent;color:#b3261e;border:1px solid #e3b4b0}

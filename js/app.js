@@ -44,7 +44,8 @@ const ICONOS = {
   bandera:    '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>',
   trofeo:     '<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M8 6H5v1.5A3 3 0 008 10.5M16 6h3v1.5a3 3 0 01-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/>',
   menos:      '<path d="M5 12h14"/>',
-  check:      '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+  check:      '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  regalo:     '<rect x="3.5" y="9" width="17" height="4" rx="1"/><path d="M5 13v7h14v-7M12 9v11"/><path d="M12 9c-2.5 0-4.5-1-4.5-2.8C7.5 4.8 8.6 4 9.8 4 11.3 4 12 6 12 9zM12 9c2.5 0 4.5-1 4.5-2.8C16.5 4.8 15.4 4 14.2 4 12.7 4 12 6 12 9z"/>'
 };
 function ico(nombre, tam = 18) {
   return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
@@ -346,6 +347,7 @@ function restaurarVista(estado) {
     case "tienda":      mostrarTienda(); break;
     case "highlights":  mostrarHighlights(); break;
     case "porra":       mostrarPorra(); break;
+    case "sorteos":     mostrarSorteos(); break;
     case "radar":       mostrarRadar(); break;
     case "zona":        mostrarZona(); break;
     case "avisos":      mostrarAvisos(); break;
@@ -960,6 +962,7 @@ const VISTAS_INICIALES = {
   tienda: () => mostrarTienda(),
   highlights: () => mostrarHighlights(),
   porra: () => mostrarPorra(),
+  sorteos: () => mostrarSorteos(),
   radar: () => mostrarRadar(),
   zona: () => mostrarZona(),
   avisos: () => mostrarAvisos()
@@ -1137,7 +1140,7 @@ function setNavActivoPorVista(vista) {
     .querySelectorAll('.nav-principal button')
     .forEach(b => b.classList.remove('activo'));
 
-  if (["tienda", "highlights", "porra"].includes(vista)) vista = "zona";
+  if (["tienda", "highlights", "porra", "sorteos"].includes(vista)) vista = "zona";
   if (vista === "radar") vista = "pabellones";
   const btn = document.querySelector(`.nav-principal button[data-view="${vista}"]`);
   if (btn) btn.classList.add('activo');
@@ -5141,6 +5144,7 @@ window.enviarHighlight = enviarHighlight;
 const SECCIONES_ZONA = [
   { id: "highlights", nombre: "Highlights", icono: "play", abrir: () => mostrarHighlights() },
   { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() },
+  { id: "sorteos",    nombre: "Sorteos",    icono: "regalo", abrir: () => mostrarSorteos() },
   { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() }
 ];
 
@@ -5502,6 +5506,219 @@ window.porraPedirAlias = porraPedirAlias;
 window.porraGuardar = porraGuardar;
 window.porraActivar = porraActivar;
 window.porraOcultar = porraOcultar;
+
+/* ================== PH SORTEOS ================== */
+
+let sorteos = [];
+
+function fechaSorteo(iso) {
+  try {
+    const loc = { es: "es-ES", en: "en-GB", pt: "pt-PT", fr: "fr-FR", de: "de-DE" }[document.documentElement.lang] || "es-ES";
+    return new Intl.DateTimeFormat(loc, { timeZone: ZONA_TORNEO, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+  } catch (e) { return String(iso); }
+}
+
+async function cargarSorteos() {
+  const { data, error } = await supabase.rpc("sorteo_lista", { p_device: idDispositivo() });
+  if (error) { console.error("Error cargando sorteos:", error); return false; }
+  sorteos = data || [];
+  return true;
+}
+
+function mensajeErrorSorteo(error) {
+  const m = (error && error.message) || "";
+  if (error && error.code === "42501") { pinAdmin = null; return "PIN de administrador no válido"; }
+  if (/cerrado/i.test(m)) return "Este sorteo ya ha cerrado";
+  if (/no ha cerrado/i.test(m)) return "El sorteo aún no ha cerrado";
+  if (/No hay participantes/i.test(m)) return "Nadie ha participado todavía";
+  if (/futura/i.test(m)) return "La fecha de cierre debe ser futura";
+  return "No se ha podido completar la acción";
+}
+
+function tarjetaSorteo(s) {
+  const estado = s.estado;
+  const pill = estado === "activo" ? ["Sorteo activo", "ok"] : estado === "cerrado" ? ["Cerrado", "espera"] : ["Sorteado", "fin"];
+  const id = Number(s.id);
+  const n = Number(s.n_participantes) || 0;
+
+  let accion = "";
+  if (estado === "activo") {
+    accion = s.participo
+      ? `<div class="sr-dentro">${ico("check", 16)}Ya estás participando</div>`
+      : `<button type="button" class="sr-participar" onclick="sorteoParticipar(${id})">${ico("regalo", 20)}Participar en el sorteo</button>`;
+  } else if (estado === "cerrado") {
+    accion = `<div class="sr-espera">Sorteo cerrado. Pronto se anunciará el ganador.</div>
+      ${s.participo ? `<div class="sr-dentro">${ico("check", 16)}Estás participando</div>` : ""}`;
+  } else {
+    accion = `<div class="sr-ganador ${s.gane ? "yo" : ""}">${ico("trofeo", 20)}<span>Ganador</span><strong>${escaparHtml(s.ganador_alias || "")}</strong></div>
+      ${s.gane ? `<p class="sr-premio">¡Has ganado! Enseña tu alias en el torneo para recoger tu premio.</p>` : ""}`;
+  }
+
+  const admin = adminActivo ? `
+    <div class="sr-admin">
+      ${estado === "cerrado" ? `<button type="button" class="sr-realizar" onclick="sorteoRealizar(${id})">Realizar sorteo</button>` : ""}
+      ${estado !== "sorteado" ? `<button type="button" class="sr-cancelar" onclick="sorteoCancelar(${id})">Cancelar sorteo</button>` : ""}
+    </div>` : "";
+
+  return `
+    <article class="sr-card ${estado}">
+      ${s.imagen ? `<div class="sr-foto"><img src="${escaparHtml(urlSegura(s.imagen))}" alt="" loading="lazy" decoding="async"></div>` : ""}
+      <div class="sr-cuerpo">
+        <div class="sr-fila"><span class="sr-pill ${pill[1]}">${pill[0]}</span><span class="sr-gratis">Participación gratuita</span></div>
+        <h3>${escaparHtml(s.titulo)}</h3>
+        ${s.descripcion ? `<p class="sr-desc">${escaparHtml(s.descripcion)}</p>` : ""}
+        <div class="sr-meta">
+          <span>${estado === "activo" ? "Cierre:" : "Cerró:"} <b translate="no">${fechaSorteo(s.cierre)}</b></span>
+          <span>${n} ${n === 1 ? "participante" : "participantes"}</span>
+        </div>
+        ${accion}
+        ${admin}
+      </div>
+    </article>`;
+}
+
+function pintarSorteos(cuerpo) {
+  if (vistaActual !== "sorteos") return;
+  contenido.innerHTML = `
+    ${barraZona("sorteos")}
+    <h2>PH Sorteos</h2>
+    <p class="pab-intro">Participa gratis para ganar premios de los patrocinadores del torneo.</p>
+    ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoSorteo()">Crear sorteo</button>` : ""}
+    ${cuerpo}`;
+}
+
+async function mostrarSorteos() {
+  setNavActivoPorVista("sorteos");
+  registrarNavegacion("sorteos");
+
+  pintarSorteos(`<div class="estado-vacio">Cargando…</div>`);
+  const ok = await cargarSorteos();
+  if (!ok) {
+    pintarSorteos(`<div class="estado-vacio"><strong>No se han podido cargar los datos</strong>
+      <button type="button" class="hl-subir" onclick="mostrarSorteos()">Reintentar</button></div>`);
+    return;
+  }
+
+  pintarSorteos(sorteos.length
+    ? sorteos.map(tarjetaSorteo).join("")
+    : `<div class="estado-vacio">${ico("regalo", 36)}<strong>Todavía no hay sorteos</strong><span>Vuelve pronto: habrá premios durante el torneo.</span></div>`);
+}
+
+async function sorteoParticipar(id) {
+  if (!porraAlias) {
+    const alias = (prompt("Elige un alias para participar (3 a 16 caracteres, no uses tu nombre completo):") || "").trim();
+    if (!alias) return;
+    const { data, error } = await supabase.rpc("porra_registrar", { p_device: idDispositivo(), p_alias: alias });
+    if (error) { avisar(mensajeErrorPorra(error), "error"); return; }
+    porraAlias = data || alias;
+    lsSet("porra_alias", porraAlias);
+  }
+
+  const { error } = await supabase.rpc("sorteo_participar", { p_device: idDispositivo(), p_id: id });
+  if (error) { console.error("Error participando:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+  avisar("¡Ya participas en el sorteo!");
+  await cargarSorteos();
+  pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
+}
+
+function formNuevoSorteo() {
+  if (!adminActivo) return;
+  contenido.innerHTML = `
+    <div class="form-producto">
+      <h2>Nuevo sorteo</h2>
+      <label for="sr-titulo">Título del sorteo</label>
+      <input id="sr-titulo" maxlength="80" placeholder="Ej.: ¡Gana un pack PH!">
+      <label for="sr-desc">Descripción (opcional)</label>
+      <textarea id="sr-desc" rows="3" maxlength="300"></textarea>
+      <label for="sr-cierre">Fecha y hora de cierre</label>
+      <input id="sr-cierre" type="datetime-local">
+      <label for="sr-foto">Foto del premio (opcional)</label>
+      <input id="sr-foto" type="file" accept="image/*">
+      <button type="button" id="sr-guardar" onclick="guardarNuevoSorteo()">Crear sorteo</button>
+      <button type="button" class="volver" onclick="mostrarSorteos()">Cancelar</button>
+    </div>`;
+}
+
+async function guardarNuevoSorteo() {
+  if (!adminActivo) return;
+  const titulo = document.getElementById("sr-titulo").value.trim();
+  const descripcion = document.getElementById("sr-desc").value.trim();
+  const cierreTxt = document.getElementById("sr-cierre").value;
+  const archivo = document.getElementById("sr-foto").files[0];
+
+  if (titulo.length < 3) { avisar("Escribe el título del sorteo", "error"); return; }
+  if (!cierreTxt) { avisar("Elige la fecha de cierre", "error"); return; }
+  const cierre = new Date(cierreTxt);
+  if (!(cierre.getTime() > Date.now())) { avisar("La fecha de cierre debe ser futura", "error"); return; }
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const boton = document.getElementById("sr-guardar");
+  boton.disabled = true;
+  boton.textContent = "Guardando…";
+
+  let nombreArchivo = null;
+  try {
+    let urlImagen = "";
+    if (archivo) {
+      const foto = await reducirImagen(archivo);
+      nombreArchivo = `sorteo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error: errorSubida } = await supabase.storage
+        .from("productos")
+        .upload(nombreArchivo, foto, { contentType: "image/jpeg", cacheControl: "31536000" });
+      if (errorSubida) throw errorSubida;
+      urlImagen = supabase.storage.from("productos").getPublicUrl(nombreArchivo).data.publicUrl;
+    }
+
+    const { error } = await supabase.rpc("sorteo_crear", {
+      p_pin: pin, p_titulo: titulo, p_descripcion: descripcion, p_imagen: urlImagen, p_cierre: cierre.toISOString()
+    });
+    if (error) throw error;
+
+    avisar("Sorteo creado");
+    mostrarSorteos();
+  } catch (error) {
+    console.error("Error creando sorteo:", error);
+    if (nombreArchivo) supabase.storage.from("productos").remove([nombreArchivo]).catch(() => {});
+    avisar(mensajeErrorSorteo(error), "error");
+    boton.disabled = false;
+    boton.textContent = "Crear sorteo";
+  }
+}
+
+async function sorteoRealizar(id) {
+  if (!adminActivo) return;
+  if (!confirm("¿Realizar el sorteo ahora? El ganador se elige al azar y no se puede repetir.")) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { data, error } = await supabase.rpc("sorteo_realizar", { p_pin: pin, p_id: id });
+  if (error) { console.error("Error en el sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+
+  avisar(`¡Sorteo realizado! Ganador: ${data}`, "info", { duracion: 9000 });
+  await cargarSorteos();
+  pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
+}
+
+async function sorteoCancelar(id) {
+  if (!adminActivo) return;
+  if (!confirm("¿Cancelar este sorteo? Dejará de verse en la app.")) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { error } = await supabase.rpc("sorteo_cancelar", { p_pin: pin, p_id: id });
+  if (error) { avisar(mensajeErrorSorteo(error), "error"); return; }
+  avisar("Sorteo cancelado");
+  mostrarSorteos();
+}
+
+window.mostrarSorteos = mostrarSorteos;
+window.sorteoParticipar = sorteoParticipar;
+window.formNuevoSorteo = formNuevoSorteo;
+window.guardarNuevoSorteo = guardarNuevoSorteo;
+window.sorteoRealizar = sorteoRealizar;
+window.sorteoCancelar = sorteoCancelar;
 
 /* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */
 

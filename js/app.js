@@ -32,7 +32,16 @@ const ICONOS = {
   derecha:    '<path d="M9 6l6 6-6 6"/>',
   izquierda:  '<path d="M15 6l-6 6 6 6"/>',
   lupa:       '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
-  camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
+  camara:     '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  estrella:   '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8L3.5 9.7l5.9-.9z"/>',
+  mas:        '<path d="M12 5v14M5 12h14"/>',
+  diana:      '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8"/>',
+  escudo:     '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',
+  mano:       '<path d="M8 12V6.5a1.5 1.5 0 013 0V11m0-4.5v-1a1.5 1.5 0 013 0V11m0-4a1.5 1.5 0 013 0v7a6 6 0 01-6 6h-1a6 6 0 01-5-2.7L4 14.5a1.5 1.5 0 012.4-1.7L8 14"/>',
+  rayo:       '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',
+  claqueta:   '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l2-4 3 1.5L11 3l3 1.5L16 3l2 3.5L20 9"/>',
+  subir:      '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/>',
+  bandera:    '<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>'
 };
 function ico(nombre, tam = 18) {
   return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
@@ -332,6 +341,7 @@ function restaurarVista(estado) {
     case "tabla":       mostrarClasificacion(); break;
     case "pabellones":  mostrarPabellones(); break;
     case "tienda":      mostrarTienda(); break;
+    case "highlights":  mostrarHighlights(); break;
     case "avisos":      mostrarAvisos(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
     case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
@@ -940,6 +950,7 @@ const VISTAS_INICIALES = {
   tabla: () => mostrarClasificacion(),
   pabellones: () => mostrarPabellones(),
   tienda: () => mostrarTienda(),
+  highlights: () => mostrarHighlights(),
   avisos: () => mostrarAvisos()
 };
 
@@ -4450,6 +4461,474 @@ async function borrarProducto(id) {
   tiendaCargada = false;
   mostrarTienda();
 }
+
+
+/* ================== PH HIGHLIGHTS (LOS MEJORES MOMENTOS) ================== */
+
+const TIPOS_HIGHLIGHT = [
+  { id: "gol",     plural: "Goles",    singular: "Gol",     icono: "diana" },
+  { id: "defensa", plural: "Defensas", singular: "Defensa", icono: "escudo" },
+  { id: "parada",  plural: "Paradas",  singular: "Parada",  icono: "mano" },
+  { id: "penalti", plural: "Penaltis", singular: "Penalti", icono: "diana" },
+  { id: "jugada",  plural: "Jugadas",  singular: "Jugada",  icono: "rayo" },
+  { id: "momento", plural: "Momentos", singular: "Momento", icono: "claqueta" }
+];
+
+const HL_MAX_MB = 50;
+const HL_MAX_SEGUNDOS = 60;
+const HL_POR_PAGINA = 8;
+const HL_MIN_VOTOS_DESTACADO = 3;
+
+let highlights = [];
+let highlightsPendientes = [];
+let highlightsCargados = false;
+let hlFiltro = "todos";
+let hlOrden = "mejores";
+let hlLimite = HL_POR_PAGINA;
+
+// Identificador anónimo de este móvil: sirve para limitar a un voto por vídeo
+function idDispositivo() {
+  let id = lsGet("ph_device");
+  if (!id || id.length < 8) {
+    id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `d${Date.now()}${Math.random().toString(36).slice(2, 12)}`;
+    lsSet("ph_device", id);
+  }
+  return id;
+}
+
+function misVotosHighlights() {
+  try { return JSON.parse(lsGet("ph_votos") || "{}") || {}; } catch (e) { return {}; }
+}
+
+function guardarVotoLocal(id, n) {
+  const v = misVotosHighlights();
+  v[id] = n;
+  lsSet("ph_votos", JSON.stringify(v));
+}
+
+function tipoHighlight(id) {
+  return TIPOS_HIGHLIGHT.find(t => t.id === id) || TIPOS_HIGHLIGHT[5];
+}
+
+function mediaHighlight(h) {
+  return h.votos > 0 ? h.suma / h.votos : 0;
+}
+
+function textoMedia(h) {
+  if (!h.votos) return "";
+  const lang = document.documentElement.lang || "es";
+  return new Intl.NumberFormat(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(mediaHighlight(h));
+}
+
+function textoValoraciones(n) {
+  return n ? `${n} ${n === 1 ? "valoración" : "valoraciones"}` : "Sin valoraciones";
+}
+
+async function cargarHighlights() {
+  const { data, error } = await supabase
+    .from("highlights")
+    .select("id,tipo,categoria,club,descripcion,video_url,votos,suma,creado,autor_device")
+    .order("creado", { ascending: false })
+    .limit(300);
+
+  if (error) {
+    console.error("Error cargando highlights:", error);
+    return false;
+  }
+
+  highlights = data || [];
+  highlightsCargados = true;
+  return true;
+}
+
+async function cargarPendientesHighlights() {
+  highlightsPendientes = [];
+  if (!adminActivo) return;
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { data, error } = await supabase.rpc("highlight_pendientes", { p_pin: pin });
+  if (error) {
+    console.error("Error cargando pendientes:", error);
+    if (error.code === "42501") pinAdmin = null;
+    return;
+  }
+  highlightsPendientes = data || [];
+}
+
+function estrellasHighlight(h) {
+  const mio = Number(misVotosHighlights()[h.id]) || 0;
+  const propio = h.autor_device && h.autor_device === idDispositivo();
+  return Array.from({ length: 5 }, (_, i) => {
+    const n = i + 1;
+    return `<button type="button" class="hl-estrella ${n <= mio ? "llena" : ""}" ${propio ? "disabled" : ""}
+      aria-label="Valorar con ${n} ${n === 1 ? "estrella" : "estrellas"}" onclick="hlValorar(${Number(h.id)}, ${n})">${ico("estrella", 26)}</button>`;
+  }).join("");
+}
+
+function cabeceraMediaHighlight(h) {
+  const media = textoMedia(h);
+  return `
+    <span class="hl-nota">${ico("estrella", 16)}<strong>${media || "–"}</strong></span>
+    <span class="hl-votos">${textoValoraciones(h.votos)}</span>`;
+}
+
+function tarjetaHighlight(h, opciones = {}) {
+  const tipo = tipoHighlight(h.tipo);
+  const url = escaparHtml(urlSegura(h.video_url));
+  const pendiente = !!opciones.pendiente;
+
+  return `
+    <article class="hl-card ${opciones.destacado ? "destacado" : ""}" data-hl-id="${Number(h.id)}">
+      <div class="hl-video">
+        <video controls playsinline preload="metadata" src="${url}#t=0.1" aria-label="${escaparHtml(h.descripcion)}"></video>
+        ${opciones.destacado ? `<span class="hl-insignia">${ico("estrella", 14)}Destacado</span>` : ""}
+      </div>
+
+      <div class="hl-cuerpo">
+        <div class="hl-meta">
+          <span class="hl-tipo">${ico(tipo.icono, 15)}${tipo.singular}</span>
+          <span class="hl-quien">${escaparHtml(h.categoria)}${h.club ? ` · ${escaparHtml(h.club)}` : ""}</span>
+        </div>
+
+        <p class="hl-desc">${escaparHtml(h.descripcion)}</p>
+
+        ${pendiente ? `
+          <div class="hl-admin">
+            <button type="button" class="hl-btn primario" onclick="hlModerar(${Number(h.id)}, 'aprobado')">Aprobar</button>
+            <button type="button" class="hl-btn peligro" onclick="hlModerar(${Number(h.id)}, 'eliminado')">Eliminar</button>
+          </div>
+        ` : `
+          <div class="hl-valoracion">
+            <div class="hl-resumen">${cabeceraMediaHighlight(h)}</div>
+            <div class="hl-estrellas" role="group" aria-label="Valora este momento">${estrellasHighlight(h)}</div>
+          </div>
+          <div class="hl-pie">
+            <button type="button" class="hl-enlace" onclick="hlReportar(${Number(h.id)})">${ico("bandera", 14)}Reportar vídeo</button>
+            ${adminActivo ? `<button type="button" class="hl-enlace peligro" onclick="hlModerar(${Number(h.id)}, 'eliminado')">Eliminar</button>` : ""}
+          </div>
+        `}
+      </div>
+    </article>`;
+}
+
+function listaFiltradaHighlights() {
+  let lista = highlights.filter(h => hlFiltro === "todos" || h.tipo === hlFiltro);
+
+  if (hlOrden === "mejores") {
+    lista = [...lista].sort((a, b) =>
+      (mediaHighlight(b) - mediaHighlight(a)) || (b.votos - a.votos) || (new Date(b.creado) - new Date(a.creado)));
+  } else {
+    lista = [...lista].sort((a, b) => new Date(b.creado) - new Date(a.creado));
+  }
+
+  return lista;
+}
+
+function pintarHighlights() {
+  if (vistaActual !== "highlights") return;
+
+  const filtros = [{ id: "todos", plural: "Todos", icono: "" }, ...TIPOS_HIGHLIGHT]
+    .map(t => `<button type="button" class="hl-chip ${hlFiltro === t.id ? "activo" : ""}" aria-pressed="${hlFiltro === t.id}"
+      onclick="hlFiltrar('${t.id}')">${t.icono ? ico(t.icono, 15) : ""}${t.plural}</button>`).join("");
+
+  const lista = listaFiltradaHighlights();
+  let destacado = null;
+  let resto = lista;
+
+  if (hlOrden === "mejores" && hlFiltro === "todos") {
+    const candidato = lista[0];
+    if (candidato && candidato.votos >= HL_MIN_VOTOS_DESTACADO) {
+      destacado = candidato;
+      resto = lista.slice(1);
+    }
+  }
+
+  const visibles = resto.slice(0, hlLimite);
+
+  let cuerpo = "";
+  if (!highlights.length) {
+    cuerpo = `<div class="estado-vacio">${ico("claqueta", 36)}<strong>Todavía no hay vídeos</strong><span>Sé el primero en subir un momento del torneo.</span></div>`;
+  } else if (!lista.length) {
+    cuerpo = `<div class="estado-vacio">${ico("claqueta", 36)}<strong>No hay vídeos de este tipo todavía</strong></div>`;
+  } else {
+    cuerpo = `
+      ${destacado ? tarjetaHighlight(destacado, { destacado: true }) : ""}
+      <div class="hl-lista">${visibles.map(h => tarjetaHighlight(h)).join("")}</div>
+      ${resto.length > visibles.length ? `<button type="button" class="hl-mas" onclick="hlMas()">Ver más vídeos</button>` : ""}`;
+  }
+
+  const pendientes = highlightsPendientes.length ? `
+    <section class="hl-pendientes">
+      <h3>Pendientes de revisión <span class="pt-cuenta">${highlightsPendientes.length}</span></h3>
+      <div class="hl-lista">${highlightsPendientes.map(h => tarjetaHighlight(h, { pendiente: true })).join("")}</div>
+    </section>` : "";
+
+  contenido.innerHTML = `
+    <div class="hl-cab">
+      <h2>PH Highlights</h2>
+      <p class="pab-intro">Goles, paradas y jugadas subidos por jugadores y entrenadores. ¡Valora tus favoritos con estrellas!</p>
+      <button type="button" class="hl-subir" onclick="formSubirHighlight()">${ico("subir", 20)}Subir mi momento</button>
+    </div>
+
+    ${pendientes}
+
+    <div class="hl-filtros" role="group" aria-label="Tipo de momento">${filtros}</div>
+
+    <div class="hl-orden" role="group" aria-label="Orden">
+      <button type="button" class="${hlOrden === "mejores" ? "activo" : ""}" onclick="hlOrdenar('mejores')">Mejor valorados</button>
+      <button type="button" class="${hlOrden === "recientes" ? "activo" : ""}" onclick="hlOrdenar('recientes')">Más recientes</button>
+    </div>
+
+    ${cuerpo}
+  `;
+
+  // solo suena un vídeo a la vez
+  contenido.querySelectorAll("video").forEach(v => {
+    v.addEventListener("play", () => {
+      contenido.querySelectorAll("video").forEach(o => { if (o !== v) o.pause(); });
+    });
+  });
+}
+
+async function mostrarHighlights() {
+  setNavActivoPorVista("highlights");
+  registrarNavegacion("highlights");
+
+  hlLimite = HL_POR_PAGINA;
+
+  if (!highlightsCargados) {
+    contenido.innerHTML = `
+      <div class="hl-cab"><h2>PH Highlights</h2></div>
+      <div class="estado-vacio">Cargando vídeos…</div>`;
+
+    const ok = await cargarHighlights();
+    if (vistaActual !== "highlights") return;
+    if (!ok) {
+      contenido.innerHTML = `
+        <div class="hl-cab"><h2>PH Highlights</h2></div>
+        <div class="estado-vacio"><strong>No se han podido cargar los vídeos. Comprueba tu conexión e inténtalo de nuevo.</strong>
+        <button type="button" class="hl-subir" onclick="mostrarHighlights()">Reintentar</button></div>`;
+      return;
+    }
+  }
+
+  pintarHighlights();
+
+  // los vídeos se refrescan en segundo plano para ver valoraciones nuevas
+  if (adminActivo) {
+    await cargarPendientesHighlights();
+    pintarHighlights();
+  }
+}
+
+function hlFiltrar(id) { hlFiltro = id; hlLimite = HL_POR_PAGINA; pintarHighlights(); }
+function hlOrdenar(o) { hlOrden = o; hlLimite = HL_POR_PAGINA; pintarHighlights(); }
+function hlMas() { hlLimite += HL_POR_PAGINA; pintarHighlights(); }
+
+async function hlValorar(id, n) {
+  const h = highlights.find(x => Number(x.id) === Number(id));
+  if (!h) return;
+
+  const anterior = Number(misVotosHighlights()[id]) || 0;
+  if (anterior === n) return;
+
+  const { data, error } = await supabase.rpc("highlight_valorar", {
+    p_id: id, p_device: idDispositivo(), p_estrellas: n
+  });
+
+  if (error) {
+    console.error("Error valorando:", error);
+    avisar(/propio/i.test(error.message || "") ? "No puedes valorar tu propio vídeo" : "No se ha podido guardar la valoración", "error");
+    return;
+  }
+
+  const fila = Array.isArray(data) ? data[0] : data;
+  if (fila) { h.votos = Number(fila.votos); h.suma = Number(fila.suma); }
+  guardarVotoLocal(id, n);
+
+  // se actualiza solo esa tarjeta para no cortar el vídeo que se está viendo
+  const tarjeta = contenido.querySelector(`.hl-card[data-hl-id="${Number(id)}"]`);
+  if (tarjeta) {
+    tarjeta.querySelector(".hl-resumen").innerHTML = cabeceraMediaHighlight(h);
+    tarjeta.querySelector(".hl-estrellas").innerHTML = estrellasHighlight(h);
+  }
+  avisar("Valoración guardada");
+}
+
+async function hlReportar(id) {
+  if (!confirm("¿Reportar este vídeo?")) return;
+
+  const { error } = await supabase.rpc("highlight_reportar", { p_id: id, p_device: idDispositivo() });
+  if (error) {
+    console.error("Error reportando:", error);
+    avisar("No se ha podido enviar el aviso", "error");
+    return;
+  }
+  avisar("Gracias por avisar. Lo revisaremos.");
+}
+
+async function hlModerar(id, estado) {
+  if (!adminActivo) return;
+  if (estado === "eliminado" && !confirm("¿Eliminar este vídeo?")) return;
+
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+
+  const { error } = await supabase.rpc("highlight_moderar", { p_pin: pin, p_id: id, p_estado: estado });
+  if (error) {
+    console.error("Error moderando:", error);
+    avisar(mensajeErrorProducto(error), "error");
+    return;
+  }
+
+  avisar(estado === "aprobado" ? "Vídeo aprobado" : "Vídeo eliminado");
+  highlightsCargados = false;
+  mostrarHighlights();
+}
+
+/* ---- subida ---- */
+
+async function formSubirHighlight() {
+  setNavActivoPorVista("highlights");
+
+  let nombresClub = [];
+  try {
+    const { data } = await supabase.from("clubes").select("nombre").order("nombre");
+    nombresClub = (data || []).map(c => c.nombre).filter(Boolean);
+  } catch (e) { /* el club es opcional */ }
+
+  contenido.innerHTML = `
+    <div class="hl-form fa-form">
+      <h2>Subir un momento</h2>
+
+      <label class="hl-archivo" for="hl-archivo">
+        ${ico("subir", 30)}
+        <strong id="hl-archivo-nombre">Seleccionar vídeo</strong>
+        <span>MP4 o MOV · máximo ${HL_MAX_MB} MB · 5-30 segundos recomendados</span>
+      </label>
+      <input id="hl-archivo" type="file" accept="video/mp4,video/quicktime,video/webm" hidden>
+
+      <label for="hl-tipo">Tipo de momento</label>
+      <select id="hl-tipo">
+        ${TIPOS_HIGHLIGHT.map(t => `<option value="${t.id}">${t.singular}</option>`).join("")}
+      </select>
+
+      <label for="hl-categoria">Categoría</label>
+      <select id="hl-categoria">
+        <option value="Infantil">Infantil</option>
+        <option value="Cadete">Cadete</option>
+        <option value="Juvenil">Juvenil</option>
+      </select>
+
+      <label for="hl-club">Club (opcional)</label>
+      <select id="hl-club">
+        <option value="">Sin indicar</option>
+        ${nombresClub.map(n => `<option value="${escaparHtml(n)}">${escaparHtml(n)}</option>`).join("")}
+      </select>
+
+      <label for="hl-desc">Descripción corta</label>
+      <textarea id="hl-desc" rows="2" maxlength="100" placeholder="Ej.: ¡Paradón a falta de cinco segundos!"></textarea>
+      <div class="hl-contador" id="hl-contador">0/100 caracteres</div>
+
+      <label class="hl-permiso">
+        <input id="hl-permiso" type="checkbox">
+        <span>Confirmo que tengo permiso de las personas que aparecen (o de sus familias o tutores) para compartir este vídeo.</span>
+      </label>
+
+      <p class="hl-aviso">${ico("escudo", 16)}Los vídeos se revisarán antes de publicarse.</p>
+
+      <button type="button" id="hl-enviar" class="hl-subir" onclick="enviarHighlight()">Enviar vídeo para revisión</button>
+      <button type="button" class="volver" onclick="mostrarHighlights()">Cancelar</button>
+    </div>
+  `;
+
+  document.getElementById("hl-archivo").addEventListener("change", e => {
+    const f = e.target.files[0];
+    document.getElementById("hl-archivo-nombre").textContent = f ? f.name : "Seleccionar vídeo";
+  });
+  document.getElementById("hl-desc").addEventListener("input", e => {
+    document.getElementById("hl-contador").textContent = `${e.target.value.length}/100 caracteres`;
+  });
+}
+
+function duracionVideo(file) {
+  return new Promise(resolve => {
+    const v = document.createElement("video");
+    const url = URL.createObjectURL(file);
+    const fin = (d) => { URL.revokeObjectURL(url); resolve(d); };
+    v.preload = "metadata";
+    v.onloadedmetadata = () => fin(isFinite(v.duration) ? v.duration : null);
+    v.onerror = () => fin(null); // por ejemplo un MOV que este navegador no sabe leer: lo revisa la organización
+    setTimeout(() => fin(null), 6000);
+    v.src = url;
+  });
+}
+
+async function enviarHighlight() {
+  const archivo = document.getElementById("hl-archivo").files[0];
+  const descripcion = document.getElementById("hl-desc").value.trim();
+
+  if (!archivo) { avisar("Elige un vídeo", "error"); return; }
+  if (!/^video\/(mp4|quicktime|webm)$/.test(archivo.type)) { avisar("Formato de vídeo no admitido", "error"); return; }
+  if (archivo.size > HL_MAX_MB * 1024 * 1024) { avisar(`El vídeo pesa más de ${HL_MAX_MB} MB`, "error"); return; }
+  if (!descripcion) { avisar("Escribe una descripción", "error"); return; }
+  if (!document.getElementById("hl-permiso").checked) { avisar("Confirma el permiso de imagen", "error"); return; }
+
+  const boton = document.getElementById("hl-enviar");
+  boton.disabled = true;
+  boton.textContent = "Enviando…";
+
+  const segundos = await duracionVideo(archivo);
+  if (segundos && segundos > HL_MAX_SEGUNDOS) {
+    avisar(`El vídeo dura demasiado (máximo ${HL_MAX_SEGUNDOS} segundos)`, "error");
+    boton.disabled = false;
+    boton.textContent = "Enviar vídeo para revisión";
+    return;
+  }
+
+  const extension = archivo.type === "video/quicktime" ? "mov" : archivo.type === "video/webm" ? "webm" : "mp4";
+  const nombreArchivo = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+
+  try {
+    const { error: errorSubida } = await supabase.storage
+      .from("highlights")
+      .upload(nombreArchivo, archivo, { contentType: archivo.type, cacheControl: "31536000" });
+    if (errorSubida) throw errorSubida;
+
+    const { error } = await supabase.rpc("highlight_crear", {
+      p_device: idDispositivo(),
+      p_tipo: document.getElementById("hl-tipo").value,
+      p_categoria: document.getElementById("hl-categoria").value,
+      p_club: document.getElementById("hl-club").value,
+      p_descripcion: descripcion,
+      p_archivo: nombreArchivo,
+      p_consentimiento: true
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error subiendo highlight:", error);
+    avisar(/máximo de vídeos/i.test(error.message || "") ? "Has llegado al máximo de vídeos por hoy" : "No se ha podido subir el vídeo", "error");
+    boton.disabled = false;
+    boton.textContent = "Enviar vídeo para revisión";
+    return;
+  }
+
+  avisar("¡Gracias! Tu vídeo se publicará cuando lo revise la organización.");
+  highlightsCargados = false;
+  mostrarHighlights();
+}
+
+window.mostrarHighlights = mostrarHighlights;
+window.hlFiltrar = hlFiltrar;
+window.hlOrdenar = hlOrdenar;
+window.hlMas = hlMas;
+window.hlValorar = hlValorar;
+window.hlReportar = hlReportar;
+window.hlModerar = hlModerar;
+window.formSubirHighlight = formSubirHighlight;
+window.enviarHighlight = enviarHighlight;
 
 
 /* ================== AVISOS DE PARTIDOS (NOTIFICACIONES PUSH) ================== */

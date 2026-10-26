@@ -97,6 +97,15 @@
   </footer>
 
   <!-- BOTÓN "+" : reúne la canción, las redes sociales y el acceso de organización -->
+  <button type="button" class="info-fab" id="info-fab" onclick="abrirInfo()" aria-label="Información del torneo"><svg class="ico" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.2"/></svg></button>
+  <div class="info-panel" id="info-panel" hidden>
+    <div class="info-fondo" onclick="cerrarInfo()"></div>
+    <section class="info-hoja" role="dialog" aria-modal="true" aria-label="Información del torneo">
+      <div class="info-cab"><h2>Información del torneo</h2><button type="button" id="info-cerrar" class="info-cerrar" onclick="cerrarInfo()" aria-label="Cerrar"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="info-scroll" id="info-cuerpo"></div>
+    </section>
+  </div>
+
   <div class="hub" id="hub">
     <button type="button" class="hub-main" id="hub-main" onclick="toggleHub()"
             aria-label="Más opciones" aria-expanded="false" aria-controls="hub-items">

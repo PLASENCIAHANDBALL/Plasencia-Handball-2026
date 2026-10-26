@@ -474,4 +474,6 @@ export const DE = {
   "No se ha podido eliminar": "Konnte nicht gelöscht werden",
   "¿Eliminar esta información?": "Diese Information löschen?",
   "Información eliminada": "Information gelöscht",
+  "Imagen (opcional)": "Bild (optional)",
+  "Quitar la imagen actual": "Aktuelles Bild entfernen",
 };

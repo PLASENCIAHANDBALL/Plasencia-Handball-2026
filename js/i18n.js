@@ -548,7 +548,9 @@ const TEXTOS = {
   "No se ha podido guardar": ["Could not be saved", "Não foi possível guardar", "Impossible d'enregistrer"],
   "No se ha podido eliminar": ["Could not be deleted", "Não foi possível eliminar", "Impossible de supprimer"],
   "¿Eliminar esta información?": ["Delete this information?", "Eliminar esta informação?", "Supprimer cette information ?"],
-  "Información eliminada": ["Information deleted", "Informação eliminada", "Information supprimée"]
+  "Información eliminada": ["Information deleted", "Informação eliminada", "Information supprimée"],
+  "Imagen (opcional)": ["Image (optional)", "Imagem (opcional)", "Image (facultatif)"],
+  "Quitar la imagen actual": ["Remove the current image", "Remover a imagem atual", "Supprimer l'image actuelle"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

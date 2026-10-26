@@ -547,8 +547,6 @@ function mostrarHome() {
 
     <div id="bloque-instalar"></div>
 
-    <section id="bloque-info"></section>
-
     <h3 class="titulo-seccion">Fotos del torneo</h3>
     <div class="fotos-grid">
       <section class="galeria2027">
@@ -655,7 +653,6 @@ function mostrarHome() {
 
   // cargar galería
 setTimeout(renderActualizacionesHome, 0);
-renderInfoHome();
 
   requestAnimationFrame(() => {
     cargarGaleria2025();
@@ -5761,7 +5758,7 @@ let infoTorneo = [];
 async function cargarInfoTorneo() {
   const { data, error } = await supabase
     .from("info_torneo")
-    .select("id,categoria,titulo,texto,fijado,actualizado")
+    .select("id,categoria,titulo,texto,fijado,imagen,actualizado")
     .order("fijado", { ascending: false })
     .order("actualizado", { ascending: false });
 
@@ -5778,11 +5775,12 @@ function tarjetaInfo(i) {
   const cat = CATEGORIAS_INFO[i.categoria] || CATEGORIAS_INFO.general;
   const id = Number(i.id);
   return `
-    <article class="info-card ${i.categoria === "aviso" ? "aviso" : ""}">
+    <article class="info-card ${i.categoria === "aviso" ? "info-aviso" : ""}">
       <div class="info-icono">${ico(cat.icono, 22)}</div>
       <div class="info-cuerpo">
         <div class="info-etiqueta">${cat.nombre}${i.fijado ? ` · <span class="info-fijado">Destacado</span>` : ""}</div>
         <h4>${escaparHtml(i.titulo)}</h4>
+        ${i.imagen ? `<img class="info-img" src="${escaparHtml(urlSegura(i.imagen))}" alt="" loading="lazy" decoding="async">` : ""}
         ${i.texto ? `<p>${textoInfoHtml(i.texto)}</p>` : ""}
         ${adminActivo ? `
           <div class="info-admin">
@@ -5793,24 +5791,46 @@ function tarjetaInfo(i) {
     </article>`;
 }
 
-async function renderInfoHome() {
-  const cont = document.getElementById("bloque-info");
-  if (!cont) return;
+function panelInfo() { return document.getElementById("info-panel"); }
+
+async function abrirInfo() {
+  const panel = panelInfo();
+  if (!panel) return;
+  panel.hidden = false;
+  document.body.classList.add("info-abierto");
+  document.getElementById("info-cuerpo").innerHTML = `<p class="estado-vacio">Cargando…</p>`;
+  document.getElementById("info-cerrar").focus();
+  await renderInfoPanel();
+}
+
+function cerrarInfo() {
+  const panel = panelInfo();
+  if (panel) panel.hidden = true;
+  document.body.classList.remove("info-abierto");
+}
+
+async function renderInfoPanel() {
+  const cuerpo = document.getElementById("info-cuerpo");
+  if (!cuerpo) return;
 
   const ok = await cargarInfoTorneo();
-  if (!document.getElementById("bloque-info")) return;
-  if (!ok || (!infoTorneo.length && !adminActivo)) { cont.innerHTML = ""; return; }
+  if (!ok) {
+    cuerpo.innerHTML = `<div class="estado-vacio"><strong>No se han podido cargar los datos</strong>
+      <button type="button" class="hl-subir" onclick="renderInfoPanel()">Reintentar</button></div>`;
+    return;
+  }
 
-  cont.innerHTML = `
-    <h3 class="titulo-seccion">Información del torneo</h3>
+  cuerpo.innerHTML = `
     ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formInfo()">Añadir información</button>` : ""}
     <div class="info-lista">${infoTorneo.map(tarjetaInfo).join("") || `<p class="estado-vacio">Todavía no hay información publicada.</p>`}</div>`;
 }
 
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarInfo(); });
+
 function formInfo(id) {
   if (!adminActivo) return;
   const i = id ? infoTorneo.find(x => Number(x.id) === Number(id)) : null;
-  contenido.innerHTML = `
+  document.getElementById("info-cuerpo").innerHTML = `
     <div class="form-producto">
       <h2>${i ? "Editar información" : "Nueva información"}</h2>
       <label for="info-cat">Tipo</label>
@@ -5819,9 +5839,12 @@ function formInfo(id) {
       <input id="info-titulo" maxlength="80" placeholder="Ej.: Autobuses a los pabellones" value="${i ? escaparHtml(i.titulo) : ""}">
       <label for="info-texto">Texto</label>
       <textarea id="info-texto" rows="6" maxlength="800">${i ? escaparHtml(i.texto || "") : ""}</textarea>
+      <label for="info-foto">Imagen (opcional)</label>
+      <input id="info-foto" type="file" accept="image/*">
+      ${i && i.imagen ? `<label class="check-linea"><input id="info-quitar-foto" type="checkbox"> Quitar la imagen actual</label>` : ""}
       <label class="check-linea"><input id="info-fijado" type="checkbox" ${i && i.fijado ? "checked" : ""}> Destacado (aparece el primero)</label>
       <button type="button" id="info-guardar" onclick="guardarInfo(${i ? Number(i.id) : "null"})">Guardar</button>
-      <button type="button" class="volver" onclick="mostrarHome()">Cancelar</button>
+      <button type="button" class="volver" onclick="renderInfoPanel()">Cancelar</button>
     </div>`;
 }
 
@@ -5836,24 +5859,41 @@ async function guardarInfo(id) {
   const boton = document.getElementById("info-guardar");
   boton.disabled = true;
 
-  const { error } = await supabase.rpc("info_guardar", {
-    p_pin: pin,
-    p_id: id,
-    p_categoria: document.getElementById("info-cat").value,
-    p_titulo: titulo,
-    p_texto: document.getElementById("info-texto").value.trim(),
-    p_fijado: document.getElementById("info-fijado").checked
-  });
+  const archivo = document.getElementById("info-foto").files[0];
+  const quitar = !!document.getElementById("info-quitar-foto")?.checked;
+  let nombreArchivo = null;
+  let imagen = quitar ? "" : null;   // null = dejar la que hay
 
-  if (error) {
+  try {
+    if (archivo) {
+      const foto = await reducirImagen(archivo);
+      nombreArchivo = `info-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error: errorSubida } = await supabase.storage
+        .from("productos")
+        .upload(nombreArchivo, foto, { contentType: "image/jpeg", cacheControl: "31536000" });
+      if (errorSubida) throw errorSubida;
+      imagen = supabase.storage.from("productos").getPublicUrl(nombreArchivo).data.publicUrl;
+    }
+
+    const { error } = await supabase.rpc("info_guardar", {
+      p_pin: pin,
+      p_id: id,
+      p_categoria: document.getElementById("info-cat").value,
+      p_titulo: titulo,
+      p_texto: document.getElementById("info-texto").value.trim(),
+      p_fijado: document.getElementById("info-fijado").checked,
+      p_imagen: imagen
+    });
+    if (error) throw error;
+
+    avisar("Información guardada");
+    await renderInfoPanel();
+  } catch (error) {
     console.error("Error guardando información:", error);
+    if (nombreArchivo) supabase.storage.from("productos").remove([nombreArchivo]).catch(() => {});
     avisar(error.code === "42501" ? mensajeErrorProducto(error) : "No se ha podido guardar", "error");
     boton.disabled = false;
-    return;
   }
-
-  avisar("Información guardada");
-  mostrarHome();
 }
 
 async function borrarInfo(id) {
@@ -5865,9 +5905,12 @@ async function borrarInfo(id) {
   const { error } = await supabase.rpc("info_borrar", { p_pin: pin, p_id: id });
   if (error) { avisar(error.code === "42501" ? mensajeErrorProducto(error) : "No se ha podido eliminar", "error"); return; }
   avisar("Información eliminada");
-  mostrarHome();
+  await renderInfoPanel();
 }
 
+window.abrirInfo = abrirInfo;
+window.cerrarInfo = cerrarInfo;
+window.renderInfoPanel = renderInfoPanel;
 window.formInfo = formInfo;
 window.guardarInfo = guardarInfo;
 window.borrarInfo = borrarInfo;

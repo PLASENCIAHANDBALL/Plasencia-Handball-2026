@@ -4209,7 +4209,7 @@ function mostrarPabellones() {
 // Posiciones sobre la foto aérea de Plasencia (en % de la imagen)
 const POSICIONES_RADAR = {
   "Municipal":     [47.5, 15.5],
-  "San Calixto":   [59.2, 31.2],
+  "San Calixto":   [61.9, 46.6],
   "Multipista":    [87.0, 28.8],
   "Escuela":       [69.5, 37.5],
   "Miralvalle":    [68.0, 59.7],

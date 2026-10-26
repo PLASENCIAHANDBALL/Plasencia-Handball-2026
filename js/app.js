@@ -6513,9 +6513,21 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
+const VERSION_APP = "2026-10-26-51";
+{ const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
+
 function registrarServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   if (location.protocol !== "https:" && location.hostname !== "localhost") return;
+
+  // si ya había una versión controlando la página y llega otra, se recarga sola una vez
+  const habiaControlador = !!navigator.serviceWorker.controller;
+  let recargada = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!habiaControlador || recargada) return;
+    recargada = true;
+    location.reload();
+  });
 
   navigator.serviceWorker.register("sw.js").then(reg => {
     registroSW = reg;

@@ -4314,3 +4314,5 @@ body.splash-activo .info-fab,body.info-abierto .info-fab,body.info-abierto .hub{
 .gf-archivo-txt strong{font-size:15px;color:var(--tile-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gf-archivo-txt small{color:var(--muted);font-size:12px}
 .gf-input-archivo{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.version-app{display:block;margin-top:4px;font-size:11px;opacity:.55}

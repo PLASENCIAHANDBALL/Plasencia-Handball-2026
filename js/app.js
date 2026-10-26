@@ -5780,7 +5780,7 @@ function tarjetaInfo(i) {
       <div class="info-cuerpo">
         <div class="info-etiqueta">${cat.nombre}${i.fijado ? ` · <span class="info-fijado">Destacado</span>` : ""}</div>
         <h4>${escaparHtml(i.titulo)}</h4>
-        ${i.imagen ? `<img class="info-img" src="${escaparHtml(urlSegura(i.imagen))}" alt="" loading="lazy" decoding="async">` : ""}
+        ${i.imagen ? `<img class="info-img" src="${escaparHtml(urlSegura(i.imagen))}" alt="Ampliar imagen" loading="lazy" decoding="async" role="button" tabindex="0" onclick="ampliarImagenInfo(this.src)" onkeydown="if(event.key==='Enter')ampliarImagenInfo(this.src)">` : ""}
         ${i.texto ? `<p>${textoInfoHtml(i.texto)}</p>` : ""}
         ${adminActivo ? `
           <div class="info-admin">
@@ -5825,7 +5825,29 @@ async function renderInfoPanel() {
     <div class="info-lista">${infoTorneo.map(tarjetaInfo).join("") || `<p class="estado-vacio">Todavía no hay información publicada.</p>`}</div>`;
 }
 
-document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarInfo(); });
+function ampliarImagenInfo(src) {
+  cerrarVisorInfo();
+  const visor = document.createElement("div");
+  visor.id = "info-visor";
+  visor.className = "info-visor";
+  visor.setAttribute("role", "dialog");
+  visor.setAttribute("aria-label", "Imagen ampliada");
+  visor.innerHTML = `
+    <button type="button" class="info-visor-cerrar" aria-label="Cerrar">${ico("close", 22)}</button>
+    <div class="info-visor-zona"><img alt="" src="${escaparHtml(src)}"></div>`;
+  visor.addEventListener("click", e => { if (!e.target.closest("img")) cerrarVisorInfo(); });
+  document.body.appendChild(visor);
+  visor.querySelector("button").focus();
+}
+
+function cerrarVisorInfo() {
+  document.getElementById("info-visor")?.remove();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (document.getElementById("info-visor")) cerrarVisorInfo(); else cerrarInfo();
+});
 
 function formInfo(id) {
   if (!adminActivo) return;
@@ -5908,6 +5930,7 @@ async function borrarInfo(id) {
   await renderInfoPanel();
 }
 
+window.ampliarImagenInfo = ampliarImagenInfo;
 window.abrirInfo = abrirInfo;
 window.cerrarInfo = cerrarInfo;
 window.renderInfoPanel = renderInfoPanel;

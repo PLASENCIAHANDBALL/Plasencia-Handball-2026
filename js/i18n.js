@@ -550,7 +550,9 @@ const TEXTOS = {
   "¿Eliminar esta información?": ["Delete this information?", "Eliminar esta informação?", "Supprimer cette information ?"],
   "Información eliminada": ["Information deleted", "Informação eliminada", "Information supprimée"],
   "Imagen (opcional)": ["Image (optional)", "Imagem (opcional)", "Image (facultatif)"],
-  "Quitar la imagen actual": ["Remove the current image", "Remover a imagem atual", "Supprimer l'image actuelle"]
+  "Quitar la imagen actual": ["Remove the current image", "Remover a imagem atual", "Supprimer l'image actuelle"],
+  "Ampliar imagen": ["Enlarge image", "Ampliar imagem", "Agrandir l'image"],
+  "Imagen ampliada": ["Enlarged image", "Imagem ampliada", "Image agrandie"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

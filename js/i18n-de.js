@@ -476,4 +476,6 @@ export const DE = {
   "Información eliminada": "Information gelöscht",
   "Imagen (opcional)": "Bild (optional)",
   "Quitar la imagen actual": "Aktuelles Bild entfernen",
+  "Ampliar imagen": "Bild vergrößern",
+  "Imagen ampliada": "Vergrößertes Bild",
 };

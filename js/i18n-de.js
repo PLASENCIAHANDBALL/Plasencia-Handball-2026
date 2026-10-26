@@ -478,4 +478,10 @@ export const DE = {
   "Quitar la imagen actual": "Aktuelles Bild entfernen",
   "Ampliar imagen": "Bild vergrößern",
   "Imagen ampliada": "Vergrößertes Bild",
+  "Aparecerá en el inicio de la app": "Erscheint auf der Startseite der App",
+  "Elige el club, la categoría y el grupo": "Wähle Verein, Kategorie und Gruppe",
+  "Después podrás crear sus equipos": "Danach kannst du seine Mannschaften anlegen",
+  "Elegir imagen": "Bild auswählen",
+  "PNG o JPG. Se ajusta sola.": "PNG oder JPG. Wird automatisch angepasst.",
+  "Ej.: Balonmano Plasencia": "z. B.: Balonmano Plasencia",
 };

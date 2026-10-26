@@ -552,7 +552,13 @@ const TEXTOS = {
   "Imagen (opcional)": ["Image (optional)", "Imagem (opcional)", "Image (facultatif)"],
   "Quitar la imagen actual": ["Remove the current image", "Remover a imagem atual", "Supprimer l'image actuelle"],
   "Ampliar imagen": ["Enlarge image", "Ampliar imagem", "Agrandir l'image"],
-  "Imagen ampliada": ["Enlarged image", "Imagem ampliada", "Image agrandie"]
+  "Imagen ampliada": ["Enlarged image", "Imagem ampliada", "Image agrandie"],
+  "Aparecerá en el inicio de la app": ["It will appear on the app's home screen", "Aparecerá no início da app", "Il apparaîtra sur l'accueil de l'app"],
+  "Elige el club, la categoría y el grupo": ["Choose the club, category and group", "Escolhe o clube, a categoria e o grupo", "Choisissez le club, la catégorie et le groupe"],
+  "Después podrás crear sus equipos": ["You'll be able to create its teams afterwards", "Depois poderás criar as suas equipas", "Vous pourrez ensuite créer ses équipes"],
+  "Elegir imagen": ["Choose image", "Escolher imagem", "Choisir une image"],
+  "PNG o JPG. Se ajusta sola.": ["PNG or JPG. It's resized automatically.", "PNG ou JPG. Ajusta-se sozinha.", "PNG ou JPG. Elle s'ajuste toute seule."],
+  "Ej.: Balonmano Plasencia": ["E.g.: Balonmano Plasencia", "Ex.: Balonmano Plasencia", "Ex. : Balonmano Plasencia"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

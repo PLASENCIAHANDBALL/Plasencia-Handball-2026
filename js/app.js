@@ -695,20 +695,20 @@ async function moverPatrocinador(id, direccion) {
 
 function formNuevoPatrocinador() {
   contenido.innerHTML = `
-    <h2>Nuevo patrocinador</h2>
-
-    <label>Nombre</label>
-    <input id="nombre">
-
-    <label>Web</label>
-    <input id="web" placeholder="https://">
-
-    <label>Logo</label>
-    <input type="file" id="imagen" accept="image/*">
-
-    <button onclick="guardarNuevoPatrocinador()">Guardar</button>
-    <button class="volver" onclick="mostrarHome()">Volver</button>
-  `;
+    ${cabeceraGestion("estrella", "Nuevo patrocinador", "Aparecerá en el inicio de la app")}
+    <div class="fa-form">
+      <section class="fa-seccion">
+        <div class="fa-grid">
+          ${campoFormulario("nombre", "Nombre", `<input id="nombre" maxlength="60" autocomplete="off">`, "fa-ancho")}
+          ${campoFormulario("web", "Web", `<input id="web" type="url" inputmode="url" placeholder="https://" autocomplete="off" autocapitalize="off">`, "fa-ancho")}
+          ${campoArchivoGestion("imagen", "Logo")}
+        </div>
+      </section>
+      <div class="fa-botones">
+        <button type="button" class="fa-guardar" onclick="guardarNuevoPatrocinador()">Guardar</button>
+        <button type="button" class="volver" onclick="mostrarHome()">Volver</button>
+      </div>
+    </div>`;
 }
 
 function obtenerActualizacionesPartidos() {
@@ -1598,6 +1598,40 @@ function seccionFormulario(numero, titulo, contenidoHtml) {
       ${contenidoHtml}
     </section>`;
 }
+
+/* ---------- formularios de gestión (club, equipo, patrocinador) ---------- */
+function cabeceraGestion(icono, titulo, subtitulo) {
+  return `
+    <div class="gf-cab">
+      <span class="gf-icono">${ico(icono, 26)}</span>
+      <div><h2>${titulo}</h2><p>${subtitulo}</p></div>
+    </div>`;
+}
+
+function campoArchivoGestion(id, etiqueta) {
+  return `
+    <div class="fa-campo fa-ancho">
+      <span class="gf-etiqueta">${etiqueta}</span>
+      <label class="gf-archivo" for="${id}">
+        <span class="gf-prev" id="${id}-prev">${ico("subir", 22)}</span>
+        <span class="gf-archivo-txt"><strong id="${id}-nom">Elegir imagen</strong><small>PNG o JPG. Se ajusta sola.</small></span>
+      </label>
+      <input type="file" id="${id}" accept="image/*" class="gf-input-archivo" onchange="previsualizarArchivoGestion('${id}')">
+    </div>`;
+}
+
+function previsualizarArchivoGestion(id) {
+  const archivo = document.getElementById(id)?.files[0];
+  const prev = document.getElementById(`${id}-prev`);
+  const nombre = document.getElementById(`${id}-nom`);
+  if (!prev || !nombre) return;
+  if (!archivo) { prev.innerHTML = ico("subir", 22); nombre.textContent = "Elegir imagen"; return; }
+  const url = URL.createObjectURL(archivo);
+  prev.innerHTML = `<img alt="" src="${url}">`;
+  prev.querySelector("img").onload = () => URL.revokeObjectURL(url);
+  nombre.textContent = archivo.name;
+}
+window.previsualizarArchivoGestion = previsualizarArchivoGestion;
 
 function campoFormulario(id, etiqueta, controlHtml, extra = "") {
   return `<div class="fa-campo ${extra}"><label for="${id}">${etiqueta}</label>${controlHtml}</div>`;
@@ -3076,41 +3110,22 @@ function formNuevoEquipo() {
   }
 
   contenido.innerHTML = `
-    <h2>Nuevo equipo</h2>
-
-    <label>Club</label>
-    <select id="club">
-      ${clubes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join("")}
-    </select>
-
-    <label>Nombre del equipo (opcional)</label>
-    <input id="nombre" placeholder="Ej: BM Plasencia Infantil">
-
-    <label>Categoría</label>
-    <select id="categoria">
-      <option>Infantil</option>
-      <option>Cadete</option>
-      <option>Juvenil</option>
-    </select>
-
-    <label>Género</label>
-    <select id="genero">
-      <option>Masculino</option>
-      <option>Femenino</option>
-    </select>
-
-    <label>Grupo</label>
-    <select id="grupo">
-      <option>Grupo A</option>
-      <option>Grupo B</option>
-      <option>Grupo C</option>
-      <option>Grupo D</option>
-      <option>Grupo Único</option>
-    </select>
-
-    <button onclick="guardarNuevoEquipo()">Guardar equipo</button>
-    <button class="volver" onclick="mostrarEquipos()">Volver</button>
-  `;
+    ${cabeceraGestion("mano", "Nuevo equipo", "Elige el club, la categoría y el grupo")}
+    <div class="fa-form">
+      <section class="fa-seccion">
+        <div class="fa-grid">
+          ${campoFormulario("club", "Club", `<select id="club">${clubes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join("")}</select>`, "fa-ancho")}
+          ${campoFormulario("nombre", "Nombre del equipo (opcional)", `<input id="nombre" maxlength="60" placeholder="Ej: BM Plasencia Infantil" autocomplete="off">`, "fa-ancho")}
+          ${campoFormulario("categoria", "Categoría", `<select id="categoria"><option>Infantil</option><option>Cadete</option><option>Juvenil</option></select>`)}
+          ${campoFormulario("genero", "Género", `<select id="genero"><option>Masculino</option><option>Femenino</option></select>`)}
+          ${campoFormulario("grupo", "Grupo", `<select id="grupo"><option>Grupo A</option><option>Grupo B</option><option>Grupo C</option><option>Grupo D</option><option>Grupo Único</option></select>`, "fa-ancho")}
+        </div>
+      </section>
+      <div class="fa-botones">
+        <button type="button" class="fa-guardar" onclick="guardarNuevoEquipo()">Guardar equipo</button>
+        <button type="button" class="volver" onclick="mostrarEquipos()">Volver</button>
+      </div>
+    </div>`;
 }
 
 async function guardarNuevoEquipo() {
@@ -4000,17 +4015,19 @@ window.togglePartidosEquipoClub = togglePartidosEquipoClub;
 
 function formNuevoClub() {
   contenido.innerHTML = `
-    <h2>Nuevo club</h2>
-
-    <label>Nombre del club</label>
-    <input id="nombre">
-
-    <label>Escudo</label>
-    <input type="file" id="escudo" accept="image/*">
-
-    <button onclick="guardarNuevoClub()">Guardar</button>
-    <button class="volver" onclick="mostrarEquipos()">Volver</button>
-  `;
+    ${cabeceraGestion("escudo", "Nuevo club", "Después podrás crear sus equipos")}
+    <div class="fa-form">
+      <section class="fa-seccion">
+        <div class="fa-grid">
+          ${campoFormulario("nombre", "Nombre del club", `<input id="nombre" maxlength="60" placeholder="Ej.: Balonmano Plasencia" autocomplete="off">`, "fa-ancho")}
+          ${campoArchivoGestion("escudo", "Escudo")}
+        </div>
+      </section>
+      <div class="fa-botones">
+        <button type="button" class="fa-guardar" onclick="guardarNuevoClub()">Guardar</button>
+        <button type="button" class="volver" onclick="mostrarEquipos()">Volver</button>
+      </div>
+    </div>`;
 }
 
 // Lee la imagen del escudo y la reduce (máx. 192 px). Los escudos se guardan dentro de la

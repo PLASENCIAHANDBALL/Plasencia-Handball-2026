@@ -4297,3 +4297,20 @@ body.splash-activo .info-fab,body.info-abierto .info-fab,body.info-abierto .hub{
 @keyframes rdonda{to{transform:translate(-50%,-50%) scale(3.4);opacity:0}}
 @keyframes rdrebote{50%{transform:scale(1.3)}}
 @media (prefers-reduced-motion:reduce){.rd-punto.sel i,.rd-punto.sel i::before,.rd-punto.sel i::after{animation:none}}
+
+/* ---------- formularios de gestión: club, equipo, patrocinador ---------- */
+.gf-cab{display:flex;align-items:center;gap:14px;margin:4px 0 16px}
+.gf-cab h2{margin:0;font-size:24px}
+.gf-cab p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.gf-icono{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--accent),var(--azul-medio));box-shadow:0 8px 18px rgba(43,134,217,.3)}
+.fa-form .fa-campo input:not([type=file]),.fa-form .fa-campo select{background:var(--ground);border:1px solid var(--border);border-radius:14px;padding:0 14px;font-family:inherit;color:var(--text)}
+.fa-form .fa-campo input:focus,.fa-form .fa-campo select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,184,240,.3)}
+.fa-form .fa-campo select{appearance:none;-webkit-appearance:none;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231b6fb8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.gf-etiqueta{font-size:13px;font-weight:600;color:var(--muted)}
+.gf-archivo{display:flex;align-items:center;gap:14px;margin:0;padding:12px;border:2px dashed var(--accent);border-radius:16px;background:var(--ground);cursor:pointer}
+.gf-prev{flex:none;width:64px;height:64px;border-radius:14px;background:var(--tile);color:var(--tile-ink);display:grid;place-items:center;overflow:hidden}
+.gf-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
+.gf-archivo-txt{min-width:0;display:grid;gap:2px}
+.gf-archivo-txt strong{font-size:15px;color:var(--tile-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gf-archivo-txt small{color:var(--muted);font-size:12px}
+.gf-input-archivo{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}

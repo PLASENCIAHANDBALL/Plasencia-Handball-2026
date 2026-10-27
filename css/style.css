@@ -4316,3 +4316,41 @@ body.splash-activo .info-fab,body.info-abierto .info-fab,body.info-abierto .hub{
 .gf-input-archivo{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 
 .version-app{display:block;margin-top:4px;font-size:11px;opacity:.55}
+
+/* ================== RULETA DEL SORTEO ================== */
+.rl-overlay{position:fixed;inset:0;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 0;color:#fff;text-align:center;overflow:hidden}
+.rl-fondo{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,#0b3555 0,#04121f 60%,#000 100%)}
+.rl-overlay>*{position:relative}
+.rl-fondo{position:absolute!important}
+body.rl-abierta .info-fab,body.rl-abierta .hub{display:none!important}
+.rl-marca{font-weight:800;letter-spacing:.3em;font-size:13px;color:#6fdcf5}
+.rl-titulo{margin:0;padding:0 20px;font-size:clamp(24px,7vw,40px);line-height:1.1;text-shadow:0 0 18px rgba(111,220,245,.6)}
+.rl-estado{margin:0;color:#9fd8ea;font-size:16px;letter-spacing:.08em;animation:rlparpadeo 1s ease-in-out infinite}
+@keyframes rlparpadeo{50%{opacity:.35}}
+.rl-ventana{position:relative;width:100%;height:150px;overflow:hidden;margin:10px 0;mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.rl-track{position:absolute;left:0;top:14px;display:flex;gap:12px;will-change:transform}
+.rl-card{flex:none;width:190px;height:122px;border-radius:16px;background:linear-gradient(160deg,#10324d,#0a1d30);border:2px solid #1c5578;display:grid;place-items:center;padding:0 10px;box-shadow:inset 0 -6px 0 #6fdcf5}
+.rl-card span{font-weight:800;font-size:19px;overflow-wrap:anywhere;line-height:1.15}
+.rl-puntero{position:absolute;left:50%;top:0;bottom:0;width:4px;margin-left:-2px;background:#ffd24a;box-shadow:0 0 16px 3px rgba(255,210,74,.8);z-index:3;border-radius:4px}
+.rl-puntero::before{content:"";position:absolute;left:50%;top:-2px;transform:translateX(-50%);border:9px solid transparent;border-top-color:#ffd24a}
+.rl-puntero.pulsa{animation:rlpulso .12s ease-out}
+@keyframes rlpulso{from{box-shadow:0 0 30px 10px rgba(255,210,74,1)}}
+.rl-fin .rl-card{opacity:.28;transition:opacity .5s,transform .5s}
+.rl-fin .rl-card.rl-ganadora{opacity:1;transform:scale(1.14);border-color:#6fdcf5;background:linear-gradient(160deg,#1b6fb8,#0a3a80);box-shadow:0 0 30px 6px rgba(111,220,245,.8),inset 0 -6px 0 #ffd24a;animation:rlbrillo 1.1s ease-in-out infinite}
+@keyframes rlbrillo{50%{box-shadow:0 0 52px 14px rgba(111,220,245,.95),inset 0 -6px 0 #ffd24a}}
+.rl-resultado{animation:rlentra .6s cubic-bezier(.2,1.4,.4,1)}
+.rl-resultado[hidden]{display:none}
+@keyframes rlentra{from{transform:scale(.4);opacity:0}}
+.rl-felicidades{font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#ffd24a;font-size:clamp(16px,4.6vw,22px)}
+.rl-nombre{font-weight:800;font-size:clamp(34px,11vw,64px);line-height:1.05;margin:6px 16px;color:#fff;text-shadow:0 0 22px #6fdcf5,0 0 44px rgba(111,220,245,.6);overflow-wrap:anywhere}
+.rl-aviso{margin:6px 24px 0;font-size:12px;color:#9fd8ea}
+.rl-botones{display:flex;gap:10px;margin-top:6px}
+.rl-botones button{width:auto;margin:0;min-height:0;padding:12px 26px;border-radius:99px;box-shadow:none;font-weight:700}
+.rl-saltar{background:transparent;color:#9fd8ea;border:1px solid #2b5f80}
+.rl-cerrar{background:#6fdcf5;color:#06223a;border:0}
+.rl-botones [hidden]{display:none}
+.rl-confeti{position:absolute;top:-16px;width:9px;height:16px;border-radius:2px;animation:rlcae linear forwards;z-index:5;pointer-events:none}
+@keyframes rlcae{to{transform:translate(var(--deriva),110vh) rotate(var(--giro))}}
+@media (prefers-reduced-motion:reduce){.rl-estado,.rl-fin .rl-card.rl-ganadora{animation:none}.rl-confeti{display:none}}
+.rl-fin .rl-puntero{opacity:0;transition:opacity .4s}
+.rl-card span{overflow-wrap:break-word;word-break:normal}

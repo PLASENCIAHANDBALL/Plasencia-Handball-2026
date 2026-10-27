@@ -5711,6 +5711,159 @@ async function guardarNuevoSorteo() {
   }
 }
 
+/* ================== RULETA DEL SORTEO (animación del ganador) ================== */
+
+function sonidoRuleta() {
+  let ctx = null;
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return { tick() {}, fin() {}, cerrar() {} }; }
+  const nota = (f, t0, dur, vol) => {
+    try {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(vol, ctx.currentTime + t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t0 + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + t0); o.stop(ctx.currentTime + t0 + dur + 0.02);
+    } catch (e) { /* sin audio */ }
+  };
+  return {
+    tick() { nota(1100, 0, 0.05, 0.06); },
+    fin() { [523, 659, 784, 1047].forEach((f, i) => nota(f, i * 0.12, 0.5, 0.12)); },
+    cerrar() { try { ctx.close(); } catch (e) { /* nada */ } }
+  };
+}
+
+function confetiRuleta(contenedor) {
+  const colores = ["#6fdcf5", "#ffffff", "#5bb8f0", "#ffd24a", "#7cf0b0"];
+  for (let i = 0; i < 90; i++) {
+    const p = document.createElement("i");
+    p.className = "rl-confeti";
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.background = colores[i % colores.length];
+    p.style.animationDuration = `${2.6 + Math.random() * 2.6}s`;
+    p.style.animationDelay = `${Math.random() * 0.8}s`;
+    p.style.setProperty("--giro", `${Math.round(Math.random() * 720 - 360)}deg`);
+    p.style.setProperty("--deriva", `${Math.round(Math.random() * 160 - 80)}px`);
+    contenedor.appendChild(p);
+  }
+  setTimeout(() => contenedor.querySelectorAll(".rl-confeti").forEach(n => n.remove()), 7000);
+}
+
+// Ruleta a pantalla completa: la tira pasa rápido, frena poco a poco y se detiene en el ganador.
+// El ganador ya lo ha decidido el servidor; esto es solo el espectáculo.
+function ruletaSorteo({ pin, id, ganador, titulo, repeticion }) {
+  return new Promise(async resolve => {
+    document.getElementById("rl-overlay")?.remove();
+
+    let nombres = [];
+    try {
+      const { data } = await supabase.rpc("sorteo_participantes", { p_pin: pin, p_id: id });
+      nombres = (data || []).map(x => x.alias).filter(Boolean);
+    } catch (e) { /* se usa solo el ganador */ }
+    if (!nombres.length) nombres = [ganador];
+
+    const TOTAL = 72, POS = 60, ANCHO = 190, PASO = ANCHO + 12;
+    const tarjetas = [];
+    let anterior = "";
+    for (let i = 0; i < TOTAL; i++) {
+      let n = i === POS ? ganador : nombres[Math.floor(Math.random() * nombres.length)];
+      if (i !== POS && nombres.length > 1 && (n === anterior || (Math.abs(i - POS) === 1 && n === ganador))) {
+        n = nombres.find(x => x !== anterior && x !== ganador) || n;
+      }
+      anterior = n;
+      tarjetas.push(n);
+    }
+
+    const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const sonido = sonidoRuleta();
+    const overlay = document.createElement("div");
+    overlay.id = "rl-overlay";
+    overlay.className = "rl-overlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-label", "Sorteo");
+    overlay.innerHTML = `
+      <div class="rl-fondo"></div>
+      <div class="rl-marca">PH SORTEOS</div>
+      <h2 class="rl-titulo">${escaparHtml(titulo || "")}</h2>
+      <p class="rl-estado" id="rl-estado">${repeticion ? "Nuevo sorteo…" : "Sorteando…"}</p>
+      <div class="rl-ventana" translate="no">
+        <div class="rl-puntero" aria-hidden="true"></div>
+        <div class="rl-track" id="rl-track">
+          ${tarjetas.map((n, i) => `<div class="rl-card" data-i="${i}"><span style="font-size:${n.length > 17 ? 14 : n.length > 12 ? 16 : 19}px">${escaparHtml(n)}</span></div>`).join("")}
+        </div>
+      </div>
+      <div class="rl-resultado" id="rl-resultado" hidden>
+        <div class="rl-felicidades">¡Tenemos ganador!</div>
+        <div class="rl-nombre" translate="no">${escaparHtml(ganador)}</div>
+      </div>
+      <div class="rl-botones">
+        <button type="button" class="rl-saltar" id="rl-saltar">Saltar</button>
+        <button type="button" class="rl-cerrar" id="rl-cerrar" hidden>Cerrar</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.classList.add("rl-abierta");
+
+    const track = overlay.querySelector("#rl-track");
+    const ventana = overlay.querySelector(".rl-ventana");
+    const vw = ventana.clientWidth;
+    const inicio = vw / 2 - ANCHO / 2;
+    const salto = Math.round(Math.random() * 80 - 40);   // se detiene en un punto cualquiera de la tarjeta
+    const fin = vw / 2 - (POS * PASO + ANCHO / 2) + salto;
+    const duracion = reducir ? 1200 : 8200;
+
+    track.style.transform = `translateX(${inicio}px)`;
+    const anim = track.animate(
+      [{ transform: `translateX(${inicio}px)` }, { transform: `translateX(${fin}px)` }],
+      { duration: duracion, easing: "cubic-bezier(.1,.55,.1,1)", fill: "forwards" }
+    );
+
+    let ultimo = -1;
+    let raf = 0;
+    const vigilar = () => {
+      const m = new DOMMatrix(getComputedStyle(track).transform);
+      const idx = Math.floor((vw / 2 - m.m41) / PASO);
+      if (idx !== ultimo) {
+        ultimo = idx;
+        sonido.tick();
+        const marca = overlay.querySelector(".rl-puntero");
+        marca.classList.remove("pulsa"); void marca.offsetWidth; marca.classList.add("pulsa");
+      }
+      raf = requestAnimationFrame(vigilar);
+    };
+    raf = requestAnimationFrame(vigilar);
+
+    let terminado = false;
+    const cerrar = () => {
+      cancelAnimationFrame(raf);
+      sonido.cerrar();
+      overlay.remove();
+      document.body.classList.remove("rl-abierta");
+      document.removeEventListener("keydown", tecla);
+      resolve();
+    };
+    const tecla = e => { if (e.key === "Escape" && terminado) cerrar(); };
+    document.addEventListener("keydown", tecla);
+
+    const revelar = () => {
+      if (terminado) return;
+      terminado = true;
+      cancelAnimationFrame(raf);
+      overlay.classList.add("rl-fin");
+      overlay.querySelector(`.rl-card[data-i="${POS}"]`).classList.add("rl-ganadora");
+      overlay.querySelector("#rl-estado").hidden = true;
+      overlay.querySelector("#rl-resultado").hidden = false;
+      overlay.querySelector("#rl-saltar").hidden = true;
+      overlay.querySelector("#rl-cerrar").hidden = false;
+      sonido.fin();
+      confetiRuleta(overlay);
+    };
+
+    anim.onfinish = revelar;
+    overlay.querySelector("#rl-saltar").onclick = () => anim.finish();
+    overlay.querySelector("#rl-cerrar").onclick = cerrar;
+  });
+}
+
 async function sorteoRealizar(id) {
   if (!adminActivo) return;
   if (!confirm("¿Realizar el sorteo ahora? El ganador se elige al azar y no se puede repetir.")) return;
@@ -5720,7 +5873,8 @@ async function sorteoRealizar(id) {
   const { data, error } = await supabase.rpc("sorteo_realizar", { p_pin: pin, p_id: id });
   if (error) { console.error("Error en el sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
 
-  avisar(`¡Sorteo realizado! Ganador: ${data}`, "info", { duracion: 9000 });
+  const s = sorteos.find(x => Number(x.id) === Number(id));
+  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: false });
   await cargarSorteos();
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
 }
@@ -5734,7 +5888,8 @@ async function sorteoRepetir(id) {
   const { data, error } = await supabase.rpc("sorteo_repetir", { p_pin: pin, p_id: id });
   if (error) { console.error("Error repitiendo sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
 
-  avisar(`¡Nuevo ganador! ${data}`, "info", { duracion: 9000 });
+  const s = sorteos.find(x => Number(x.id) === Number(id));
+  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: true });
   await cargarSorteos();
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
 }
@@ -6513,7 +6668,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-10-26-51";
+const VERSION_APP = "2026-10-27-52";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

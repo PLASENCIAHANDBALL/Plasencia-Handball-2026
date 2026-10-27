@@ -558,7 +558,13 @@ const TEXTOS = {
   "Después podrás crear sus equipos": ["You'll be able to create its teams afterwards", "Depois poderás criar as suas equipas", "Vous pourrez ensuite créer ses équipes"],
   "Elegir imagen": ["Choose image", "Escolher imagem", "Choisir une image"],
   "PNG o JPG. Se ajusta sola.": ["PNG or JPG. It's resized automatically.", "PNG ou JPG. Ajusta-se sozinha.", "PNG ou JPG. Elle s'ajuste toute seule."],
-  "Ej.: Balonmano Plasencia": ["E.g.: Balonmano Plasencia", "Ex.: Balonmano Plasencia", "Ex. : Balonmano Plasencia"]
+  "Ej.: Balonmano Plasencia": ["E.g.: Balonmano Plasencia", "Ex.: Balonmano Plasencia", "Ex. : Balonmano Plasencia"],
+  "Sorteando…": ["Drawing…", "A sortear…", "Tirage en cours…"],
+  "Nuevo sorteo…": ["Drawing again…", "Novo sorteio…", "Nouveau tirage…"],
+  "Saltar": ["Skip", "Saltar", "Passer"],
+  "Cerrar": ["Close", "Fechar", "Fermer"],
+  "¡Tenemos ganador!": ["We have a winner!", "Temos vencedor!", "Nous avons un gagnant !"],
+  "Comprueba que sigue a @plasenciahandball antes de entregar el premio.": ["Check that they follow @plasenciahandball before handing over the prize.", "Confirma que segue @plasenciahandball antes de entregar o prémio.", "Vérifiez qu'il suit @plasenciahandball avant de remettre le lot."]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

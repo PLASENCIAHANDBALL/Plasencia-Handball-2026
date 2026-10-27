@@ -484,4 +484,10 @@ export const DE = {
   "Elegir imagen": "Bild auswählen",
   "PNG o JPG. Se ajusta sola.": "PNG oder JPG. Wird automatisch angepasst.",
   "Ej.: Balonmano Plasencia": "z. B.: Balonmano Plasencia",
+  "Sorteando…": "Auslosung läuft…",
+  "Nuevo sorteo…": "Neue Auslosung…",
+  "Saltar": "Überspringen",
+  "Cerrar": "Schließen",
+  "¡Tenemos ganador!": "Wir haben einen Gewinner!",
+  "Comprueba que sigue a @plasenciahandball antes de entregar el premio.": "Prüfe, ob er @plasenciahandball folgt, bevor du den Preis übergibst.",
 };

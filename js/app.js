@@ -5711,11 +5711,14 @@ async function guardarNuevoSorteo() {
   }
 }
 
-/* ================== RULETA DEL SORTEO (animación del ganador) ================== */
+/* ================== RULETA DEL SORTEO (vídeo para compartir) ================== */
 
 function sonidoRuleta() {
   let ctx = null;
-  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return { tick() {}, fin() {}, cerrar() {} }; }
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return { tick() {}, fin() {}, cerrar() {}, pista: null }; }
+  try { ctx.resume(); } catch (e) { /* nada */ }
+  let destino = null;
+  try { destino = ctx.createMediaStreamDestination(); } catch (e) { /* sin grabación de audio */ }
   const nota = (f, t0, dur, vol) => {
     try {
       const o = ctx.createOscillator(), g = ctx.createGain();
@@ -5723,37 +5726,46 @@ function sonidoRuleta() {
       g.gain.setValueAtTime(vol, ctx.currentTime + t0);
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t0 + dur);
       o.connect(g); g.connect(ctx.destination);
+      if (destino) g.connect(destino);
       o.start(ctx.currentTime + t0); o.stop(ctx.currentTime + t0 + dur + 0.02);
     } catch (e) { /* sin audio */ }
   };
   return {
     tick() { nota(1100, 0, 0.05, 0.06); },
     fin() { [523, 659, 784, 1047].forEach((f, i) => nota(f, i * 0.12, 0.5, 0.12)); },
-    cerrar() { try { ctx.close(); } catch (e) { /* nada */ } }
+    cerrar() { try { ctx.close(); } catch (e) { /* nada */ } },
+    pista: destino ? destino.stream.getAudioTracks()[0] : null
   };
 }
 
-function confetiRuleta(contenedor) {
-  const colores = ["#6fdcf5", "#ffffff", "#5bb8f0", "#ffd24a", "#7cf0b0"];
-  for (let i = 0; i < 90; i++) {
-    const p = document.createElement("i");
-    p.className = "rl-confeti";
-    p.style.left = `${Math.random() * 100}%`;
-    p.style.background = colores[i % colores.length];
-    p.style.animationDuration = `${2.6 + Math.random() * 2.6}s`;
-    p.style.animationDelay = `${Math.random() * 0.8}s`;
-    p.style.setProperty("--giro", `${Math.round(Math.random() * 720 - 360)}deg`);
-    p.style.setProperty("--deriva", `${Math.round(Math.random() * 160 - 80)}px`);
-    contenedor.appendChild(p);
-  }
-  setTimeout(() => contenedor.querySelectorAll(".rl-confeti").forEach(n => n.remove()), 7000);
+// curva cubic-bezier(x1,y1,x2,y2) como en CSS
+function curvaBezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = t => ((ax * t + bx) * t + cx) * t;
+  const Y = t => ((ay * t + by) * t + cy) * t;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 28; i++) { const v = X(t); if (Math.abs(v - x) < 1e-5) break; if (v < x) lo = t; else hi = t; t = (lo + hi) / 2; }
+    return Y(t);
+  };
 }
 
-// Ruleta a pantalla completa: la tira pasa rápido, frena poco a poco y se detiene en el ganador.
+function tipoVideoSorteo() {
+  if (typeof MediaRecorder === "undefined") return "";
+  const tipos = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  return tipos.find(t => { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } }) || "";
+}
+
+// Ruleta a pantalla completa dibujada en un canvas vertical (9:16) que se graba a la vez:
+// al terminar se puede compartir o guardar el vídeo para subirlo a Instagram.
 // El ganador ya lo ha decidido el servidor; esto es solo el espectáculo.
-function ruletaSorteo({ pin, id, ganador, titulo, repeticion }) {
+function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
   return new Promise(async resolve => {
     document.getElementById("rl-overlay")?.remove();
+    sonido = sonido || sonidoRuleta();
 
     let nombres = [];
     try {
@@ -5762,7 +5774,9 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion }) {
     } catch (e) { /* se usa solo el ganador */ }
     if (!nombres.length) nombres = [ganador];
 
-    const TOTAL = 72, POS = 60, ANCHO = 190, PASO = ANCHO + 12;
+    const W = 720, H = 1280;
+    const TOTAL = 72, POS = 60, ANCHO = 300, ALTO = 220, PASO = ANCHO + 20;
+    const CY = 640;
     const tarjetas = [];
     let anterior = "";
     for (let i = 0; i < TOTAL; i++) {
@@ -5775,91 +5789,252 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion }) {
     }
 
     const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const sonido = sonidoRuleta();
+    const DURACION = reducir ? 1500 : 8200;
+    const REVELADO = reducir ? 1500 : 3800;   // tiempo que se sigue grabando tras el ganador
+    const salto = Math.round(Math.random() * 120 - 60);
+    const inicio = W / 2 - ANCHO / 2;
+    const fin = W / 2 - (POS * PASO + ANCHO / 2) + salto;
+    const ease = curvaBezier(.1, .55, .1, 1);
+
     const overlay = document.createElement("div");
     overlay.id = "rl-overlay";
     overlay.className = "rl-overlay";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-label", "Sorteo");
     overlay.innerHTML = `
-      <div class="rl-fondo"></div>
-      <div class="rl-marca">PH SORTEOS</div>
-      <h2 class="rl-titulo">${escaparHtml(titulo || "")}</h2>
-      <p class="rl-estado" id="rl-estado">${repeticion ? "Nuevo sorteo…" : "Sorteando…"}</p>
-      <div class="rl-ventana" translate="no">
-        <div class="rl-puntero" aria-hidden="true"></div>
-        <div class="rl-track" id="rl-track">
-          ${tarjetas.map((n, i) => `<div class="rl-card" data-i="${i}"><span style="font-size:${n.length > 17 ? 14 : n.length > 12 ? 16 : 19}px">${escaparHtml(n)}</span></div>`).join("")}
-        </div>
-      </div>
-      <div class="rl-resultado" id="rl-resultado" hidden>
-        <div class="rl-felicidades">¡Tenemos ganador!</div>
-        <div class="rl-nombre" translate="no">${escaparHtml(ganador)}</div>
-      </div>
+      <canvas id="rl-canvas" width="${W}" height="${H}"></canvas>
       <div class="rl-botones">
         <button type="button" class="rl-saltar" id="rl-saltar">Saltar</button>
+        <span class="rl-preparando" id="rl-preparando" hidden>Preparando vídeo…</span>
+        <button type="button" class="rl-compartir" id="rl-compartir" hidden>Compartir vídeo</button>
+        <button type="button" class="rl-guardar" id="rl-guardar" hidden>Guardar vídeo</button>
         <button type="button" class="rl-cerrar" id="rl-cerrar" hidden>Cerrar</button>
       </div>`;
     document.body.appendChild(overlay);
     document.body.classList.add("rl-abierta");
 
-    const track = overlay.querySelector("#rl-track");
-    const ventana = overlay.querySelector(".rl-ventana");
-    const vw = ventana.clientWidth;
-    const inicio = vw / 2 - ANCHO / 2;
-    const salto = Math.round(Math.random() * 80 - 40);   // se detiene en un punto cualquiera de la tarjeta
-    const fin = vw / 2 - (POS * PASO + ANCHO / 2) + salto;
-    const duracion = reducir ? 1200 : 8200;
+    const canvas = overlay.querySelector("#rl-canvas");
+    const g = canvas.getContext("2d");
+    const FUENTE = `"Manrope", "Inter", system-ui, -apple-system, sans-serif`;
 
-    track.style.transform = `translateX(${inicio}px)`;
-    const anim = track.animate(
-      [{ transform: `translateX(${inicio}px)` }, { transform: `translateX(${fin}px)` }],
-      { duration: duracion, easing: "cubic-bezier(.1,.55,.1,1)", fill: "forwards" }
-    );
-
-    let ultimo = -1;
-    let raf = 0;
-    const vigilar = () => {
-      const m = new DOMMatrix(getComputedStyle(track).transform);
-      const idx = Math.floor((vw / 2 - m.m41) / PASO);
-      if (idx !== ultimo) {
-        ultimo = idx;
-        sonido.tick();
-        const marca = overlay.querySelector(".rl-puntero");
-        marca.classList.remove("pulsa"); void marca.offsetWidth; marca.classList.add("pulsa");
+    /* ---------- grabación ---------- */
+    let grabador = null, trozos = [], videoBlob = null, tipoVideo = "";
+    try {
+      tipoVideo = tipoVideoSorteo();
+      if (tipoVideo && canvas.captureStream) {
+        const flujo = canvas.captureStream(30);
+        if (sonido.pista) flujo.addTrack(sonido.pista);
+        grabador = new MediaRecorder(flujo, { mimeType: tipoVideo, videoBitsPerSecond: 3500000 });
+        grabador.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
+        grabador.onstop = () => {
+          videoBlob = new Blob(trozos, { type: (tipoVideo.split(";")[0]) || "video/webm" });
+          mostrarOpcionesVideo();
+        };
+        grabador.start(500);
       }
-      raf = requestAnimationFrame(vigilar);
-    };
-    raf = requestAnimationFrame(vigilar);
+    } catch (e) { grabador = null; console.warn("No se pudo grabar el vídeo:", e); }
 
-    let terminado = false;
-    const cerrar = () => {
+    /* ---------- dibujo ---------- */
+    const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+    const ajustarTexto = (txt, maxAncho, tam, min = 18) => {
+      let t = tam;
+      g.font = `800 ${t}px ${FUENTE}`;
+      while (g.measureText(txt).width > maxAncho && t > min) { t -= 2; g.font = `800 ${t}px ${FUENTE}`; }
+      return t;
+    };
+    const lineasTitulo = (txt, maxAncho) => {
+      g.font = `800 56px ${FUENTE}`;
+      const pal = String(txt).split(" "); const out = []; let l = "";
+      for (const p of pal) { const prueba = l ? `${l} ${p}` : p; if (g.measureText(prueba).width > maxAncho && l) { out.push(l); l = p; } else l = prueba; }
+      if (l) out.push(l);
+      return out.slice(0, 2);
+    };
+    const tituloLineas = lineasTitulo(titulo || "", 620);
+
+    const confeti = [];
+    const colores = ["#6fdcf5", "#ffffff", "#5bb8f0", "#ffd24a", "#7cf0b0"];
+    const lanzarConfeti = () => {
+      for (let i = 0; i < 160; i++) {
+        confeti.push({
+          x: Math.random() * W, y: -20 - Math.random() * 500, vx: (Math.random() - .5) * 3,
+          vy: 3 + Math.random() * 6, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
+          w: 10 + Math.random() * 8, h: 18 + Math.random() * 10, c: colores[i % colores.length]
+        });
+      }
+    };
+
+    let t0 = performance.now();
+    let tReveal = 0, revelado = false, ultimo = -1, pulso = 0, cerrado = false, raf = 0;
+
+    const dibujar = ahora => {
+      const t = ahora - t0;
+      const p = Math.min(1, t / DURACION);
+      const x0 = inicio + (fin - inicio) * ease(p);
+      const dtR = revelado ? ahora - tReveal : 0;
+
+      // sonido de cada tarjeta que cruza el puntero
+      if (!revelado) {
+        const idx = Math.floor((W / 2 - x0) / PASO);
+        if (idx !== ultimo) { ultimo = idx; sonido.tick(); pulso = ahora; }
+      }
+
+      // fondo
+      const fondo = g.createRadialGradient(W / 2, H * .4, 40, W / 2, H * .4, H * .75);
+      fondo.addColorStop(0, "#0b3555"); fondo.addColorStop(.6, "#04121f"); fondo.addColorStop(1, "#000");
+      g.fillStyle = fondo; g.fillRect(0, 0, W, H);
+
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.shadowColor = "transparent"; g.shadowBlur = 0;
+
+      // marca y título
+      g.fillStyle = "#6fdcf5"; g.font = `800 30px ${FUENTE}`;
+      try { g.letterSpacing = "10px"; } catch (e) { /* nada */ }
+      g.fillText("PH SORTEOS", W / 2 + 5, 250);
+      try { g.letterSpacing = "0px"; } catch (e) { /* nada */ }
+      g.fillStyle = "#fff"; g.font = `800 56px ${FUENTE}`;
+      g.shadowColor = "rgba(111,220,245,.7)"; g.shadowBlur = 28;
+      tituloLineas.forEach((l, i) => g.fillText(l, W / 2, 330 + i * 66));
+      g.shadowBlur = 0;
+
+      // estado
+      if (!revelado) {
+        g.globalAlpha = .55 + .45 * Math.abs(Math.sin(t / 500));
+        g.fillStyle = "#9fd8ea"; g.font = `600 34px ${FUENTE}`;
+        g.fillText(repeticion ? "Nuevo sorteo…" : "Sorteando…", W / 2, 445);
+        g.globalAlpha = 1;
+      }
+
+      // tira de tarjetas
+      const dentro = Math.min(1, dtR / 500);
+      for (let i = 0; i < TOTAL; i++) {
+        const x = x0 + i * PASO;
+        if (x > W + 20 || x + ANCHO < -20) continue;
+        const gana = revelado && i === POS;
+        const esc = gana ? 1 + .14 * dentro : 1;
+        const w = ANCHO * esc, h = ALTO * esc, cx = x + ANCHO / 2;
+        g.save();
+        g.globalAlpha = revelado && !gana ? 1 - .72 * dentro : 1;
+        if (gana) { g.shadowColor = "rgba(111,220,245,.9)"; g.shadowBlur = 40 + 20 * Math.sin(dtR / 180); }
+        rr(cx - w / 2, CY - h / 2, w, h, 28);
+        const fill = g.createLinearGradient(0, CY - h / 2, 0, CY + h / 2);
+        if (gana) { fill.addColorStop(0, "#1b6fb8"); fill.addColorStop(1, "#0a3a80"); }
+        else { fill.addColorStop(0, "#10324d"); fill.addColorStop(1, "#0a1d30"); }
+        g.fillStyle = fill; g.fill();
+        g.shadowBlur = 0;
+        g.lineWidth = 4; g.strokeStyle = gana ? "#6fdcf5" : "#1c5578"; g.stroke();
+        // barra inferior
+        g.save(); rr(cx - w / 2, CY - h / 2, w, h, 28); g.clip();
+        g.fillStyle = gana ? "#ffd24a" : "#6fdcf5"; g.fillRect(cx - w / 2, CY + h / 2 - 12, w, 12);
+        g.restore();
+        // nombre
+        g.fillStyle = "#fff";
+        const tam = ajustarTexto(tarjetas[i], w - 36, 40 * esc);
+        g.font = `800 ${tam}px ${FUENTE}`;
+        g.fillText(tarjetas[i], cx, CY - 6);
+        g.restore();
+      }
+
+      // bordes que se desvanecen
+      const borde = (xa, xb, a0, a1) => {
+        const gr = g.createLinearGradient(xa, 0, xb, 0);
+        gr.addColorStop(0, `rgba(4,18,31,${a0})`); gr.addColorStop(1, `rgba(4,18,31,${a1})`);
+        g.fillStyle = gr; g.fillRect(Math.min(xa, xb), CY - ALTO, Math.abs(xb - xa), ALTO * 2);
+      };
+      borde(0, 150, .95, 0); borde(W, W - 150, .95, 0);
+
+      // puntero
+      const aPuntero = revelado ? Math.max(0, 1 - dtR / 400) : 1;
+      if (aPuntero > 0) {
+        g.save(); g.globalAlpha = aPuntero;
+        const brillo = Math.max(0, 1 - (ahora - pulso) / 140);
+        g.shadowColor = "rgba(255,210,74,.9)"; g.shadowBlur = 20 + 24 * brillo;
+        g.fillStyle = "#ffd24a"; g.fillRect(W / 2 - 3, CY - ALTO / 2 - 40, 6, ALTO + 80);
+        g.beginPath(); g.moveTo(W / 2 - 18, CY - ALTO / 2 - 58); g.lineTo(W / 2 + 18, CY - ALTO / 2 - 58); g.lineTo(W / 2, CY - ALTO / 2 - 30); g.closePath(); g.fill();
+        g.restore();
+      }
+
+      // resultado
+      if (revelado) {
+        const a = Math.min(1, dtR / 450);
+        const esc = a < 1 ? .4 + .6 * (1 - Math.pow(1 - a, 3)) * (1 + .12 * Math.sin(a * Math.PI)) : 1;
+        g.save();
+        g.globalAlpha = a; g.translate(W / 2, 960); g.scale(esc, esc);
+        g.fillStyle = "#ffd24a"; g.font = `800 40px ${FUENTE}`;
+        try { g.letterSpacing = "6px"; } catch (e) { /* nada */ }
+        g.fillText("¡TENEMOS GANADOR!", 3, -90);
+        try { g.letterSpacing = "0px"; } catch (e) { /* nada */ }
+        g.fillStyle = "#fff";
+        const tam = ajustarTexto(ganador, 640, 110, 40);
+        g.font = `800 ${tam}px ${FUENTE}`;
+        g.shadowColor = "#6fdcf5"; g.shadowBlur = 36;
+        g.fillText(ganador, 0, 20);
+        g.restore();
+        g.fillStyle = "rgba(159,216,234,.85)"; g.font = `600 30px ${FUENTE}`;
+        g.fillText("@plasenciahandball", W / 2, 1180);
+      }
+
+      // confeti
+      if (confeti.length) {
+        for (const c of confeti) {
+          c.x += c.vx; c.y += c.vy; c.r += c.vr;
+          g.save(); g.translate(c.x, c.y); g.rotate(c.r); g.fillStyle = c.c; g.fillRect(-c.w / 2, -c.h / 2, c.w, c.h); g.restore();
+        }
+        for (let i = confeti.length - 1; i >= 0; i--) if (confeti[i].y > H + 40) confeti.splice(i, 1);
+      }
+
+      // pasos de la animación
+      if (!revelado && p >= 1) {
+        revelado = true; tReveal = ahora;
+        sonido.fin(); lanzarConfeti();
+        overlay.querySelector("#rl-saltar").hidden = true;
+        if (grabador) overlay.querySelector("#rl-preparando").hidden = false; else overlay.querySelector("#rl-cerrar").hidden = false;
+      }
+      if (revelado && grabador && grabador.state === "recording" && ahora - tReveal > REVELADO) {
+        try { grabador.stop(); } catch (e) { /* nada */ }
+      }
+      if (!cerrado) raf = requestAnimationFrame(dibujar);
+    };
+    raf = requestAnimationFrame(dibujar);
+
+    /* ---------- botones ---------- */
+    const nombreArchivo = () => `sorteo-ph-${new Date().toISOString().slice(0, 10)}.${videoBlob && videoBlob.type.includes("mp4") ? "mp4" : "webm"}`;
+
+    function mostrarOpcionesVideo() {
+      overlay.querySelector("#rl-preparando").hidden = true;
+      overlay.querySelector("#rl-guardar").hidden = !videoBlob;
+      overlay.querySelector("#rl-cerrar").hidden = false;
+      const archivo = videoBlob ? new File([videoBlob], nombreArchivo(), { type: videoBlob.type }) : null;
+      if (archivo && navigator.canShare && navigator.canShare({ files: [archivo] })) overlay.querySelector("#rl-compartir").hidden = false;
+    }
+
+    overlay.querySelector("#rl-compartir").onclick = async () => {
+      if (!videoBlob) return;
+      const archivo = new File([videoBlob], nombreArchivo(), { type: videoBlob.type });
+      try { await navigator.share({ files: [archivo], title: "PH Sorteos" }); }
+      catch (e) { if (e && e.name !== "AbortError") avisar("No se ha podido compartir el vídeo", "error"); }
+    };
+    overlay.querySelector("#rl-guardar").onclick = () => {
+      if (!videoBlob) return;
+      const url = URL.createObjectURL(videoBlob);
+      const a = document.createElement("a");
+      a.href = url; a.download = nombreArchivo();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    };
+    overlay.querySelector("#rl-saltar").onclick = () => { t0 = performance.now() - DURACION; };
+
+    const tecla = e => { if (e.key === "Escape" && revelado) cerrar(); };
+    document.addEventListener("keydown", tecla);
+    function cerrar() {
+      cerrado = true;
       cancelAnimationFrame(raf);
+      try { if (grabador && grabador.state === "recording") { grabador.onstop = null; grabador.stop(); } } catch (e) { /* nada */ }
       sonido.cerrar();
       overlay.remove();
       document.body.classList.remove("rl-abierta");
       document.removeEventListener("keydown", tecla);
       resolve();
-    };
-    const tecla = e => { if (e.key === "Escape" && terminado) cerrar(); };
-    document.addEventListener("keydown", tecla);
-
-    const revelar = () => {
-      if (terminado) return;
-      terminado = true;
-      cancelAnimationFrame(raf);
-      overlay.classList.add("rl-fin");
-      overlay.querySelector(`.rl-card[data-i="${POS}"]`).classList.add("rl-ganadora");
-      overlay.querySelector("#rl-estado").hidden = true;
-      overlay.querySelector("#rl-resultado").hidden = false;
-      overlay.querySelector("#rl-saltar").hidden = true;
-      overlay.querySelector("#rl-cerrar").hidden = false;
-      sonido.fin();
-      confetiRuleta(overlay);
-    };
-
-    anim.onfinish = revelar;
-    overlay.querySelector("#rl-saltar").onclick = () => anim.finish();
+    }
     overlay.querySelector("#rl-cerrar").onclick = cerrar;
   });
 }
@@ -5869,12 +6044,13 @@ async function sorteoRealizar(id) {
   if (!confirm("¿Realizar el sorteo ahora? El ganador se elige al azar y no se puede repetir.")) return;
   const pin = obtenerPinAdmin();
   if (!pin) return;
+  const sonido = sonidoRuleta();   // se crea aquí, dentro del toque, para que el móvil permita el audio
 
   const { data, error } = await supabase.rpc("sorteo_realizar", { p_pin: pin, p_id: id });
-  if (error) { console.error("Error en el sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+  if (error) { console.error("Error en el sorteo:", error); sonido.cerrar(); avisar(mensajeErrorSorteo(error), "error"); return; }
 
   const s = sorteos.find(x => Number(x.id) === Number(id));
-  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: false });
+  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: false, sonido });
   await cargarSorteos();
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
 }
@@ -5884,12 +6060,13 @@ async function sorteoRepetir(id) {
   if (!confirm("¿Elegir otro ganador? El ganador actual quedará descartado.")) return;
   const pin = obtenerPinAdmin();
   if (!pin) return;
+  const sonido = sonidoRuleta();
 
   const { data, error } = await supabase.rpc("sorteo_repetir", { p_pin: pin, p_id: id });
-  if (error) { console.error("Error repitiendo sorteo:", error); avisar(mensajeErrorSorteo(error), "error"); return; }
+  if (error) { console.error("Error repitiendo sorteo:", error); sonido.cerrar(); avisar(mensajeErrorSorteo(error), "error"); return; }
 
   const s = sorteos.find(x => Number(x.id) === Number(id));
-  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: true });
+  await ruletaSorteo({ pin, id, ganador: data, titulo: s ? s.titulo : "", repeticion: true, sonido });
   await cargarSorteos();
   pintarSorteos(sorteos.map(tarjetaSorteo).join(""));
 }
@@ -6668,7 +6845,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-10-27-52";
+const VERSION_APP = "2026-10-27-53";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

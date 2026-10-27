@@ -564,7 +564,11 @@ const TEXTOS = {
   "Saltar": ["Skip", "Saltar", "Passer"],
   "Cerrar": ["Close", "Fechar", "Fermer"],
   "¡Tenemos ganador!": ["We have a winner!", "Temos vencedor!", "Nous avons un gagnant !"],
-  "Comprueba que sigue a @plasenciahandball antes de entregar el premio.": ["Check that they follow @plasenciahandball before handing over the prize.", "Confirma que segue @plasenciahandball antes de entregar o prémio.", "Vérifiez qu'il suit @plasenciahandball avant de remettre le lot."]
+  "Comprueba que sigue a @plasenciahandball antes de entregar el premio.": ["Check that they follow @plasenciahandball before handing over the prize.", "Confirma que segue @plasenciahandball antes de entregar o prémio.", "Vérifiez qu'il suit @plasenciahandball avant de remettre le lot."],
+  "Preparando vídeo…": ["Preparing video…", "A preparar o vídeo…", "Préparation de la vidéo…"],
+  "Compartir vídeo": ["Share video", "Partilhar vídeo", "Partager la vidéo"],
+  "Guardar vídeo": ["Save video", "Guardar vídeo", "Enregistrer la vidéo"],
+  "No se ha podido compartir el vídeo": ["The video could not be shared", "Não foi possível partilhar o vídeo", "La vidéo n'a pas pu être partagée"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

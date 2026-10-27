@@ -490,4 +490,8 @@ export const DE = {
   "Cerrar": "Schließen",
   "¡Tenemos ganador!": "Wir haben einen Gewinner!",
   "Comprueba que sigue a @plasenciahandball antes de entregar el premio.": "Prüfe, ob er @plasenciahandball folgt, bevor du den Preis übergibst.",
+  "Preparando vídeo…": "Video wird vorbereitet…",
+  "Compartir vídeo": "Video teilen",
+  "Guardar vídeo": "Video speichern",
+  "No se ha podido compartir el vídeo": "Das Video konnte nicht geteilt werden",
 };

@@ -5587,7 +5587,7 @@ function tarjetaSorteo(s) {
 
   return `
     <article class="sr-card ${estado}">
-      ${s.imagen ? `<div class="sr-foto"><img src="${escaparHtml(urlSegura(s.imagen))}" alt="" loading="lazy" decoding="async"></div>` : ""}
+      ${s.imagen ? `<div class="sr-foto"><img src="${escaparHtml(urlSegura(s.imagen))}" alt="Ampliar imagen" loading="lazy" decoding="async" role="button" tabindex="0" onclick="ampliarImagenInfo(this.src)" onkeydown="if(event.key==='Enter')ampliarImagenInfo(this.src)"></div>` : ""}
       <div class="sr-cuerpo">
         <div class="sr-fila"><span class="sr-pill ${pill[1]}">${pill[0]}</span><span class="sr-gratis">Participación gratuita</span></div>
         <h3>${escaparHtml(s.titulo)}</h3>
@@ -6990,7 +6990,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-10-29-54";
+const VERSION_APP = "2026-10-30-55";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

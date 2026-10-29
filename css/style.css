@@ -4232,6 +4232,7 @@ button.rd-enlace{background:transparent;color:#6fdcf5;border:1px solid #6fdcf5}
 @media (max-width: 480px){ .zona-barra button{padding:9px 2px;font-size:12.5px;gap:4px} .zona-barra button .ico{display:none} }
 .sr-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:14px}
 .sr-foto img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.sr-foto img[role="button"]{cursor:zoom-in}
 .sr-cuerpo{padding:14px}
 .sr-fila{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .sr-pill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;background:var(--tile);color:var(--tile-ink)}

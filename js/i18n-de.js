@@ -494,4 +494,5 @@ export const DE = {
   "Compartir vídeo": "Video teilen",
   "Guardar vídeo": "Video speichern",
   "No se ha podido compartir el vídeo": "Das Video konnte nicht geteilt werden",
+  "Tu navegador no puede crear el vídeo. Usa la grabación de pantalla del móvil.": "Dein Browser kann das Video nicht erstellen. Nutze die Bildschirmaufnahme deines Handys.",
 };

@@ -568,7 +568,8 @@ const TEXTOS = {
   "Preparando vídeo…": ["Preparing video…", "A preparar o vídeo…", "Préparation de la vidéo…"],
   "Compartir vídeo": ["Share video", "Partilhar vídeo", "Partager la vidéo"],
   "Guardar vídeo": ["Save video", "Guardar vídeo", "Enregistrer la vidéo"],
-  "No se ha podido compartir el vídeo": ["The video could not be shared", "Não foi possível partilhar o vídeo", "La vidéo n'a pas pu être partagée"]
+  "No se ha podido compartir el vídeo": ["The video could not be shared", "Não foi possível partilhar o vídeo", "La vidéo n'a pas pu être partagée"],
+  "Tu navegador no puede crear el vídeo. Usa la grabación de pantalla del móvil.": ["Your browser can't create the video. Use your phone's screen recording.", "O teu navegador não consegue criar o vídeo. Usa a gravação de ecrã do telemóvel.", "Votre navigateur ne peut pas créer la vidéo. Utilisez l'enregistrement d'écran du téléphone."]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */
@@ -604,6 +605,7 @@ function ordinal(n, i) {
 // Cada patrón: [expresión, función(coincidencia, i)] con i: 0 inglés, 1 portugués, 2 francés
 const PATRONES = [
   [/^¡Nuevo ganador! (.+)$/, (m, i) => [`New winner! ${m[1]}`, `Novo vencedor! ${m[1]}`, `Nouveau gagnant ! ${m[1]}`][i]],
+  [/^Preparando vídeo… (\d+)%$/, (m, i) => `${["Preparing video…", "A preparar o vídeo…", "Préparation de la vidéo…"][i]} ${m[1]}%`],
   [/^(\d+) participantes?$/, (m, i) => `${m[1]} ${[plural(m[1], "participant", "participants"), plural(m[1], "participante", "participantes"), plural(m[1], "participant", "participants")][i]}`],
   [/^¡Sorteo realizado! Ganador: (.+)$/, (m, i) => [`Draw done! Winner: ${m[1]}`, `Sorteio realizado! Vencedor: ${m[1]}`, `Tirage effectué ! Gagnant : ${m[1]}`][i]],
   [/^(\d+) exactos? · (\d+) partidos?$/, (m, i) => `${m[1]} ${[plural(m[1], "exact", "exact"), plural(m[1], "exato", "exatos"), plural(m[1], "exact", "exacts")][i]} · ${m[2]} ${[plural(m[2], "match", "matches"), plural(m[2], "jogo", "jogos"), plural(m[2], "match", "matchs")][i]}`],

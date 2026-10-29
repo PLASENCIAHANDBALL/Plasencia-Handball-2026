@@ -5753,14 +5753,172 @@ function curvaBezier(x1, y1, x2, y2) {
   };
 }
 
+/* ---------- MP4 mínimo (H.264 + AAC) para guardar el vídeo sin depender de librerías ---------- */
+function crearMp4({ ancho, alto, fps, avcC, muestrasV, audio }) {
+  const enc = new TextEncoder();
+  const u32 = n => new Uint8Array([(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]);
+  const u16 = n => new Uint8Array([(n >>> 8) & 255, n & 255]);
+  const u8 = n => new Uint8Array([n & 255]);
+  const cat = partes => {
+    const lista = partes.filter(Boolean);
+    const total = lista.reduce((t, p) => t + p.length, 0);
+    const out = new Uint8Array(total); let o = 0;
+    for (const p of lista) { out.set(p, o); o += p.length; }
+    return out;
+  };
+  const caja = (tipo, ...partes) => { const c = cat(partes); return cat([u32(c.length + 8), enc.encode(tipo), c]); };
+  const cajaCompleta = (tipo, ver, flags, ...partes) => caja(tipo, u8(ver), new Uint8Array([(flags >> 16) & 255, (flags >> 8) & 255, flags & 255]), ...partes);
+  const ceros = n => new Uint8Array(n);
+  const matriz = cat([u32(0x10000), u32(0), u32(0), u32(0), u32(0x10000), u32(0), u32(0), u32(0), u32(0x40000000)]);
+  const lenDesc = n => u8(n);   // todos los descriptores son < 128 bytes
+
+  const nV = muestrasV.length;
+  const durV = nV * 1000;                       // escala de tiempo del vídeo: fps*1000
+  const escalaV = fps * 1000;
+  const durMs = Math.round(durV / escalaV * 1000);
+  const claves = []; muestrasV.forEach((m, i) => { if (m.key) claves.push(i + 1); });
+
+  function trakVideo(offset) {
+    const stbl = caja("stbl",
+      cajaCompleta("stsd", 0, 0, u32(1), caja("avc1", ceros(6), u16(1), ceros(16), u16(ancho), u16(alto), u32(0x480000), u32(0x480000), u32(0), u16(1), ceros(32), u16(0x18), u16(0xffff), caja("avcC", avcC))),
+      cajaCompleta("stts", 0, 0, u32(1), u32(nV), u32(1000)),
+      cajaCompleta("stss", 0, 0, u32(claves.length), ...claves.map(u32)),
+      cajaCompleta("stsc", 0, 0, u32(1), u32(1), u32(nV), u32(1)),
+      cajaCompleta("stsz", 0, 0, u32(0), u32(nV), ...muestrasV.map(m => u32(m.data.length))),
+      cajaCompleta("stco", 0, 0, u32(1), u32(offset)));
+    return caja("trak",
+      cajaCompleta("tkhd", 0, 3, u32(0), u32(0), u32(1), u32(0), u32(durMs), ceros(8), u16(0), u16(0), u16(0), u16(0), matriz, u32(ancho << 16), u32(alto << 16)),
+      caja("mdia",
+        cajaCompleta("mdhd", 0, 0, u32(0), u32(0), u32(escalaV), u32(durV), u16(0x55c4), u16(0)),
+        cajaCompleta("hdlr", 0, 0, u32(0), enc.encode("vide"), ceros(12), enc.encode("Video\0")),
+        caja("minf", cajaCompleta("vmhd", 0, 1, ceros(8)), caja("dinf", cajaCompleta("dref", 0, 0, u32(1), cajaCompleta("url ", 0, 1))), stbl)));
+  }
+
+  function trakAudio(offset) {
+    const nA = audio.muestras.length, sr = audio.sampleRate, ch = audio.canales, desc = audio.descripcion;
+    const esds = cajaCompleta("esds", 0, 0,
+      u8(3), lenDesc(23 + desc.length), u16(2), u8(0),
+      u8(4), lenDesc(15 + desc.length), u8(0x40), u8(0x15), ceros(3), u32(0), u32(0),
+      u8(5), lenDesc(desc.length), desc,
+      u8(6), lenDesc(1), u8(2));
+    const stbl = caja("stbl",
+      cajaCompleta("stsd", 0, 0, u32(1), caja("mp4a", ceros(6), u16(1), ceros(8), u16(ch), u16(16), u16(0), u16(0), u32(sr << 16), esds)),
+      cajaCompleta("stts", 0, 0, u32(1), u32(nA), u32(1024)),
+      cajaCompleta("stsc", 0, 0, u32(1), u32(1), u32(nA), u32(1)),
+      cajaCompleta("stsz", 0, 0, u32(0), u32(nA), ...audio.muestras.map(m => u32(m.length))),
+      cajaCompleta("stco", 0, 0, u32(1), u32(offset)));
+    return caja("trak",
+      cajaCompleta("tkhd", 0, 3, u32(0), u32(0), u32(2), u32(0), u32(Math.round(nA * 1024 / sr * 1000)), ceros(8), u16(0), u16(0), u16(0x100), u16(0), matriz, u32(0), u32(0)),
+      caja("mdia",
+        cajaCompleta("mdhd", 0, 0, u32(0), u32(0), u32(sr), u32(nA * 1024), u16(0x55c4), u16(0)),
+        cajaCompleta("hdlr", 0, 0, u32(0), enc.encode("soun"), ceros(12), enc.encode("Audio\0")),
+        caja("minf", cajaCompleta("smhd", 0, 0, ceros(4)), caja("dinf", cajaCompleta("dref", 0, 0, u32(1), cajaCompleta("url ", 0, 1))), stbl)));
+  }
+
+  const ftyp = caja("ftyp", enc.encode("isom"), u32(512), enc.encode("isomiso2avc1mp41"));
+  const datosV = cat(muestrasV.map(m => m.data));
+  const datosA = audio ? cat(audio.muestras) : new Uint8Array(0);
+  const moov = (offV, offA) => caja("moov",
+    cajaCompleta("mvhd", 0, 0, u32(0), u32(0), u32(1000), u32(durMs), u32(0x10000), u16(0x100), ceros(10), matriz, ceros(24), u32(audio ? 3 : 2)),
+    trakVideo(offV), audio ? trakAudio(offA) : null);
+  const tam = moov(0, 0).length;
+  const offV = ftyp.length + tam + 8;
+  const offA = offV + datosV.length;
+  return new Blob([ftyp, moov(offV, offA), u32(datosV.length + datosA.length + 8), enc.encode("mdat"), datosV, datosA], { type: "video/mp4" });
+}
+
+// Dibuja el vídeo fotograma a fotograma (más rápido que el tiempo real y siempre completo)
+// y lo codifica en H.264 + AAC. Devuelve un Blob mp4, o null si el navegador no puede.
+async function codificarVideoSorteo({ pintar, ticks, duracionAnim, totalMs, W, H, alProgreso }) {
+  if (!window.VideoEncoder || !window.VideoFrame) return null;
+  const FPS = 30;
+  const base = { width: W, height: H, bitrate: 4000000, framerate: FPS, avc: { format: "avc" } };
+  let codec = null;
+  for (const c of ["avc1.640028", "avc1.4d0028", "avc1.42001f"]) {
+    try { if ((await VideoEncoder.isConfigSupported({ ...base, codec: c })).supported) { codec = c; break; } } catch (e) { /* siguiente */ }
+  }
+  if (!codec) return null;
+
+  const lienzo = document.createElement("canvas");
+  lienzo.width = W; lienzo.height = H;
+  const g2 = lienzo.getContext("2d");
+  const muestrasV = []; let avcC = null, fallo = null;
+  const codificador = new VideoEncoder({
+    output: (chunk, meta) => {
+      const datos = new Uint8Array(chunk.byteLength); chunk.copyTo(datos);
+      if (meta && meta.decoderConfig && meta.decoderConfig.description) avcC = new Uint8Array(meta.decoderConfig.description.slice ? meta.decoderConfig.description.slice(0) : meta.decoderConfig.description);
+      muestrasV.push({ data: datos, key: chunk.type === "key" });
+    },
+    error: e => { fallo = e; }
+  });
+  codificador.configure({ ...base, codec });
+  const N = Math.ceil(totalMs / 1000 * FPS);
+  for (let i = 0; i < N; i++) {
+    if (fallo) throw fallo;
+    pintar(g2, i * 1000 / FPS);
+    const fotograma = new VideoFrame(lienzo, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    codificador.encode(fotograma, { keyFrame: i % FPS === 0 });
+    fotograma.close();
+    while (codificador.encodeQueueSize > 6) await new Promise(r => setTimeout(r, 4));
+    if (i % 8 === 0) { alProgreso && alProgreso(i / N * 0.9); await new Promise(r => setTimeout(r, 0)); }
+  }
+  await codificador.flush();
+  codificador.close();
+  if (fallo || !avcC || !muestrasV.length) return null;
+
+  // audio: se renderiza aparte con las mismas notas y se codifica a AAC (si el navegador puede)
+  let audio = null;
+  try {
+    if (window.AudioEncoder && window.AudioData && window.OfflineAudioContext) {
+      const SR = 44100;
+      const cfgA = { codec: "mp4a.40.2", sampleRate: SR, numberOfChannels: 1, bitrate: 96000 };
+      if ((await AudioEncoder.isConfigSupported(cfgA)).supported) {
+        const off = new OfflineAudioContext(1, Math.ceil(SR * totalMs / 1000), SR);
+        const nota = (f, t0, dur, vol) => {
+          const o = off.createOscillator(), gn = off.createGain();
+          o.type = "triangle"; o.frequency.value = f;
+          gn.gain.setValueAtTime(vol, t0);
+          gn.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          o.connect(gn); gn.connect(off.destination);
+          o.start(t0); o.stop(t0 + dur + 0.02);
+        };
+        ticks.forEach(t => nota(1100, t / 1000, 0.05, 0.06));
+        [523, 659, 784, 1047].forEach((f, i) => nota(f, duracionAnim / 1000 + i * 0.12, 0.5, 0.12));
+        const buffer = await off.startRendering();
+        const pcm = buffer.getChannelData(0);
+        const muestrasA = []; let descripcion = null, falloA = null;
+        const codA = new AudioEncoder({
+          output: (chunk, meta) => {
+            const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d); muestrasA.push(d);
+            if (meta && meta.decoderConfig && meta.decoderConfig.description) descripcion = new Uint8Array(meta.decoderConfig.description.slice ? meta.decoderConfig.description.slice(0) : meta.decoderConfig.description);
+          },
+          error: e => { falloA = e; }
+        });
+        codA.configure(cfgA);
+        const BLOQUE = 4096;
+        for (let i = 0; i < pcm.length; i += BLOQUE) {
+          const trozo = pcm.slice(i, i + BLOQUE);
+          const ad = new AudioData({ format: "f32-planar", sampleRate: SR, numberOfFrames: trozo.length, numberOfChannels: 1, timestamp: Math.round(i / SR * 1e6), data: trozo });
+          codA.encode(ad); ad.close();
+        }
+        await codA.flush(); codA.close();
+        if (!falloA && descripcion && muestrasA.length) audio = { muestras: muestrasA, descripcion, sampleRate: SR, canales: 1 };
+      }
+    }
+  } catch (e) { console.warn("Vídeo sin audio:", e); audio = null; }
+
+  alProgreso && alProgreso(1);
+  return crearMp4({ ancho: W, alto: H, fps: FPS, avcC, muestrasV, audio });
+}
+
 function tipoVideoSorteo() {
   if (typeof MediaRecorder === "undefined") return "";
   const tipos = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   return tipos.find(t => { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } }) || "";
 }
 
-// Ruleta a pantalla completa dibujada en un canvas vertical (9:16) que se graba a la vez:
-// al terminar se puede compartir o guardar el vídeo para subirlo a Instagram.
+// Ruleta a pantalla completa dibujada en un canvas vertical (9:16).
+// El vídeo para Instagram se genera aparte, fotograma a fotograma, para que salga completo.
 // El ganador ya lo ha decidido el servidor; esto es solo el espectáculo.
 function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
   return new Promise(async resolve => {
@@ -5790,11 +5948,26 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
 
     const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const DURACION = reducir ? 1500 : 8200;
-    const REVELADO = reducir ? 1500 : 3800;   // tiempo que se sigue grabando tras el ganador
+    const REVELADO = reducir ? 1500 : 4500;   // tiempo que dura el ganador en el vídeo
+    const TOTAL_MS = DURACION + REVELADO;
     const salto = Math.round(Math.random() * 120 - 60);
     const inicio = W / 2 - ANCHO / 2;
     const fin = W / 2 - (POS * PASO + ANCHO / 2) + salto;
     const ease = curvaBezier(.1, .55, .1, 1);
+    const posX = t => inicio + (fin - inicio) * ease(Math.min(1, t / DURACION));
+
+    // instantes en los que una tarjeta cruza el puntero (sonido y destello)
+    const ticks = [];
+    { let u = Math.floor((W / 2 - posX(0)) / PASO);
+      for (let t = 4; t <= DURACION; t += 4) { const k = Math.floor((W / 2 - posX(t)) / PASO); if (k !== u) { u = k; ticks.push(t); } } }
+
+    // confeti determinista (misma posición en directo y en el vídeo)
+    const colores = ["#6fdcf5", "#ffffff", "#5bb8f0", "#ffd24a", "#7cf0b0"];
+    const confeti = Array.from({ length: 160 }, (_, i) => ({
+      x: Math.random() * W, y: -20 - Math.random() * 500, vx: (Math.random() - .5) * 3,
+      vy: 3 + Math.random() * 6, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
+      w: 10 + Math.random() * 8, h: 18 + Math.random() * 10, c: colores[i % colores.length]
+    }));
 
     const overlay = document.createElement("div");
     overlay.id = "rl-overlay";
@@ -5814,71 +5987,33 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
     document.body.classList.add("rl-abierta");
 
     const canvas = overlay.querySelector("#rl-canvas");
-    const g = canvas.getContext("2d");
+    const gVivo = canvas.getContext("2d");
     const FUENTE = `"Manrope", "Inter", system-ui, -apple-system, sans-serif`;
 
-    /* ---------- grabación ---------- */
-    let grabador = null, trozos = [], videoBlob = null, tipoVideo = "";
-    try {
-      tipoVideo = tipoVideoSorteo();
-      if (tipoVideo && canvas.captureStream) {
-        const flujo = canvas.captureStream(30);
-        if (sonido.pista) flujo.addTrack(sonido.pista);
-        grabador = new MediaRecorder(flujo, { mimeType: tipoVideo, videoBitsPerSecond: 3500000 });
-        grabador.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
-        grabador.onstop = () => {
-          videoBlob = new Blob(trozos, { type: (tipoVideo.split(";")[0]) || "video/webm" });
-          mostrarOpcionesVideo();
-        };
-        grabador.start(500);
-      }
-    } catch (e) { grabador = null; console.warn("No se pudo grabar el vídeo:", e); }
-
-    /* ---------- dibujo ---------- */
-    const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
-    const ajustarTexto = (txt, maxAncho, tam, min = 18) => {
+    /* ---------- dibujo: función pura del tiempo t (ms desde el inicio) ---------- */
+    const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+    const ajustarTexto = (g, txt, maxAncho, tam, min = 18) => {
       let t = tam;
       g.font = `800 ${t}px ${FUENTE}`;
       while (g.measureText(txt).width > maxAncho && t > min) { t -= 2; g.font = `800 ${t}px ${FUENTE}`; }
       return t;
     };
-    const lineasTitulo = (txt, maxAncho) => {
+    let tituloLineas = null;
+    const lineasTitulo = (g, txt, maxAncho) => {
       g.font = `800 56px ${FUENTE}`;
       const pal = String(txt).split(" "); const out = []; let l = "";
       for (const p of pal) { const prueba = l ? `${l} ${p}` : p; if (g.measureText(prueba).width > maxAncho && l) { out.push(l); l = p; } else l = prueba; }
       if (l) out.push(l);
       return out.slice(0, 2);
     };
-    const tituloLineas = lineasTitulo(titulo || "", 620);
+    const ultimoTick = t => { let r = -1e9; for (const k of ticks) { if (k <= t) r = k; else break; } return r; };
 
-    const confeti = [];
-    const colores = ["#6fdcf5", "#ffffff", "#5bb8f0", "#ffd24a", "#7cf0b0"];
-    const lanzarConfeti = () => {
-      for (let i = 0; i < 160; i++) {
-        confeti.push({
-          x: Math.random() * W, y: -20 - Math.random() * 500, vx: (Math.random() - .5) * 3,
-          vy: 3 + Math.random() * 6, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
-          w: 10 + Math.random() * 8, h: 18 + Math.random() * 10, c: colores[i % colores.length]
-        });
-      }
-    };
+    const pintar = (g, t) => {
+      const x0 = posX(t);
+      const revelado = t >= DURACION;
+      const dtR = revelado ? t - DURACION : 0;
+      if (!tituloLineas) tituloLineas = lineasTitulo(g, titulo || "", 620);
 
-    let t0 = performance.now();
-    let tReveal = 0, revelado = false, ultimo = -1, pulso = 0, cerrado = false, raf = 0;
-
-    const dibujar = ahora => {
-      const t = ahora - t0;
-      const p = Math.min(1, t / DURACION);
-      const x0 = inicio + (fin - inicio) * ease(p);
-      const dtR = revelado ? ahora - tReveal : 0;
-
-      // sonido de cada tarjeta que cruza el puntero
-      if (!revelado) {
-        const idx = Math.floor((W / 2 - x0) / PASO);
-        if (idx !== ultimo) { ultimo = idx; sonido.tick(); pulso = ahora; }
-      }
-
-      // fondo
       const fondo = g.createRadialGradient(W / 2, H * .4, 40, W / 2, H * .4, H * .75);
       fondo.addColorStop(0, "#0b3555"); fondo.addColorStop(.6, "#04121f"); fondo.addColorStop(1, "#000");
       g.fillStyle = fondo; g.fillRect(0, 0, W, H);
@@ -5886,7 +6021,6 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
       g.textAlign = "center"; g.textBaseline = "middle";
       g.shadowColor = "transparent"; g.shadowBlur = 0;
 
-      // marca y título
       g.fillStyle = "#6fdcf5"; g.font = `800 30px ${FUENTE}`;
       try { g.letterSpacing = "10px"; } catch (e) { /* nada */ }
       g.fillText("PH SORTEOS", W / 2 + 5, 250);
@@ -5896,7 +6030,6 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
       tituloLineas.forEach((l, i) => g.fillText(l, W / 2, 330 + i * 66));
       g.shadowBlur = 0;
 
-      // estado
       if (!revelado) {
         g.globalAlpha = .55 + .45 * Math.abs(Math.sin(t / 500));
         g.fillStyle = "#9fd8ea"; g.font = `600 34px ${FUENTE}`;
@@ -5904,7 +6037,6 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
         g.globalAlpha = 1;
       }
 
-      // tira de tarjetas
       const dentro = Math.min(1, dtR / 500);
       for (let i = 0; i < TOTAL; i++) {
         const x = x0 + i * PASO;
@@ -5915,26 +6047,23 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
         g.save();
         g.globalAlpha = revelado && !gana ? 1 - .72 * dentro : 1;
         if (gana) { g.shadowColor = "rgba(111,220,245,.9)"; g.shadowBlur = 40 + 20 * Math.sin(dtR / 180); }
-        rr(cx - w / 2, CY - h / 2, w, h, 28);
+        rr(g, cx - w / 2, CY - h / 2, w, h, 28);
         const fill = g.createLinearGradient(0, CY - h / 2, 0, CY + h / 2);
         if (gana) { fill.addColorStop(0, "#1b6fb8"); fill.addColorStop(1, "#0a3a80"); }
         else { fill.addColorStop(0, "#10324d"); fill.addColorStop(1, "#0a1d30"); }
         g.fillStyle = fill; g.fill();
         g.shadowBlur = 0;
         g.lineWidth = 4; g.strokeStyle = gana ? "#6fdcf5" : "#1c5578"; g.stroke();
-        // barra inferior
-        g.save(); rr(cx - w / 2, CY - h / 2, w, h, 28); g.clip();
+        g.save(); rr(g, cx - w / 2, CY - h / 2, w, h, 28); g.clip();
         g.fillStyle = gana ? "#ffd24a" : "#6fdcf5"; g.fillRect(cx - w / 2, CY + h / 2 - 12, w, 12);
         g.restore();
-        // nombre
         g.fillStyle = "#fff";
-        const tam = ajustarTexto(tarjetas[i], w - 36, 40 * esc);
+        const tam = ajustarTexto(g, tarjetas[i], w - 36, 40 * esc);
         g.font = `800 ${tam}px ${FUENTE}`;
         g.fillText(tarjetas[i], cx, CY - 6);
         g.restore();
       }
 
-      // bordes que se desvanecen
       const borde = (xa, xb, a0, a1) => {
         const gr = g.createLinearGradient(xa, 0, xb, 0);
         gr.addColorStop(0, `rgba(4,18,31,${a0})`); gr.addColorStop(1, `rgba(4,18,31,${a1})`);
@@ -5942,18 +6071,16 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
       };
       borde(0, 150, .95, 0); borde(W, W - 150, .95, 0);
 
-      // puntero
       const aPuntero = revelado ? Math.max(0, 1 - dtR / 400) : 1;
       if (aPuntero > 0) {
         g.save(); g.globalAlpha = aPuntero;
-        const brillo = Math.max(0, 1 - (ahora - pulso) / 140);
+        const brillo = Math.max(0, 1 - (t - ultimoTick(t)) / 140);
         g.shadowColor = "rgba(255,210,74,.9)"; g.shadowBlur = 20 + 24 * brillo;
         g.fillStyle = "#ffd24a"; g.fillRect(W / 2 - 3, CY - ALTO / 2 - 40, 6, ALTO + 80);
         g.beginPath(); g.moveTo(W / 2 - 18, CY - ALTO / 2 - 58); g.lineTo(W / 2 + 18, CY - ALTO / 2 - 58); g.lineTo(W / 2, CY - ALTO / 2 - 30); g.closePath(); g.fill();
         g.restore();
       }
 
-      // resultado
       if (revelado) {
         const a = Math.min(1, dtR / 450);
         const esc = a < 1 ? .4 + .6 * (1 - Math.pow(1 - a, 3)) * (1 + .12 * Math.sin(a * Math.PI)) : 1;
@@ -5964,47 +6091,65 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
         g.fillText("¡TENEMOS GANADOR!", 3, -90);
         try { g.letterSpacing = "0px"; } catch (e) { /* nada */ }
         g.fillStyle = "#fff";
-        const tam = ajustarTexto(ganador, 640, 110, 40);
+        const tam = ajustarTexto(g, ganador, 640, 110, 40);
         g.font = `800 ${tam}px ${FUENTE}`;
         g.shadowColor = "#6fdcf5"; g.shadowBlur = 36;
         g.fillText(ganador, 0, 20);
         g.restore();
         g.fillStyle = "rgba(159,216,234,.85)"; g.font = `600 30px ${FUENTE}`;
         g.fillText("@plasenciahandball", W / 2, 1180);
-      }
 
-      // confeti
-      if (confeti.length) {
+        const frames = dtR / 1000 * 60;   // el confeti cae como a 60 fps
         for (const c of confeti) {
-          c.x += c.vx; c.y += c.vy; c.r += c.vr;
-          g.save(); g.translate(c.x, c.y); g.rotate(c.r); g.fillStyle = c.c; g.fillRect(-c.w / 2, -c.h / 2, c.w, c.h); g.restore();
+          const y = c.y + c.vy * frames;
+          if (y > H + 40) continue;
+          g.save(); g.translate(c.x + c.vx * frames, y); g.rotate(c.r + c.vr * frames);
+          g.fillStyle = c.c; g.fillRect(-c.w / 2, -c.h / 2, c.w, c.h); g.restore();
         }
-        for (let i = confeti.length - 1; i >= 0; i--) if (confeti[i].y > H + 40) confeti.splice(i, 1);
       }
-
-      // pasos de la animación
-      if (!revelado && p >= 1) {
-        revelado = true; tReveal = ahora;
-        sonido.fin(); lanzarConfeti();
-        overlay.querySelector("#rl-saltar").hidden = true;
-        if (grabador) overlay.querySelector("#rl-preparando").hidden = false; else overlay.querySelector("#rl-cerrar").hidden = false;
-      }
-      if (revelado && grabador && grabador.state === "recording" && ahora - tReveal > REVELADO) {
-        try { grabador.stop(); } catch (e) { /* nada */ }
-      }
-      if (!cerrado) raf = requestAnimationFrame(dibujar);
     };
-    raf = requestAnimationFrame(dibujar);
 
-    /* ---------- botones ---------- */
-    const nombreArchivo = () => `sorteo-ph-${new Date().toISOString().slice(0, 10)}.${videoBlob && videoBlob.type.includes("mp4") ? "mp4" : "webm"}`;
+    /* ---------- directo ---------- */
+    let t0 = performance.now(), cerrado = false, raf = 0, sonoTick = 0, sonoFin = false, iniciadoVideo = false;
+    let videoBlob = null;
 
+    const bucle = ahora => {
+      const t = ahora - t0;
+      pintar(gVivo, Math.min(t, TOTAL_MS));
+      while (sonoTick < ticks.length && ticks[sonoTick] <= t) { sonoTick++; if (t < DURACION) sonido.tick(); }
+      if (!sonoFin && t >= DURACION) {
+        sonoFin = true; sonido.fin();
+        overlay.querySelector("#rl-saltar").hidden = true;
+        iniciarVideo();
+      }
+      if (!cerrado) raf = requestAnimationFrame(bucle);
+    };
+
+    function nombreArchivo() { return `sorteo-ph-${new Date().toISOString().slice(0, 10)}.${videoBlob && videoBlob.type.includes("mp4") ? "mp4" : "webm"}`; }
     function mostrarOpcionesVideo() {
       overlay.querySelector("#rl-preparando").hidden = true;
       overlay.querySelector("#rl-guardar").hidden = !videoBlob;
       overlay.querySelector("#rl-cerrar").hidden = false;
       const archivo = videoBlob ? new File([videoBlob], nombreArchivo(), { type: videoBlob.type }) : null;
-      if (archivo && navigator.canShare && navigator.canShare({ files: [archivo] })) overlay.querySelector("#rl-compartir").hidden = false;
+      try { if (archivo && navigator.canShare && navigator.canShare({ files: [archivo] })) overlay.querySelector("#rl-compartir").hidden = false; } catch (e) { /* nada */ }
+    }
+
+    async function iniciarVideo() {
+      if (iniciadoVideo) return;
+      iniciadoVideo = true;
+      const etiqueta = overlay.querySelector("#rl-preparando");
+      etiqueta.hidden = false;
+      try {
+        videoBlob = await codificarVideoSorteo({
+          pintar, ticks, duracionAnim: DURACION, totalMs: TOTAL_MS, W, H,
+          alProgreso: p => { etiqueta.textContent = `Preparando vídeo… ${Math.round(p * 100)}%`; }
+        });
+      } catch (e) { console.warn("No se pudo generar el vídeo:", e); videoBlob = null; }
+      if (cerrado) return;
+      if (videoBlob) { mostrarOpcionesVideo(); return; }
+      etiqueta.hidden = true;
+      overlay.querySelector("#rl-cerrar").hidden = false;
+      avisar("Tu navegador no puede crear el vídeo. Usa la grabación de pantalla del móvil.", "info", { duracion: 6000 });
     }
 
     overlay.querySelector("#rl-compartir").onclick = async () => {
@@ -6023,12 +6168,11 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
     };
     overlay.querySelector("#rl-saltar").onclick = () => { t0 = performance.now() - DURACION; };
 
-    const tecla = e => { if (e.key === "Escape" && revelado) cerrar(); };
+    const tecla = e => { if (e.key === "Escape" && sonoFin) cerrar(); };
     document.addEventListener("keydown", tecla);
     function cerrar() {
       cerrado = true;
       cancelAnimationFrame(raf);
-      try { if (grabador && grabador.state === "recording") { grabador.onstop = null; grabador.stop(); } } catch (e) { /* nada */ }
       sonido.cerrar();
       overlay.remove();
       document.body.classList.remove("rl-abierta");
@@ -6036,6 +6180,7 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
       resolve();
     }
     overlay.querySelector("#rl-cerrar").onclick = cerrar;
+    raf = requestAnimationFrame(bucle);
   });
 }
 
@@ -6845,7 +6990,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-10-27-53";
+const VERSION_APP = "2026-10-29-54";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

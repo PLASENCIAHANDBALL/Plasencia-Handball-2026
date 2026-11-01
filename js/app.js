@@ -5261,7 +5261,7 @@ function burbujaChat(m, i, lista) {
   return `
     ${nuevoDia ? `<div class="ch-dia"><span>${etiquetaDiaChat(m.creado)}</span></div>` : ""}
     <div class="ch-fila ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""} ${mismoAutor ? "seguido" : ""} ${sigMismo ? "sigue" : ""}">
-      ${m.mio ? "" : (mismoAutor ? `<span class="ch-av vacio"></span>` : avatar)}
+      ${mismoAutor ? `<span class="ch-av vacio"></span>` : avatar}
       <div class="ch-msg" ${adminActivo ? `onclick="this.classList.toggle('abierto')"` : ""}>
         ${!mismoAutor ? `<div class="ch-nombre"><strong translate="no">${m.es_admin ? "Plasencia Handball" : escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Oficial</em>` : ""}</div>` : ""}
         <p translate="no">${escaparHtml(m.texto)}<time>${horaChat(m.creado)}</time></p>

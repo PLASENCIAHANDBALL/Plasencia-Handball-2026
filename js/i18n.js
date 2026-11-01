@@ -588,7 +588,14 @@ const TEXTOS = {
   "Bloquear": ["Block", "Bloquear", "Bloquer"],
   "Usuario bloqueado": ["User blocked", "Utilizador bloqueado", "Utilisateur bloqué"],
   "¿Bloquear a este usuario? Se borrarán todos sus mensajes y no podrá volver a escribir.": ["Block this user? All their messages will be deleted and they won't be able to write again.", "Bloquear este utilizador? Todas as suas mensagens serão apagadas e não poderá voltar a escrever.", "Bloquer cet utilisateur ? Tous ses messages seront supprimés et il ne pourra plus écrire."],
-  "Escribes como": ["You write as", "Escreves como", "Vous écrivez en tant que"]
+  "Escribes como": ["You write as", "Escreves como", "Vous écrivez en tant que"],
+  "Habla con otros aficionados del torneo": ["Chat with other tournament fans", "Fala com outros adeptos do torneio", "Discutez avec les autres supporters du tournoi"],
+  "En directo": ["Live", "Em direto", "En direct"],
+  "Ayer": ["Yesterday", "Ontem", "Hier"],
+  "Únete a la conversación": ["Join the conversation", "Junta-te à conversa", "Rejoignez la conversation"],
+  "Elige un nombre para chatear con otros aficionados": ["Choose a name to chat with other fans", "Escolhe um nome para conversar com outros adeptos", "Choisissez un nom pour discuter avec les autres supporters"],
+  "Oficial": ["Official", "Oficial", "Officiel"],
+  "Cambiar nombre": ["Change name", "Mudar nome", "Changer de nom"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

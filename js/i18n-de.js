@@ -514,4 +514,11 @@ export const DE = {
   "Usuario bloqueado": "Nutzer gesperrt",
   "¿Bloquear a este usuario? Se borrarán todos sus mensajes y no podrá volver a escribir.": "Diesen Nutzer sperren? Alle seine Nachrichten werden gelöscht und er kann nicht mehr schreiben.",
   "Escribes como": "Du schreibst als",
+  "Habla con otros aficionados del torneo": "Chatte mit anderen Fans des Turniers",
+  "En directo": "Live",
+  "Ayer": "Gestern",
+  "Únete a la conversación": "Mach mit im Gespräch",
+  "Elige un nombre para chatear con otros aficionados": "Wähle einen Namen, um mit anderen Fans zu chatten",
+  "Oficial": "Offiziell",
+  "Cambiar nombre": "Namen ändern",
 };

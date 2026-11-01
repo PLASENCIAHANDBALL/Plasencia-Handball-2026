@@ -5220,17 +5220,53 @@ function horaChat(iso) {
   try { return new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }); } catch (e) { return ""; }
 }
 
-function burbujaChat(m) {
-  const admin = adminActivo ? `
+function diaChat(iso) {
+  try { return new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" }); } catch (e) { return ""; }
+}
+
+function etiquetaDiaChat(iso) {
+  const hoy = diaChat(new Date().toISOString());
+  const ayer = diaChat(new Date(Date.now() - 864e5).toISOString());
+  const d = diaChat(iso);
+  if (d === hoy) return "Hoy";
+  if (d === ayer) return "Ayer";
+  try { return new Date(iso).toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" }); } catch (e) { return d; }
+}
+
+function colorChat(alias) {
+  let h = 0;
+  for (const c of String(alias)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 6;
+}
+
+function iniciales(alias) {
+  const l = String(alias).replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]/g, "");
+  return (l.slice(0, 2) || "?").toUpperCase();
+}
+
+function burbujaChat(m, i, lista) {
+  const ant = lista[i - 1];
+  const sig = lista[i + 1];
+  const nuevoDia = !ant || diaChat(ant.creado) !== diaChat(m.creado);
+  const mismoAutor = ant && !nuevoDia && ant.alias === m.alias && ant.es_admin === m.es_admin && ant.mio === m.mio;
+  const sigMismo = sig && diaChat(sig.creado) === diaChat(m.creado) && sig.alias === m.alias && sig.es_admin === m.es_admin && sig.mio === m.mio;
+  const acciones = adminActivo ? `
     <span class="ch-mod">
-      <button type="button" onclick="chatBorrar(${m.id})">Borrar</button>
-      ${m.es_admin ? "" : `<button type="button" onclick="chatBloquear(${m.id})">Bloquear</button>`}
+      <button type="button" onclick="event.stopPropagation();chatBorrar(${m.id})">Borrar</button>
+      ${m.es_admin ? "" : `<button type="button" onclick="event.stopPropagation();chatBloquear(${m.id})">Bloquear</button>`}
     </span>` : "";
+  const avatar = m.es_admin
+    ? `<span class="ch-av org" aria-hidden="true">PH</span>`
+    : `<span class="ch-av c${colorChat(m.alias)}" aria-hidden="true" translate="no">${escaparHtml(iniciales(m.alias))}</span>`;
   return `
-    <div class="ch-msg ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""}">
-      <div class="ch-cab"><strong translate="no">${escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Organización</em>` : ""}<time>${horaChat(m.creado)}</time></div>
-      <p translate="no">${escaparHtml(m.texto)}</p>
-      ${admin}
+    ${nuevoDia ? `<div class="ch-dia"><span>${etiquetaDiaChat(m.creado)}</span></div>` : ""}
+    <div class="ch-fila ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""} ${mismoAutor ? "seguido" : ""} ${sigMismo ? "sigue" : ""}">
+      ${m.mio ? "" : (mismoAutor ? `<span class="ch-av vacio"></span>` : avatar)}
+      <div class="ch-msg" ${adminActivo ? `onclick="this.classList.toggle('abierto')"` : ""}>
+        ${!m.mio && !mismoAutor ? `<div class="ch-nombre"><strong translate="no">${escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Oficial</em>` : ""}</div>` : ""}
+        <p translate="no">${escaparHtml(m.texto)}<time>${horaChat(m.creado)}</time></p>
+        ${acciones}
+      </div>
     </div>`;
 }
 
@@ -5243,7 +5279,7 @@ function pintarListaChat(forzar) {
   const abajo = caja.scrollHeight - caja.scrollTop - caja.clientHeight < 120;
   caja.innerHTML = chatMensajes.length
     ? chatMensajes.map(burbujaChat).join("")
-    : `<div class="estado-vacio">${ico("chat", 36)}<strong>Todavía no hay mensajes</strong><span>¡Sé el primero en escribir!</span></div>`;
+    : `<div class="ch-vacio"><span>${ico("chat", 30)}</span><strong>Todavía no hay mensajes</strong><small>¡Sé el primero en escribir!</small></div>`;
   if (abajo || forzar) caja.scrollTop = caja.scrollHeight;
 }
 
@@ -5258,14 +5294,19 @@ async function cargarChat(forzar) {
 function pintarChat() {
   if (vistaActual !== "chat") return;
   const pie = (chatAlias || adminActivo)
-    ? `<form class="ch-form" onsubmit="chatEnviar(event)">
-         <input id="ch-texto" type="text" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off" enterkeyhint="send" translate="no">
-         <button type="submit" aria-label="Enviar">${ico("enviar", 20)}</button>
-       </form>
-       <p class="ch-yo"><span>Escribes como</span> ${adminActivo ? "<strong>Organización</strong>" : `<strong translate="no">${escaparHtml(chatAlias)}</strong> · <button type="button" onclick="chatCambiarNombre()">Cambiar</button>`}</p>`
+    ? `<div class="ch-yo">
+         <span class="ch-chip">${adminActivo ? "<i>PH</i> <span>Organización</span>" : `<i translate="no">${escaparHtml(iniciales(chatAlias))}</i> <strong translate="no">${escaparHtml(chatAlias)}</strong>`}</span>
+         ${adminActivo ? "" : `<button type="button" onclick="chatCambiarNombre()">Cambiar nombre</button>`}
+       </div>
+       <form class="ch-form" onsubmit="chatEnviar(event)">
+         <input id="ch-texto" type="text" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off" enterkeyhint="send" translate="no" oninput="chatActualizarEnvio()">
+         <button type="submit" id="ch-enviar" aria-label="Enviar" disabled>${ico("enviar", 20)}</button>
+       </form>`
     : `<div class="ch-alias">
-         <p>Elige un nombre para chatear</p>
-         <div class="po-alias-fila">
+         <span class="ch-alias-ico">${ico("chat", 26)}</span>
+         <h3>Únete a la conversación</h3>
+         <p>Elige un nombre para chatear con otros aficionados</p>
+         <div class="ch-alias-fila">
            <input id="ch-alias" type="text" maxlength="16" placeholder="Tu nombre" autocomplete="off" translate="no" value="${escaparHtml(porraAlias || "")}">
            <button type="button" onclick="chatGuardarNombre()">Entrar</button>
          </div>
@@ -5274,11 +5315,20 @@ function pintarChat() {
   contenido.innerHTML = `
     ${barraZona("chat")}
     <div class="ch-pagina">
-      <h2>PH Chat</h2>
+      <div class="ch-cabecera">
+        <div><h2>PH Chat</h2><p>Habla con otros aficionados del torneo</p></div>
+        <span class="ch-vivo"><i></i>En directo</span>
+      </div>
       <div class="ch-lista" id="ch-lista" aria-live="polite"></div>
       ${pie}
     </div>`;
   pintarListaChat(true);
+}
+
+function chatActualizarEnvio() {
+  const b = document.getElementById("ch-enviar");
+  const t = document.getElementById("ch-texto");
+  if (b && t) b.disabled = !t.value.trim();
 }
 
 function chatRefrescar() {
@@ -5326,7 +5376,7 @@ async function chatEnviar(e) {
   });
   chatEnviando = false;
   if (error) { console.error("Error en el chat:", error); avisar(mensajeErrorChat(error), "error"); return; }
-  if (campo) { campo.value = ""; campo.focus(); }
+  if (campo) { campo.value = ""; campo.focus(); chatActualizarEnvio(); }
   const caja = document.getElementById("ch-lista");
   await cargarChat(false);
   if (caja) caja.scrollTop = caja.scrollHeight;
@@ -5358,6 +5408,7 @@ window.chatBorrar = chatBorrar;
 window.chatBloquear = chatBloquear;
 window.chatGuardarNombre = chatGuardarNombre;
 window.chatCambiarNombre = chatCambiarNombre;
+window.chatActualizarEnvio = chatActualizarEnvio;
 
 /* ================== PH PORRA ================== */
 
@@ -7158,7 +7209,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-02-56";
+const VERSION_APP = "2026-11-02-57";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

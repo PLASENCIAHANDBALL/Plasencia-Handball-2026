@@ -5263,7 +5263,7 @@ function burbujaChat(m, i, lista) {
     <div class="ch-fila ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""} ${mismoAutor ? "seguido" : ""} ${sigMismo ? "sigue" : ""}">
       ${m.mio ? "" : (mismoAutor ? `<span class="ch-av vacio"></span>` : avatar)}
       <div class="ch-msg" ${adminActivo ? `onclick="this.classList.toggle('abierto')"` : ""}>
-        ${!m.mio && !mismoAutor ? `<div class="ch-nombre"><strong translate="no">${escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Oficial</em>` : ""}</div>` : ""}
+        ${!mismoAutor ? `<div class="ch-nombre"><strong translate="no">${m.es_admin ? "Plasencia Handball" : escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Oficial</em>` : ""}</div>` : ""}
         <p translate="no">${escaparHtml(m.texto)}<time>${horaChat(m.creado)}</time></p>
         ${acciones}
       </div>
@@ -5295,7 +5295,7 @@ function pintarChat() {
   if (vistaActual !== "chat") return;
   const pie = (chatAlias || adminActivo)
     ? `<div class="ch-yo">
-         <span class="ch-chip">${adminActivo ? "<i>PH</i> <span>Organización</span>" : `<i translate="no">${escaparHtml(iniciales(chatAlias))}</i> <strong translate="no">${escaparHtml(chatAlias)}</strong>`}</span>
+         <span class="ch-chip">${adminActivo ? "<i>PH</i> <strong>Plasencia Handball</strong>" : `<i translate="no">${escaparHtml(iniciales(chatAlias))}</i> <strong translate="no">${escaparHtml(chatAlias)}</strong>`}</span>
          ${adminActivo ? "" : `<button type="button" onclick="chatCambiarNombre()">Cambiar nombre</button>`}
        </div>
        <form class="ch-form" onsubmit="chatEnviar(event)">

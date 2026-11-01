@@ -569,7 +569,26 @@ const TEXTOS = {
   "Compartir vídeo": ["Share video", "Partilhar vídeo", "Partager la vidéo"],
   "Guardar vídeo": ["Save video", "Guardar vídeo", "Enregistrer la vidéo"],
   "No se ha podido compartir el vídeo": ["The video could not be shared", "Não foi possível partilhar o vídeo", "La vidéo n'a pas pu être partagée"],
-  "Tu navegador no puede crear el vídeo. Usa la grabación de pantalla del móvil.": ["Your browser can't create the video. Use your phone's screen recording.", "O teu navegador não consegue criar o vídeo. Usa a gravação de ecrã do telemóvel.", "Votre navigateur ne peut pas créer la vidéo. Utilisez l'enregistrement d'écran du téléphone."]
+  "Tu navegador no puede crear el vídeo. Usa la grabación de pantalla del móvil.": ["Your browser can't create the video. Use your phone's screen recording.", "O teu navegador não consegue criar o vídeo. Usa a gravação de ecrã do telemóvel.", "Votre navigateur ne peut pas créer la vidéo. Utilisez l'enregistrement d'écran du téléphone."],
+  "PH Chat": ["PH Chat", "PH Chat", "PH Chat"],
+  "Chat": ["Chat", "Chat", "Chat"],
+  "Escribe un mensaje…": ["Write a message…", "Escreve uma mensagem…", "Écrivez un message…"],
+  "Todavía no hay mensajes": ["No messages yet", "Ainda não há mensagens", "Pas encore de messages"],
+  "¡Sé el primero en escribir!": ["Be the first to write!", "Sê o primeiro a escrever!", "Soyez le premier à écrire !"],
+  "Elige un nombre para chatear": ["Choose a name to chat", "Escolhe um nome para conversar", "Choisissez un nom pour discuter"],
+  "Tu nombre": ["Your name", "O teu nome", "Votre nom"],
+  "De 3 a 16 caracteres, sin espacios. Respeta a los demás: los mensajes ofensivos se borran y se bloquea a quien los envía.": ["3 to 16 characters, no spaces. Respect others: offensive messages are deleted and the sender is blocked.", "De 3 a 16 caracteres, sem espaços. Respeita os outros: as mensagens ofensivas são apagadas e quem as envia é bloqueado.", "De 3 à 16 caractères, sans espaces. Respectez les autres : les messages offensants sont supprimés et leur auteur est bloqué."],
+  "Nombre no válido: 3 a 16 caracteres, sin espacios": ["Invalid name: 3 to 16 characters, no spaces", "Nome inválido: 3 a 16 caracteres, sem espaços", "Nom non valide : 3 à 16 caractères, sans espaces"],
+  "No se pueden enviar enlaces": ["Links can't be sent", "Não é possível enviar links", "Les liens ne sont pas autorisés"],
+  "No puedes escribir en el chat": ["You can't write in the chat", "Não podes escrever no chat", "Vous ne pouvez pas écrire dans le chat"],
+  "Vas muy rápido, espera un momento": ["Slow down, wait a moment", "Estás a ir muito depressa, espera um momento", "Doucement, patientez un instant"],
+  "Escribe un mensaje de hasta 300 caracteres": ["Write a message of up to 300 characters", "Escreve uma mensagem até 300 caracteres", "Écrivez un message de 300 caractères maximum"],
+  "No se ha podido enviar el mensaje": ["The message could not be sent", "Não foi possível enviar a mensagem", "Le message n'a pas pu être envoyé"],
+  "Organización": ["Organisers", "Organização", "Organisation"],
+  "Bloquear": ["Block", "Bloquear", "Bloquer"],
+  "Usuario bloqueado": ["User blocked", "Utilizador bloqueado", "Utilisateur bloqué"],
+  "¿Bloquear a este usuario? Se borrarán todos sus mensajes y no podrá volver a escribir.": ["Block this user? All their messages will be deleted and they won't be able to write again.", "Bloquear este utilizador? Todas as suas mensagens serão apagadas e não poderá voltar a escrever.", "Bloquer cet utilisateur ? Tous ses messages seront supprimés et il ne pourra plus écrire."],
+  "Escribes como": ["You write as", "Escreves como", "Vous écrivez en tant que"]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

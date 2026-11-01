@@ -50,6 +50,8 @@ const ICONOS = {
   comida:     '<path d="M7 3v8a2 2 0 002 2v8M11 3v8a2 2 0 01-2 2M9 3v6M17 21V3c-2 1.5-3 4-3 7v3h3"/>',
   parking:    '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V8h3a2.5 2.5 0 010 5h-3"/>',
   reloj:      '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  chat:       '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z"/>',
+  enviar:     '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>',
   regalo:     '<rect x="3.5" y="9" width="17" height="4" rx="1"/><path d="M5 13v7h14v-7M12 9v11"/><path d="M12 9c-2.5 0-4.5-1-4.5-2.8C7.5 4.8 8.6 4 9.8 4 11.3 4 12 6 12 9zM12 9c2.5 0 4.5-1 4.5-2.8C16.5 4.8 15.4 4 14.2 4 12.7 4 12 6 12 9z"/>'
 };
 function ico(nombre, tam = 18) {
@@ -351,6 +353,7 @@ function restaurarVista(estado) {
     case "pabellones":  mostrarPabellones(); break;
     case "tienda":      mostrarTienda(); break;
     case "highlights":  mostrarHighlights(); break;
+    case "chat":        mostrarChat(); break;
     case "porra":       mostrarPorra(); break;
     case "sorteos":     mostrarSorteos(); break;
     case "radar":       mostrarRadar(); break;
@@ -966,6 +969,7 @@ const VISTAS_INICIALES = {
   pabellones: () => mostrarPabellones(),
   tienda: () => mostrarTienda(),
   highlights: () => mostrarHighlights(),
+  chat: () => mostrarChat(),
   porra: () => mostrarPorra(),
   sorteos: () => mostrarSorteos(),
   radar: () => mostrarRadar(),
@@ -1141,11 +1145,12 @@ function cargarGaleria2025() {
 
 /* ================== GALERÍA (SUPABASE) ================== */
 function setNavActivoPorVista(vista) {
+  document.body.classList.toggle("vista-chat", vista === "chat");
   document
     .querySelectorAll('.nav-principal button')
     .forEach(b => b.classList.remove('activo'));
 
-  if (["tienda", "highlights", "porra", "sorteos"].includes(vista)) vista = "zona";
+  if (["tienda", "highlights", "chat", "porra", "sorteos"].includes(vista)) vista = "zona";
   if (vista === "radar") vista = "pabellones";
   const btn = document.querySelector(`.nav-principal button[data-view="${vista}"]`);
   if (btn) btn.classList.add('activo');
@@ -5165,6 +5170,7 @@ window.enviarHighlight = enviarHighlight;
 
 const SECCIONES_ZONA = [
   { id: "highlights", nombre: "Highlights", icono: "play", abrir: () => mostrarHighlights() },
+  { id: "chat",       nombre: "Chat",       icono: "chat", abrir: () => mostrarChat() },
   { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() },
   { id: "sorteos",    nombre: "Sorteos",    icono: "regalo", abrir: () => mostrarSorteos() },
   { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() }
@@ -5190,6 +5196,168 @@ function mostrarSeccionZona(id) {
 function mostrarZona() {
   mostrarSeccionZona(lsGet("zona_seccion") || "highlights");
 }
+
+/* ================== PH CHAT ================== */
+
+let chatMensajes = [];
+let chatFirma = "";
+let chatTimer = null;
+let chatAlias = lsGet("chat_alias") || "";
+let chatEnviando = false;
+
+function mensajeErrorChat(error) {
+  const m = (error && error.message) || "";
+  if (error && error.code === "42501") { pinAdmin = null; return "PIN de administrador no válido"; }
+  if (/Alias/i.test(m)) return "Nombre no válido: 3 a 16 caracteres, sin espacios";
+  if (/Enlaces/i.test(m)) return "No se pueden enviar enlaces";
+  if (/Bloqueado/i.test(m)) return "No puedes escribir en el chat";
+  if (/r.pido/i.test(m)) return "Vas muy rápido, espera un momento";
+  if (/Mensaje/i.test(m)) return "Escribe un mensaje de hasta 300 caracteres";
+  return "No se ha podido enviar el mensaje";
+}
+
+function horaChat(iso) {
+  try { return new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }); } catch (e) { return ""; }
+}
+
+function burbujaChat(m) {
+  const admin = adminActivo ? `
+    <span class="ch-mod">
+      <button type="button" onclick="chatBorrar(${m.id})">Borrar</button>
+      ${m.es_admin ? "" : `<button type="button" onclick="chatBloquear(${m.id})">Bloquear</button>`}
+    </span>` : "";
+  return `
+    <div class="ch-msg ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""}">
+      <div class="ch-cab"><strong translate="no">${escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Organización</em>` : ""}<time>${horaChat(m.creado)}</time></div>
+      <p translate="no">${escaparHtml(m.texto)}</p>
+      ${admin}
+    </div>`;
+}
+
+function pintarListaChat(forzar) {
+  const caja = document.getElementById("ch-lista");
+  if (!caja) return;
+  const firma = chatMensajes.map(m => m.id).join(",");
+  if (!forzar && firma === chatFirma) return;
+  chatFirma = firma;
+  const abajo = caja.scrollHeight - caja.scrollTop - caja.clientHeight < 120;
+  caja.innerHTML = chatMensajes.length
+    ? chatMensajes.map(burbujaChat).join("")
+    : `<div class="estado-vacio">${ico("chat", 36)}<strong>Todavía no hay mensajes</strong><span>¡Sé el primero en escribir!</span></div>`;
+  if (abajo || forzar) caja.scrollTop = caja.scrollHeight;
+}
+
+async function cargarChat(forzar) {
+  const { data, error } = await supabase.rpc("chat_lista", { p_device: idDispositivo(), p_desde: 0, p_limite: 80 });
+  if (error) { console.error("Error cargando el chat:", error); return false; }
+  chatMensajes = data || [];
+  pintarListaChat(forzar);
+  return true;
+}
+
+function pintarChat() {
+  if (vistaActual !== "chat") return;
+  const pie = (chatAlias || adminActivo)
+    ? `<form class="ch-form" onsubmit="chatEnviar(event)">
+         <input id="ch-texto" type="text" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off" enterkeyhint="send" translate="no">
+         <button type="submit" aria-label="Enviar">${ico("enviar", 20)}</button>
+       </form>
+       <p class="ch-yo"><span>Escribes como</span> ${adminActivo ? "<strong>Organización</strong>" : `<strong translate="no">${escaparHtml(chatAlias)}</strong> · <button type="button" onclick="chatCambiarNombre()">Cambiar</button>`}</p>`
+    : `<div class="ch-alias">
+         <p>Elige un nombre para chatear</p>
+         <div class="po-alias-fila">
+           <input id="ch-alias" type="text" maxlength="16" placeholder="Tu nombre" autocomplete="off" translate="no" value="${escaparHtml(porraAlias || "")}">
+           <button type="button" onclick="chatGuardarNombre()">Entrar</button>
+         </div>
+         <small>De 3 a 16 caracteres, sin espacios. Respeta a los demás: los mensajes ofensivos se borran y se bloquea a quien los envía.</small>
+       </div>`;
+  contenido.innerHTML = `
+    ${barraZona("chat")}
+    <div class="ch-pagina">
+      <h2>PH Chat</h2>
+      <div class="ch-lista" id="ch-lista" aria-live="polite"></div>
+      ${pie}
+    </div>`;
+  pintarListaChat(true);
+}
+
+function chatRefrescar() {
+  clearTimeout(chatTimer);
+  chatTimer = setTimeout(async () => {
+    if (vistaActual !== "chat") return;
+    if (!document.hidden && !chatEnviando) await cargarChat(false);
+    chatRefrescar();
+  }, 4000);
+}
+
+async function mostrarChat() {
+  setNavActivoPorVista("chat");
+  registrarNavegacion("chat");
+  chatFirma = "";
+  pintarChat();
+  await cargarChat(true);
+  chatRefrescar();
+}
+
+function chatGuardarNombre() {
+  const nombre = (document.getElementById("ch-alias")?.value || "").trim();
+  if (!/^[A-Za-z0-9_.áéíóúñÁÉÍÓÚÑ-]{3,16}$/.test(nombre) || /(organizaci|admin|plasencia)/i.test(nombre)) {
+    avisar("Nombre no válido: 3 a 16 caracteres, sin espacios", "error"); return;
+  }
+  chatAlias = nombre;
+  lsSet("chat_alias", nombre);
+  pintarChat();
+  document.getElementById("ch-texto")?.focus();
+}
+
+function chatCambiarNombre() {
+  chatAlias = "";
+  pintarChat();
+}
+
+async function chatEnviar(e) {
+  if (e) e.preventDefault();
+  const campo = document.getElementById("ch-texto");
+  const texto = (campo?.value || "").trim();
+  if (!texto || chatEnviando) return;
+  chatEnviando = true;
+  const { error } = await supabase.rpc("chat_enviar", {
+    p_device: idDispositivo(), p_alias: chatAlias, p_texto: texto, p_pin: adminActivo ? pinAdmin : null
+  });
+  chatEnviando = false;
+  if (error) { console.error("Error en el chat:", error); avisar(mensajeErrorChat(error), "error"); return; }
+  if (campo) { campo.value = ""; campo.focus(); }
+  const caja = document.getElementById("ch-lista");
+  await cargarChat(false);
+  if (caja) caja.scrollTop = caja.scrollHeight;
+}
+
+async function chatBorrar(id) {
+  if (!adminActivo) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+  const { error } = await supabase.rpc("chat_borrar", { p_pin: pin, p_id: id });
+  if (error) { avisar(mensajeErrorChat(error), "error"); return; }
+  await cargarChat(false);
+}
+
+async function chatBloquear(id) {
+  if (!adminActivo) return;
+  if (!confirm("¿Bloquear a este usuario? Se borrarán todos sus mensajes y no podrá volver a escribir.")) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+  const { error } = await supabase.rpc("chat_bloquear", { p_pin: pin, p_id: id });
+  if (error) { avisar(mensajeErrorChat(error), "error"); return; }
+  avisar("Usuario bloqueado");
+  await cargarChat(false);
+}
+
+window.mostrarChat = mostrarChat;
+window.chatEnviar = chatEnviar;
+window.chatBorrar = chatBorrar;
+window.chatBloquear = chatBloquear;
+window.chatGuardarNombre = chatGuardarNombre;
+window.chatCambiarNombre = chatCambiarNombre;
 
 /* ================== PH PORRA ================== */
 
@@ -6990,7 +7158,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-10-30-55";
+const VERSION_APP = "2026-11-02-56";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

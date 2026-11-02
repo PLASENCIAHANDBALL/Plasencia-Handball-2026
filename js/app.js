@@ -1243,6 +1243,10 @@ function agruparPorFecha(lista) {
   }, {});
 }
 
+// Días desplegados por el usuario. Se recuerdan para que el refresco en vivo o un cambio
+// de filtro no los vuelva a cerrar. Por defecto solo se abre el día de hoy.
+const estadoFechas = {};
+
 function renderBloquesPorFecha(lista, tipo) {
   if (lista.length === 0) return `<p>No hay partidos</p>`;
 
@@ -1250,27 +1254,26 @@ function renderBloquesPorFecha(lista, tipo) {
   let html = "";
 
   // 📅 fecha de hoy (en hora de Madrid) en formato YYYY-MM-DD
-  // (antes se usaba la fecha UTC y entre las 0:00 y las 2:00 contaba como "ayer")
   const hoy = hoyISO();
 
   Object.entries(grupos).forEach(([fecha, partidosDia]) => {
     const fechaBonita = textoFecha(fecha) || "Fecha por confirmar";
-
-    // 🔥 abrir solo si es hoy
     const esHoy = fecha === hoy;
-    const abierta = esHoy ? "abierta" : "";
+    const clave = `${tipo}|${fecha}`;
+    const abierta = clave in estadoFechas ? estadoFechas[clave] : esHoy;
 
     html += `
-      <div class="fecha-bloque ${abierta}">
-        <div class="fecha-header" role="button" tabindex="0" aria-expanded="${esHoy}" onclick="toggleFecha(this)">
+      <div class="fecha-bloque ${abierta ? "abierta" : ""}">
+        <div class="fecha-header" role="button" tabindex="0" aria-expanded="${abierta}"
+             data-clave="${escaparHtml(clave)}" onclick="toggleFecha(this)">
           <span class="fecha-texto">${fechaBonita}${esHoy ? ` <em class="chip-hoy">Hoy</em>` : ""}</span>
-          <span class="fecha-cuenta">${partidosDia.length} ${partidosDia.length === 1 ? "partido" : "partidos"}</span>
-          <span class="flecha" aria-hidden="true">⌄</span>
+          <span class="fecha-cuenta">${textoNumPartidos(partidosDia.length)}</span>
+          <span class="flecha" aria-hidden="true">${ico("chev", 18)}</span>
         </div>
 
         <div class="fecha-partidos">
-  ${renderBloquesCategoriaGenero(partidosDia, fecha, tipo)}
-</div>
+          ${renderPartidosDelDia(partidosDia)}
+        </div>
       </div>
     `;
   });
@@ -1278,214 +1281,150 @@ function renderBloquesPorFecha(lista, tipo) {
   return html;
 }
 
-function agruparPorCategoriaGenero(lista) {
-  return lista.reduce((acc, p) => {
+const ORDEN_CATEGORIAS = ["Infantil", "Cadete", "Juvenil"];
+const ORDEN_GENEROS = ["Masculino", "Femenino"];
 
-    const grupoTexto = p.grupo ? ` · ${p.grupo}` : "";
-
-    const clave = `${p.categoria} · ${p.genero}${grupoTexto}`;
-
-    if (!acc[clave]) acc[clave] = [];
-    acc[clave].push(p);
-
-    return acc;
-
-  }, {});
+function posicionEn(orden, valor) {
+  const i = orden.indexOf(valor);
+  return i === -1 ? orden.length : i;
 }
 
-function agruparPorCategoria(lista) {
-  return lista.reduce((acc, p) => {
-    const categoria = p.categoria || "Sin categoría";
-
-    if (!acc[categoria]) acc[categoria] = [];
-    acc[categoria].push(p);
-
-    return acc;
-  }, {});
+function claseCategoria(categoria) {
+  const c = (categoria || "").toLowerCase();
+  return c.includes("infantil") ? "infantil" : c.includes("cadete") ? "cadete" : c.includes("juvenil") ? "juvenil" : "";
 }
 
-function obtenerClaseCategoria(categoria) {
-
-  if (!categoria) return "";
-
-  const cat = categoria.toLowerCase();
-
-  if (cat.includes("infantil")) return "badge-infantil";
-
-  if (cat.includes("cadete")) return "badge-cadete";
-
-  if (cat.includes("juvenil")) return "badge-juvenil";
-
-  return "";
-}
-
-function obtenerClaseGenero(genero) {
-
-  if (!genero) return "";
-
-  const gen = genero.toLowerCase();
-
-  if (gen.includes("masculino")) return "badge-masculino";
-
-  if (gen.includes("femenino")) return "badge-femenino";
-
-  return "";
-}
-
-function obtenerIconoGenero(genero) {
-
-  if (!genero) return "";
-
-  const gen = genero.toLowerCase();
-
-  return "";
+function claseGenero(genero) {
+  const g = (genero || "").toLowerCase();
+  return g.includes("femenino") ? "femenino" : g.includes("masculino") ? "masculino" : "";
 }
 
 function textoNumPartidos(n) {
   return `${n} ${n === 1 ? "partido" : "partidos"}`;
 }
 
-function renderBloquesCategoriaGenero(partidosDia, fecha, tipo) {
-  const categorias = agruparPorCategoria(partidosDia);
-  let html = "";
-
-  Object.entries(categorias).forEach(([categoria, listaCategoria]) => {
-    const idCategoria = slug("categoria", tipo, fecha, categoria);
-
-    html += `
-      <section class="pj-cat ${obtenerClaseCategoria(categoria).replace("badge-", "pj-")}">
-        <div class="pj-cab pj-cab-cat" role="button" tabindex="0"
-             aria-expanded="false" aria-controls="${idCategoria}"
-             onclick="toggleCategoriaDia('${idCategoria}', this)">
-          <span class="pj-barra" aria-hidden="true"></span>
-          <span class="pj-nombre">${categoria}</span>
-          <span class="pj-num">${textoNumPartidos(listaCategoria.length)}</span>
-          <span class="pj-flecha" aria-hidden="true">${ico("chev", 18)}</span>
-        </div>
-        <div id="${idCategoria}" class="categoria-partidos oculto">
-          <div class="pj-interior">
-            ${renderSubBloquesCategoria(listaCategoria, fecha, tipo)}
-          </div>
-        </div>
-      </section>
-    `;
+// Dentro de un día: los partidos se ven directamente, agrupados por categoría y género
+// con un simple título (sin más desplegables), y ordenados por hora.
+function renderPartidosDelDia(partidosDia) {
+  const grupos = {};
+  partidosDia.forEach(p => {
+    const clave = `${p.categoria || "Sin categoría"}||${p.genero || ""}`;
+    (grupos[clave] ||= []).push(p);
   });
 
-  return html;
+  const claves = Object.keys(grupos).sort((x, y) => {
+    const [cx, gx] = x.split("||"), [cy, gy] = y.split("||");
+    return posicionEn(ORDEN_CATEGORIAS, cx) - posicionEn(ORDEN_CATEGORIAS, cy)
+        || posicionEn(ORDEN_GENEROS, gx) - posicionEn(ORDEN_GENEROS, gy);
+  });
+
+  return claves.map(clave => {
+    const [categoria, genero] = clave.split("||");
+    const lista = grupos[clave].sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
+
+    return `
+      <section class="pd-grupo pd-${claseCategoria(categoria)} pd-${claseGenero(genero)}">
+        <h4 class="pd-titulo">
+          <span class="pd-punto" aria-hidden="true"></span>
+          <span>${escaparHtml(categoria)}</span>
+          ${genero ? `<span class="pd-gen">${escaparHtml(genero)}</span>` : ""}
+          <span class="pd-num">${lista.length}</span>
+        </h4>
+        <div class="pd-lista">
+          ${lista.map(p => adminActivo ? renderPartidoCard(p) : renderFilaPartido(p)).join("")}
+        </div>
+      </section>`;
+  }).join("");
 }
 
-function renderSubBloquesCategoria(listaCategoria, fecha, tipo) {
-  const generos = listaCategoria.reduce((acc, p) => {
-    const genero = p.genero || "Sin género";
-    if (!acc[genero]) acc[genero] = [];
-    acc[genero].push(p);
-    return acc;
-  }, {});
+// Fila compacta de partido: hora a la izquierda, los dos equipos uno encima de otro
+// con su marcador a la derecha (como en las apps de resultados). Toda la fila se pulsa.
+function renderFilaPartido(p) {
+  const estado = calcularEstadoPartido(p);
+  const local = equipos.find(e => e.id === p.local_id);
+  const visitante = equipos.find(e => e.id === p.visitante_id);
+  const clubLocal = clubes.find(c => c.id === local?.club_id);
+  const clubVisitante = clubes.find(c => c.id === visitante?.club_id);
 
-  let html = "";
+  const gl = Number(p.goles_local), gv = Number(p.goles_visitante);
+  const conMarcador = estado !== "pendiente";
+  const escudo = c => c?.escudo
+    ? `<img src="${escaparHtml(c.escudo)}" class="pf-escudo" alt="" loading="lazy" decoding="async">`
+    : `<span class="pf-escudo pf-escudo-vacio"></span>`;
 
-  Object.entries(generos).forEach(([genero, listaGenero]) => {
-    const idGenero = slug("genero", tipo, fecha, listaGenero[0].categoria, genero);
+  const lado = (club, equipo, goles, gana) => `
+    <span class="pf-eq ${gana ? "gana" : ""}">
+      ${escudo(club)}
+      <span class="pf-nombre">${escaparHtml(equipo?.nombre || "Por definir")}</span>
+      ${conMarcador ? `<b class="pf-goles">${Number.isFinite(goles) ? goles : 0}</b>` : ""}
+    </span>`;
 
-    html += `
-      <div class="pj-gen ${obtenerClaseGenero(genero).replace("badge-", "pj-")}">
-        <div class="pj-cab pj-cab-gen" role="button" tabindex="0"
-             aria-expanded="false" aria-controls="${idGenero}"
-             onclick="toggleCategoriaDia('${idGenero}', this)">
-          <span class="pj-punto" aria-hidden="true"></span>
-          <span class="pj-nombre">${genero}</span>
-          <span class="pj-num">${textoNumPartidos(listaGenero.length)}</span>
-          <span class="pj-flecha" aria-hidden="true">${ico("chev", 16)}</span>
-        </div>
-        <div id="${idGenero}" class="categoria-partidos oculto">
-          <div class="pj-interior">
-            ${renderGruposDentroGenero(listaGenero, fecha, tipo)}
-          </div>
-        </div>
+  const izquierda = estado === "en_juego"
+    ? `<span class="pf-vivo">En juego</span>`
+    : `<span class="pf-hora">${formatearHora(p.hora)}</span>${estado === "finalizado" ? `<span class="pf-fin">Final</span>` : ""}`;
+
+  const meta = [p.grupo, p.pabellon].filter(Boolean).map(t => `<span>${escaparHtml(t)}</span>`).join("");
+
+  return `
+    <button type="button" class="pf ${estado}" onclick="abrirPartido(${p.id})"
+            aria-label="${escaparHtml(`${local?.nombre || ""} contra ${visitante?.nombre || ""}`)}">
+      <span class="pf-izq">${izquierda}</span>
+      <span class="pf-centro">
+        ${lado(clubLocal, local, gl, estado === "finalizado" && gl > gv)}
+        ${lado(clubVisitante, visitante, gv, estado === "finalizado" && gv > gl)}
+        ${meta ? `<span class="pf-meta">${meta}</span>` : ""}
+      </span>
+      <span class="pf-flecha" aria-hidden="true">${ico("derecha", 16)}</span>
+    </button>`;
+}
+
+/* ---- filtro de la pantalla Partidos (se elige una vez y vale para todos los días) ---- */
+const filtroPartidos = { categoria: "", genero: "" };
+
+function aplicarFiltroPartidos(lista) {
+  return lista.filter(p =>
+    (!filtroPartidos.categoria || p.categoria === filtroPartidos.categoria) &&
+    (!filtroPartidos.genero || p.genero === filtroPartidos.genero));
+}
+
+function renderFiltroPartidos() {
+  const categorias = [...new Set(partidos.map(p => p.categoria).filter(Boolean))]
+    .sort((a, b) => posicionEn(ORDEN_CATEGORIAS, a) - posicionEn(ORDEN_CATEGORIAS, b));
+  const generos = [...new Set(partidos.map(p => p.genero).filter(Boolean))]
+    .sort((a, b) => posicionEn(ORDEN_GENEROS, a) - posicionEn(ORDEN_GENEROS, b));
+
+  const chip = (campo, valor, texto, extra = "") => {
+    const activo = filtroPartidos[campo] === valor;
+    return `<button type="button" class="pf-chip ${extra} ${activo ? "activo" : ""}" aria-pressed="${activo}"
+              onclick="cambiarFiltroPartidos('${campo}', '${escaparHtml(valor)}')">${extra ? `<i aria-hidden="true"></i>` : ""}${escaparHtml(texto)}</button>`;
+  };
+
+  return `
+    <div class="pf-filtros">
+      <div class="pf-fila" role="group" aria-label="Categoría">
+        ${chip("categoria", "", "Todas")}
+        ${categorias.map(c => chip("categoria", c, c)).join("")}
       </div>
-    `;
-  });
-
-  return html;
-}
-
-function renderGruposDentroGenero(listaGenero, fecha, tipo) {
-  const grupos = listaGenero.reduce((acc, p) => {
-    const grupo = p.grupo || "Sin grupo";
-    if (!acc[grupo]) acc[grupo] = [];
-    acc[grupo].push(p);
-    return acc;
-  }, {});
-
-  let html = "";
-
-  Object.entries(grupos).forEach(([grupo, lista]) => {
-    const id = slug("grupo", tipo, fecha, lista[0].categoria, lista[0].genero, grupo);
-
-    html += `
-      <div class="pj-grupo">
-        <div class="pj-cab pj-cab-grupo" role="button" tabindex="0"
-             aria-expanded="false" aria-controls="${id}"
-             onclick="toggleCategoriaDia('${id}', this)">
-          <span class="pj-nombre">${grupo}</span>
-          <span class="pj-num">${textoNumPartidos(lista.length)}</span>
-          <span class="pj-flecha" aria-hidden="true">${ico("chev", 14)}</span>
-        </div>
-        <div id="${id}" class="categoria-partidos oculto">
-          <div class="pj-interior pj-partidos">
-            ${lista.map(p => renderPartidoCard(p)).join("")}
-          </div>
-        </div>
+      <div class="pf-fila pf-segmento" role="group" aria-label="Género">
+        ${chip("genero", "", "Todos")}
+        ${generos.map(g => chip("genero", g, g, `pf-chip-${claseGenero(g)}`)).join("")}
       </div>
-    `;
-  });
-
-  return html;
+    </div>`;
 }
 
-function toggleCategoriaDia(id, header) {
-  const contenedor = document.getElementById(id);
-  if (!contenedor) return;
-
-  const abrir = contenedor.classList.contains("oculto");
-
-  if (abrir) {
-    contenedor.classList.remove("oculto");
-    contenedor.classList.add("abierto");
-
-    // Se anima de 0 a la altura real y después se deja sin límite, para que los bloques
-    // anidados (categoría > género > grupo) nunca queden cortados.
-    contenedor.style.maxHeight = contenedor.scrollHeight + "px";
-
-    const liberar = () => {
-      if (contenedor.classList.contains("abierto")) contenedor.style.maxHeight = "none";
-    };
-
-    contenedor.addEventListener("transitionend", e => {
-      if (e.target === contenedor && e.propertyName === "max-height") liberar();
-    }, { once: true });
-
-    setTimeout(liberar, 600); // por si no hay transición (animaciones reducidas)
-  } else {
-    // se fija la altura actual para poder animar el plegado hasta 0
-    contenedor.style.maxHeight = contenedor.scrollHeight + "px";
-    void contenedor.offsetHeight;
-
-    contenedor.classList.remove("abierto");
-    contenedor.classList.add("oculto");
-    contenedor.style.maxHeight = "";
-  }
-
-  if (header) {
-    header.classList.toggle("abierto", abrir);
-    header.setAttribute("aria-expanded", abrir ? "true" : "false");
-  }
+function cambiarFiltroPartidos(campo, valor) {
+  filtroPartidos[campo] = valor;
+  const y = window.scrollY;
+  sinSaltoDeScroll(() => mostrarPartidos());
+  window.scrollTo(0, y);
 }
+window.cambiarFiltroPartidos = cambiarFiltroPartidos;
 
 function toggleFecha(header) {
   const bloque = header.parentElement;
   const abierta = bloque.classList.toggle("abierta");
   header.setAttribute("aria-expanded", abierta ? "true" : "false");
+  if (header.dataset.clave) estadoFechas[header.dataset.clave] = abierta;
 }
 
 window.toggleFecha = toggleFecha;
@@ -1504,7 +1443,7 @@ function mostrarPartidos() {
     html += `<button onclick="formNuevoPartido()">Crear partido</button>`;
   }
 
-  const ordenados = [...partidos].sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
+  const ordenados = aplicarFiltroPartidos([...partidos]).sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
 
   const proximos = ordenados.filter(
   p => calcularEstadoPartido(p) !== "finalizado"
@@ -1521,6 +1460,8 @@ const finalizados = ordenados
       <div class="pt-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>
       <div class="pt-dato"><strong>${finalizados.length}</strong><span>Finalizados</span></div>
     </div>`;
+
+  html += renderFiltroPartidos();
 
   /* ===== PRÓXIMOS ===== */
 html += `<h3 class="bloque-titulo pt-titulo">Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
@@ -7169,7 +7110,6 @@ window.editarClub = editarClub;
 window.borrarClub = borrarClub;
 window.mostrarCuadroEliminatorio = mostrarCuadroEliminatorio;
 window.mostrarCuadrosEliminatorios = mostrarCuadrosEliminatorios;
-window.toggleCategoriaDia = toggleCategoriaDia;
 
 // patrocinadores
 window.guardarNuevoPatrocinador = guardarNuevoPatrocinador;
@@ -7334,7 +7274,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-02-58";
+const VERSION_APP = "2026-11-02-59";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

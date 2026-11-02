@@ -3970,44 +3970,63 @@ p.estado-vacio { background: var(--surface); border: 1px dashed var(--border); b
 body.splash-activo .idioma-fab { display: none; }
 html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spacing: -.01em; }
 
-/* ===== Partidos: desplegables de categoría > género > grupo ===== */
-.pj-cat { margin: 12px 0 0; }
-.pj-cab { display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
-.pj-cab:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
-.pj-nombre { flex: 1; min-width: 0; font-weight: 700; }
-.pj-num { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-.pj-flecha { display: inline-flex; color: var(--accent-text); transition: transform .3s ease; flex: none; }
-.pj-cab.abierto .pj-flecha { transform: rotate(180deg); }
-.pj-interior { padding-top: 6px; }
+/* ===== Partidos: filtro arriba + días con los partidos a la vista ===== */
+.fecha-header .flecha { display: inline-flex; color: var(--accent-text); flex: none; }
+.fecha-bloque.abierta .fecha-header { border-color: var(--accent); }
 
-/* categoría: tarjeta con barra de color */
-.pj-cab-cat { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 13px 16px 13px 0; box-shadow: 0 6px 18px rgba(27,111,184,.07); overflow: hidden; }
-.pj-cab-cat .pj-nombre { font-size: 17px; color: var(--text); }
-.pj-barra { align-self: stretch; width: 6px; border-radius: 0 6px 6px 0; background: var(--azul-medio); margin: -13px 0 -13px 0; flex: none; }
-.pj-cab-cat .pj-nombre { margin-left: 4px; }
-.pj-cat.pj-infantil .pj-barra { background: #5bb8f0; }
-.pj-cat.pj-cadete .pj-barra { background: #2b86d9; }
-.pj-cat.pj-juvenil .pj-barra { background: #0a3a80; }
-.pj-cab-cat.abierto { background: var(--tile); border-color: transparent; }
+/* filtro de categoría y género */
+.pf-filtros { display: grid; gap: 8px; margin: 4px 0 6px; }
+.pf-fila { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; margin-bottom: -6px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pf-fila::-webkit-scrollbar { display: none; }
+.pf-chip { flex: none; width: auto; display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 16px; margin: 0; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--tile-ink); font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.pf-chip.activo { background: linear-gradient(135deg, var(--accent), var(--azul-medio)); border-color: transparent; color: #fff; box-shadow: 0 4px 12px rgba(43,134,217,.3); }
+.pf-chip i { width: 9px; height: 9px; border-radius: 50%; background: #2b86d9; }
+.pf-chip-femenino i { background: #e0578a; }
+.pf-chip.activo i { background: #fff; }
+.pf-segmento { display: inline-flex; width: fit-content; max-width: 100%; gap: 2px; padding: 3px; background: var(--tile); border-radius: 999px; }
+.pf-segmento .pf-chip { min-height: 34px; padding: 0 14px; border: 0; background: transparent; font-size: 13px; }
+.pf-segmento .pf-chip.activo { background: var(--surface); color: var(--tile-ink); box-shadow: 0 2px 8px rgba(27,111,184,.18); }
+.pf-segmento .pf-chip.activo i { background: #2b86d9; }
+.pf-segmento .pf-chip-femenino.activo i { background: #e0578a; }
 
-/* género: sangrado con línea guía */
-.pj-cat > .categoria-partidos > .pj-interior { margin-left: 14px; padding-left: 14px; border-left: 2px solid var(--brillo); }
-.pj-gen { margin-top: 8px; }
-.pj-cab-gen { padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-.pj-cab-gen .pj-nombre { font-size: 15px; color: var(--text); }
-.pj-punto { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
-.pj-gen.pj-masculino .pj-punto { background: #2b86d9; }
-.pj-gen.pj-femenino .pj-punto { background: #e0578a; }
-.pj-gen.pj-masculino .pj-cab-gen.abierto { background: var(--tile); border-color: transparent; color: var(--tile-ink); }
-.pj-gen.pj-femenino .pj-cab-gen.abierto { background: #fde4ee; border-color: transparent; }
+/* grupo categoría · género dentro de un día */
+.pd-grupo { margin: 14px 0 4px; }
+.pd-grupo:first-child { margin-top: 4px; }
+.pd-titulo { display: flex; align-items: center; gap: 8px; margin: 0 4px 8px; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--tile-ink); }
+.pd-punto { width: 10px; height: 10px; border-radius: 3px; background: var(--azul-medio); flex: none; }
+.pd-infantil .pd-punto { background: #5bb8f0; }
+.pd-cadete .pd-punto { background: #2b86d9; }
+.pd-juvenil .pd-punto { background: #0a3a80; }
+.pd-gen { color: #2b86d9; }
+.pd-femenino .pd-gen { color: #d0447a; }
+.pd-num { margin-left: auto; font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+.pd-lista { display: flex; flex-direction: column; gap: 8px; }
 
-/* grupo: etiqueta ligera */
-.pj-gen > .categoria-partidos > .pj-interior { padding-top: 4px; }
-.pj-grupo { margin-top: 6px; }
-.pj-cab-grupo { padding: 8px 4px; border-bottom: 1px dashed var(--border); }
-.pj-cab-grupo .pj-nombre { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); }
-.pj-partidos { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
-.pj-cab-grupo ~ .categoria-partidos .pj-partidos { margin: 0; }
+/* fila de partido */
+.pf { display: grid; grid-template-columns: 58px 1fr auto; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 12px 12px 12px 14px; text-align: left; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--brillo); border-radius: 16px; box-shadow: 0 4px 12px rgba(27,111,184,.06); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .12s ease, box-shadow .12s ease; }
+.pf:active { transform: scale(.98); }
+.pf:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
+.pf.en_juego { border-left-color: #e5483f; }
+.pf.finalizado { border-left-color: var(--azul-fuerte); }
+.pf-izq { display: grid; justify-items: center; gap: 3px; padding-right: 10px; border-right: 1px solid var(--border); align-self: stretch; align-content: center; }
+.pf-hora { font-size: 15px; font-weight: 700; color: var(--tile-ink); font-variant-numeric: tabular-nums; }
+.pf-fin { font-size: 11px; font-weight: 600; color: var(--muted); }
+.pf-vivo { font-size: 11px; font-weight: 700; color: #e5483f; text-align: center; line-height: 1.2; }
+.pf-vivo::before { content: ""; display: block; width: 8px; height: 8px; margin: 0 auto 4px; border-radius: 50%; background: #e5483f; animation: pf-latido 1.2s ease-in-out infinite; }
+@keyframes pf-latido { 50% { opacity: .3; } }
+.pf-centro { display: grid; gap: 6px; min-width: 0; }
+.pf-eq { display: flex; align-items: center; gap: 9px; min-width: 0; font-size: 15px; font-weight: 500; }
+.pf.finalizado .pf-eq { color: var(--muted); }
+.pf.finalizado .pf-eq.gana { color: var(--text); font-weight: 700; }
+.pf-escudo { width: 24px; height: 24px; object-fit: contain; flex: none; }
+.pf-escudo-vacio { border-radius: 50%; background: var(--tile); }
+.pf-nombre { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-goles { min-width: 24px; text-align: right; font-size: 17px; font-variant-numeric: tabular-nums; }
+.pf-meta { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 12px; color: var(--muted); }
+.pf-meta span:not(:last-child)::after { content: "·"; margin-left: 6px; }
+.pf-meta span:first-child { color: var(--accent-text); font-weight: 600; }
+.pf-flecha { display: inline-flex; color: var(--accent-text); opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .pf-vivo::before { animation: none; } }
 
 /* ===== Botón "+" de la barra (PH Highlights) ===== */
 

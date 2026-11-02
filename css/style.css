@@ -3993,12 +3993,11 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
 .pd-grupo { margin: 14px 0 4px; }
 .pd-grupo:first-child { margin-top: 4px; }
 .pd-titulo { display: flex; align-items: center; gap: 8px; margin: 0 4px 8px; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--tile-ink); }
-.pd-punto { width: 10px; height: 10px; border-radius: 3px; background: var(--azul-medio); flex: none; }
-.pd-infantil .pd-punto { background: #5bb8f0; }
-.pd-cadete .pd-punto { background: #2b86d9; }
-.pd-juvenil .pd-punto { background: #0a3a80; }
-.pd-gen { color: #2b86d9; }
-.pd-femenino .pd-gen { color: #d0447a; }
+.pd-punto { width: 10px; height: 10px; border-radius: 3px; background: currentColor; flex: none; }
+/* todo el título del color del género: azul para masculino, rosa para femenino */
+.pd-masculino .pd-titulo { color: #2b86d9; }
+.pd-femenino .pd-titulo { color: #d0447a; }
+.pd-gen { color: inherit; }
 .pd-num { margin-left: auto; font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--muted); }
 .pd-lista { display: flex; flex-direction: column; gap: 8px; }
 
@@ -4008,6 +4007,9 @@ html:not([lang="es"]) .nav-principal button span { font-size: .68rem; letter-spa
 .pf:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
 .pf.en_juego { border-left-color: #e5483f; }
 .pf.finalizado { border-left-color: var(--azul-fuerte); }
+.pd-femenino .pf { border-left-color: #f6c3d6; }
+.pd-femenino .pf.finalizado { border-left-color: #d0447a; }
+.pd-femenino .pf.en_juego { border-left-color: #e5483f; }
 .pf-izq { display: grid; justify-items: center; gap: 3px; padding-right: 10px; border-right: 1px solid var(--border); align-self: stretch; align-content: center; }
 .pf-hora { font-size: 15px; font-weight: 700; color: var(--tile-ink); font-variant-numeric: tabular-nums; }
 .pf-fin { font-size: 11px; font-weight: 600; color: var(--muted); }

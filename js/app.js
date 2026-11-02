@@ -360,7 +360,7 @@ function restaurarVista(estado) {
     case "zona":        mostrarZona(); break;
     case "avisos":      mostrarAvisos(); break;
     case "partido":     if (params.id) abrirPartido(params.id); else mostrarPartidos(); break;
-    case "club":        if (params.id) verClub(params.id); else mostrarEquipos(); break;
+    case "club":        if (params.id) return verClub(params.id); mostrarEquipos(); break;
     case "pabellon":    if (params.nombre) window.mostrarPartidosPorPabellon(params.nombre); else mostrarPabellones(); break;
     default:            mostrarHome();
   }
@@ -370,14 +370,76 @@ window.addEventListener("popstate", (e) => {
   if (!e.state || !e.state.vista) return;
 
   navegandoPorHistorial = true;
+  let pintado;
   try {
-    restaurarVista(e.state);
+    pintado = restaurarVista(e.state);
   } catch (err) {
     console.error("Error al volver atrás:", err);
   } finally {
     navegandoPorHistorial = false;
   }
+
+  // Si volvemos desde un partido a la pantalla de la que salimos, se deja como estaba
+  const origen = origenPartido;
+  if (origen && e.state.vista === origen.vista &&
+      JSON.stringify(e.state.params || {}) === JSON.stringify(origen.params || {})) {
+    origenPartido = null;
+    Promise.resolve(pintado).then(() => reponerOrigen(origen)).catch(() => {});
+  } else if (e.state.vista !== "partido") {
+    origenPartido = null;
+  }
 });
+
+/* ---- Volver desde un partido a la pantalla de origen ---- */
+
+// Pantalla (con filtros, equipo desplegado y scroll) desde la que se abrió el partido
+let origenPartido = null;
+
+function capturarOrigen() {
+  const origen = { vista: vistaActual, params: paramsVistaActual, scroll: window.scrollY };
+
+  if (vistaActual === "categorias") {
+    const abierto = document.querySelector(".partidos-equipo:not(.oculto)");
+    origen.categoria = window.categoriaSeleccionada;
+    origen.genero = document.getElementById("gen")?.value;
+    origen.grupo = document.getElementById("grp")?.value;
+    origen.equipo = abierto ? Number(abierto.id.replace("partidos-equipo-", "")) : null;
+  } else if (vistaActual === "club") {
+    origen.equipos = [...document.querySelectorAll(".partidos-club:not(.oculto)")]
+      .map(el => Number(el.id.replace("partidos-club-", "")));
+  }
+  return origen;
+}
+
+function reponerOrigen(origen) {
+  if (origen.vista === "categorias") {
+    const gen = document.getElementById("gen");
+    const grp = document.getElementById("grp");
+    if (gen && origen.genero) gen.value = origen.genero;
+    if (grp && origen.grupo != null) grp.value = origen.grupo;
+    const tab = [...document.querySelectorAll(".tabs .tab")]
+      .find(b => b.getAttribute("onclick")?.includes(`'${origen.categoria}'`));
+    if (tab) seleccionarCategoria(origen.categoria, tab);
+    else filtrarCategorias();
+    if (origen.equipo) togglePartidosEquipo(origen.equipo);
+  } else if (origen.vista === "club") {
+    (origen.equipos || []).forEach(id => {
+      const tarjeta = document.querySelector(`[aria-controls="partidos-club-${id}"]`);
+      if (tarjeta) togglePartidosEquipoClub(id, tarjeta);
+    });
+  }
+  setTimeout(() => window.scrollTo(0, origen.scroll || 0), 0);
+}
+
+// Botón "Volver" del partido: lleva a la pantalla anterior (categorías, club, partidos...)
+function volverDesdePartido() {
+  if (origenPartido && history.state && history.state.vista === "partido") {
+    history.back();
+  } else {
+    mostrarPartidos();
+  }
+}
+window.volverDesdePartido = volverDesdePartido;
 
 // Vuelve a pintar la pantalla actual (por ejemplo, tras entrar o salir del modo admin)
 function refrescarVistaActual() {
@@ -2215,6 +2277,8 @@ function abrirPartido(id) {
   partidoActual = partidos.find(p => p.id === id);
   if (!partidoActual) return;
 
+  if (vistaActual !== "partido" && !navegandoPorHistorial) origenPartido = capturarOrigen();
+
   registrarNavegacion("partido", { id });
 
   const equipoLocal = equipos.find(e => e.id === partidoActual.local_id);
@@ -2261,8 +2325,10 @@ function abrirPartido(id) {
       <p class="ap-nota">Finalizar cierra el partido y actualiza la clasificación.</p>
     </section>` : "";
 
+  const textoVolver = !origenPartido || origenPartido.vista === "partidos" ? "Volver a partidos" : "Volver";
+
   contenido.innerHTML = `
-  <button class="volver volver-arriba" onclick="mostrarPartidos()">${ico("izquierda", 16)} Volver a partidos</button>
+  <button class="volver volver-arriba" onclick="volverDesdePartido()">${ico("izquierda", 16)} ${textoVolver}</button>
   <h2 class="sr-only">${nombreLocal} contra ${nombreVisitante}</h2>
 
   <section class="ap-cabecera">
@@ -7268,7 +7334,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-02-57";
+const VERSION_APP = "2026-11-02-58";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

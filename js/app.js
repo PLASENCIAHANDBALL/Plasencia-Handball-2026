@@ -4540,7 +4540,10 @@ function pintarRadar() {
       <div class="rd-lista">
         ${LISTA_PABELLONES.map(p => `
           <button type="button" class="rd-item ${radarSeleccion === p ? "sel" : ""}" onclick="radarElegir('${p}')">
-            <strong><i style="background:${ESTADOS_RADAR[estados[p]].color}"></i>${p}</strong><small>${ESTADOS_RADAR[estados[p]].texto}</small>
+            ${IMAGENES_PABELLONES[p] ? `<img class="rd-foto" src="${IMAGENES_PABELLONES[p]}" alt="" loading="lazy" decoding="async">` : ""}
+            <span class="rd-texto">
+              <strong><i style="background:${ESTADOS_RADAR[estados[p]].color}"></i>${p}</strong><small>${ESTADOS_RADAR[estados[p]].texto}</small>
+            </span>
           </button>`).join("")}
       </div>
       ${fichaRadar(radarSeleccion)}
@@ -7449,7 +7452,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-03";
+const VERSION_APP = "2026-11-03-04";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

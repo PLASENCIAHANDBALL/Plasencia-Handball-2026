@@ -461,11 +461,29 @@ function sinSaltoDeScroll(fn) {
   }
 }
 
+// Solo se sube arriba al cambiar de pantalla. Si se vuelve a pintar la misma pantalla
+// (por ejemplo al pulsar un filtro o un botón en PH Radar o en Zona Fan), se queda donde estaba.
+let firmaPantalla = "";
+let subirAlPintar = false;
+
+function firmaDePantallaActual() {
+  const titulo = contenido.querySelector("h2")?.textContent.trim() || "";
+  return `${vistaActual}|${JSON.stringify(paramsVistaActual || {})}|${titulo}`;
+}
+
 if (contenido) {
   new MutationObserver(() => {
-    if (!sinScroll) window.scrollTo(0, 0);
+    const firma = firmaDePantallaActual();
+    const cambio = firma !== firmaPantalla;
+    firmaPantalla = firma;
+    if (sinScroll) return;
+    if (cambio || subirAlPintar) window.scrollTo(0, 0);
+    subirAlPintar = false;
   }).observe(contenido, { childList: true });
 }
+
+// Pulsar una pestaña de la barra de abajo siempre lleva arriba, aunque ya estés en ella
+document.querySelector(".nav-principal")?.addEventListener("click", () => { subirAlPintar = true; }, true);
 
 // Teclado: los elementos clicables (role="button") responden a Enter y Espacio
 document.addEventListener("keydown", (e) => {
@@ -7402,7 +7420,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-01";
+const VERSION_APP = "2026-11-03-02";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

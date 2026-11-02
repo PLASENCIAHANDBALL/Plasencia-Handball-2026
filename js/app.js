@@ -5250,7 +5250,13 @@ function burbujaChat(m, i, lista) {
   const nuevoDia = !ant || diaChat(ant.creado) !== diaChat(m.creado);
   const mismoAutor = ant && !nuevoDia && ant.alias === m.alias && ant.es_admin === m.es_admin && ant.mio === m.mio;
   const sigMismo = sig && diaChat(sig.creado) === diaChat(m.creado) && sig.alias === m.alias && sig.es_admin === m.es_admin && sig.mio === m.mio;
-  const acciones = adminActivo ? `
+  const moderar = m.pendiente && adminActivo ? `
+    <span class="ch-revisar">
+      <button type="button" class="ok" onclick="event.stopPropagation();chatModerar(${m.id}, true)">Aprobar</button>
+      <button type="button" onclick="event.stopPropagation();chatModerar(${m.id}, false)">Rechazar</button>
+    </span>` : "";
+  const avisoPend = m.pendiente ? `<span class="ch-pend">${adminActivo ? "Pendiente de aprobar" : "Pendiente de revisión · solo lo ves tú"}</span>` : "";
+  const acciones = adminActivo && !m.pendiente ? `
     <span class="ch-mod">
       <button type="button" onclick="event.stopPropagation();chatBorrar(${m.id})">Borrar</button>
       ${m.es_admin ? "" : `<button type="button" onclick="event.stopPropagation();chatBloquear(${m.id})">Bloquear</button>`}
@@ -5260,12 +5266,12 @@ function burbujaChat(m, i, lista) {
     : `<span class="ch-av c${colorChat(m.alias)}" aria-hidden="true" translate="no">${escaparHtml(iniciales(m.alias))}</span>`;
   return `
     ${nuevoDia ? `<div class="ch-dia"><span>${etiquetaDiaChat(m.creado)}</span></div>` : ""}
-    <div class="ch-fila ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""} ${mismoAutor ? "seguido" : ""} ${sigMismo ? "sigue" : ""}">
+    <div class="ch-fila ${m.mio ? "mio" : ""} ${m.es_admin ? "org" : ""} ${m.pendiente ? "pend" : ""} ${mismoAutor ? "seguido" : ""} ${sigMismo ? "sigue" : ""}">
       ${mismoAutor ? `<span class="ch-av vacio"></span>` : avatar}
       <div class="ch-msg" ${adminActivo ? `onclick="this.classList.toggle('abierto')"` : ""}>
         ${!mismoAutor ? `<div class="ch-nombre"><strong translate="no">${m.es_admin ? "Plasencia Handball" : escaparHtml(m.alias)}</strong>${m.es_admin ? `<em>Oficial</em>` : ""}</div>` : ""}
         <p translate="no">${escaparHtml(m.texto)}<time>${horaChat(m.creado)}</time></p>
-        ${acciones}
+        ${avisoPend}${moderar}${acciones}
       </div>
     </div>`;
 }
@@ -5273,7 +5279,7 @@ function burbujaChat(m, i, lista) {
 function pintarListaChat(forzar) {
   const caja = document.getElementById("ch-lista");
   if (!caja) return;
-  const firma = chatMensajes.map(m => m.id).join(",");
+  const firma = chatMensajes.map(m => m.id + (m.pendiente ? "p" : "")).join(",") + (adminActivo ? "a" : "");
   if (!forzar && firma === chatFirma) return;
   chatFirma = firma;
   const abajo = caja.scrollHeight - caja.scrollTop - caja.clientHeight < 120;
@@ -5284,7 +5290,7 @@ function pintarListaChat(forzar) {
 }
 
 async function cargarChat(forzar) {
-  const { data, error } = await supabase.rpc("chat_lista", { p_device: idDispositivo(), p_desde: 0, p_limite: 80 });
+  const { data, error } = await supabase.rpc("chat_lista_mod", { p_device: idDispositivo(), p_pin: adminActivo ? pinAdmin : null, p_limite: 80 });
   if (error) { console.error("Error cargando el chat:", error); return false; }
   chatMensajes = data || [];
   pintarListaChat(forzar);
@@ -5344,6 +5350,7 @@ async function mostrarChat() {
   setNavActivoPorVista("chat");
   registrarNavegacion("chat");
   chatFirma = "";
+  if (adminActivo && !pinAdmin) obtenerPinAdmin();
   pintarChat();
   await cargarChat(true);
   chatRefrescar();
@@ -5379,7 +5386,18 @@ async function chatEnviar(e) {
   if (campo) { campo.value = ""; campo.focus(); chatActualizarEnvio(); }
   const caja = document.getElementById("ch-lista");
   await cargarChat(false);
+  if (chatMensajes.some(x => x.mio && x.pendiente && x.texto === texto)) avisar("Tu mensaje lo revisará la organización antes de publicarse");
   if (caja) caja.scrollTop = caja.scrollHeight;
+}
+
+async function chatModerar(id, aprobar) {
+  if (!adminActivo) return;
+  const pin = obtenerPinAdmin();
+  if (!pin) return;
+  const { error } = await supabase.rpc("chat_moderar", { p_pin: pin, p_id: id, p_aprobar: aprobar });
+  if (error) { avisar(mensajeErrorChat(error), "error"); return; }
+  avisar(aprobar ? "Mensaje aprobado" : "Mensaje rechazado");
+  await cargarChat(true);
 }
 
 async function chatBorrar(id) {
@@ -5405,6 +5423,7 @@ async function chatBloquear(id) {
 window.mostrarChat = mostrarChat;
 window.chatEnviar = chatEnviar;
 window.chatBorrar = chatBorrar;
+window.chatModerar = chatModerar;
 window.chatBloquear = chatBloquear;
 window.chatGuardarNombre = chatGuardarNombre;
 window.chatCambiarNombre = chatCambiarNombre;

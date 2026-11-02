@@ -5203,6 +5203,8 @@ let chatMensajes = [];
 let chatFirma = "";
 let chatTimer = null;
 let chatAlias = lsGet("chat_alias") || "";
+let chatClub = Number(lsGet("chat_club")) || null;
+let chatEligiendoClub = false;
 let chatEnviando = false;
 
 function mensajeErrorChat(error) {
@@ -5261,8 +5263,11 @@ function burbujaChat(m, i, lista) {
       <button type="button" onclick="event.stopPropagation();chatBorrar(${m.id})">Borrar</button>
       ${m.es_admin ? "" : `<button type="button" onclick="event.stopPropagation();chatBloquear(${m.id})">Bloquear</button>`}
     </span>` : "";
+  const club = !m.es_admin && m.club_id ? clubes.find(c => c.id === m.club_id) : null;
   const avatar = m.es_admin
     ? `<span class="ch-av org" aria-hidden="true">PH</span>`
+    : club?.escudo
+    ? `<span class="ch-av escudo" aria-hidden="true"><img src="${club.escudo}" alt="" loading="lazy" decoding="async"></span>`
     : `<span class="ch-av c${colorChat(m.alias)}" aria-hidden="true" translate="no">${escaparHtml(iniciales(m.alias))}</span>`;
   return `
     ${nuevoDia ? `<div class="ch-dia"><span>${etiquetaDiaChat(m.creado)}</span></div>` : ""}
@@ -5290,7 +5295,7 @@ function pintarListaChat(forzar) {
 }
 
 async function cargarChat(forzar) {
-  const { data, error } = await supabase.rpc("chat_lista_mod", { p_device: idDispositivo(), p_pin: adminActivo ? pinAdmin : null, p_limite: 80 });
+  const { data, error } = await supabase.rpc("chat_lista_club", { p_device: idDispositivo(), p_pin: adminActivo ? pinAdmin : null, p_limite: 80 });
   if (error) { console.error("Error cargando el chat:", error); return false; }
   chatMensajes = data || [];
   pintarListaChat(forzar);
@@ -5299,10 +5304,10 @@ async function cargarChat(forzar) {
 
 function pintarChat() {
   if (vistaActual !== "chat") return;
-  const pie = (chatAlias || adminActivo)
+  const pie = ((chatAlias && !chatEligiendoClub) || adminActivo)
     ? `<div class="ch-yo">
-         <span class="ch-chip">${adminActivo ? "<i>PH</i> <strong>Plasencia Handball</strong>" : `<i translate="no">${escaparHtml(iniciales(chatAlias))}</i> <strong translate="no">${escaparHtml(chatAlias)}</strong>`}</span>
-         ${adminActivo ? "" : `<button type="button" onclick="chatCambiarNombre()">Cambiar nombre</button>`}
+         <span class="ch-chip">${adminActivo ? "<i>PH</i> <strong>Plasencia Handball</strong>" : `${chatMiAvatar()} <strong translate="no">${escaparHtml(chatAlias)}</strong>`}</span>
+         ${adminActivo ? "" : `<button type="button" onclick="chatCambiarNombre()">Nombre y escudo</button>`}
        </div>
        <form class="ch-form" onsubmit="chatEnviar(event)">
          <input id="ch-texto" type="text" maxlength="300" placeholder="Escribe un mensaje…" autocomplete="off" enterkeyhint="send" translate="no" oninput="chatActualizarEnvio()">
@@ -5313,9 +5318,10 @@ function pintarChat() {
          <h3>Únete a la conversación</h3>
          <p>Elige un nombre para chatear con otros aficionados</p>
          <div class="ch-alias-fila">
-           <input id="ch-alias" type="text" maxlength="16" placeholder="Tu nombre" autocomplete="off" translate="no" value="${escaparHtml(porraAlias || "")}">
+           <input id="ch-alias" type="text" maxlength="16" placeholder="Tu nombre" autocomplete="off" translate="no" value="${escaparHtml(chatAlias || porraAlias || "")}">
            <button type="button" onclick="chatGuardarNombre()">Entrar</button>
          </div>
+         ${chatSelectorClub()}
          <small>De 3 a 16 caracteres, sin espacios. Respeta a los demás: los mensajes ofensivos se borran y se bloquea a quien los envía.</small>
        </div>`;
   contenido.innerHTML = `
@@ -5356,19 +5362,52 @@ async function mostrarChat() {
   chatRefrescar();
 }
 
+function chatMiAvatar() {
+  const club = chatClub ? clubes.find(c => c.id === chatClub) : null;
+  return club?.escudo
+    ? `<i class="escudo"><img src="${club.escudo}" alt=""></i>`
+    : `<i translate="no">${escaparHtml(iniciales(chatAlias))}</i>`;
+}
+
+function chatSelectorClub() {
+  if (!clubes.length) return "";
+  const lista = [...clubes].sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), "es"));
+  return `
+    <p class="ch-club-tit">Elige el escudo de tu equipo <span>(opcional)</span></p>
+    <div class="ch-clubes" role="radiogroup" aria-label="Escudo de tu equipo">
+      <button type="button" role="radio" aria-checked="${!chatClub}" class="ch-club ${!chatClub ? "activo" : ""}" onclick="chatElegirClub(0)">
+        <span class="ch-club-img ninguno">${ico("chat", 18)}</span><small>Ninguno</small>
+      </button>
+      ${lista.map(c => `
+      <button type="button" role="radio" aria-checked="${chatClub === c.id}" class="ch-club ${chatClub === c.id ? "activo" : ""}" onclick="chatElegirClub(${c.id})">
+        <span class="ch-club-img"><img src="${c.escudo || PLACEHOLDER_ESCUDO}" alt="" loading="lazy" decoding="async"></span><small translate="no">${c.nombre}</small>
+      </button>`).join("")}
+    </div>`;
+}
+
+function chatElegirClub(id) {
+  const alias = document.getElementById("ch-alias")?.value;
+  chatClub = id || null;
+  pintarChat();
+  const campo = document.getElementById("ch-alias");
+  if (campo && alias != null) campo.value = alias;
+}
+
 function chatGuardarNombre() {
   const nombre = (document.getElementById("ch-alias")?.value || "").trim();
   if (!/^[A-Za-z0-9_.áéíóúñÁÉÍÓÚÑ-]{3,16}$/.test(nombre) || /(organizaci|admin|plasencia)/i.test(nombre)) {
     avisar("Nombre no válido: 3 a 16 caracteres, sin espacios", "error"); return;
   }
   chatAlias = nombre;
+  chatEligiendoClub = false;
   lsSet("chat_alias", nombre);
+  if (chatClub) lsSet("chat_club", String(chatClub)); else lsRemove("chat_club");
   pintarChat();
   document.getElementById("ch-texto")?.focus();
 }
 
 function chatCambiarNombre() {
-  chatAlias = "";
+  chatEligiendoClub = true;
   pintarChat();
 }
 
@@ -5378,8 +5417,8 @@ async function chatEnviar(e) {
   const texto = (campo?.value || "").trim();
   if (!texto || chatEnviando) return;
   chatEnviando = true;
-  const { error } = await supabase.rpc("chat_enviar", {
-    p_device: idDispositivo(), p_alias: chatAlias, p_texto: texto, p_pin: adminActivo ? pinAdmin : null
+  const { error } = await supabase.rpc("chat_enviar_club", {
+    p_device: idDispositivo(), p_alias: chatAlias, p_texto: texto, p_pin: adminActivo ? pinAdmin : null, p_club: adminActivo ? null : chatClub
   });
   chatEnviando = false;
   if (error) { console.error("Error en el chat:", error); avisar(mensajeErrorChat(error), "error"); return; }
@@ -5424,6 +5463,7 @@ window.mostrarChat = mostrarChat;
 window.chatEnviar = chatEnviar;
 window.chatBorrar = chatBorrar;
 window.chatModerar = chatModerar;
+window.chatElegirClub = chatElegirClub;
 window.chatBloquear = chatBloquear;
 window.chatGuardarNombre = chatGuardarNombre;
 window.chatCambiarNombre = chatCambiarNombre;

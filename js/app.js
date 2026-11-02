@@ -471,11 +471,40 @@ function firmaDePantallaActual() {
   return `${vistaActual}|${JSON.stringify(paramsVistaActual || {})}|${titulo}`;
 }
 
+// Las filas deslizables de lado (filtros de Highlights, Porra, Partidos...) recuerdan dónde
+// estaban, para que al pulsar un botón y volver a pintarse la pantalla no salten al principio.
+const desplazLateral = new Map();
+
+function claveDesplazLateral(el) {
+  const clase = el.classList[0] || el.tagName;
+  const iguales = [...contenido.querySelectorAll(`.${CSS.escape(clase)}`)];
+  return `${clase}|${el.getAttribute("aria-label") || ""}|${iguales.indexOf(el)}`;
+}
+
+if (contenido) {
+  document.addEventListener("scroll", (e) => {
+    const el = e.target;
+    if (!(el instanceof Element) || el.id === "rd-scroll" || !contenido.contains(el) || !el.classList.length) return;
+    desplazLateral.set(claveDesplazLateral(el), el.scrollLeft);
+  }, { capture: true, passive: true });
+}
+
+function reponerDesplazLateral() {
+  desplazLateral.forEach((x, clave) => {
+    const [clase, etiqueta, i] = clave.split("|");
+    const candidatos = [...contenido.querySelectorAll(`.${CSS.escape(clase)}`)];
+    const el = candidatos[Number(i)];
+    if (el && (el.getAttribute("aria-label") || "") === etiqueta) el.scrollLeft = x;
+  });
+}
+
 if (contenido) {
   new MutationObserver(() => {
     const firma = firmaDePantallaActual();
     const cambio = firma !== firmaPantalla;
     firmaPantalla = firma;
+    if (cambio) desplazLateral.clear();
+    else reponerDesplazLateral();
     if (sinScroll) return;
     if (cambio || subirAlPintar) window.scrollTo(0, 0);
     subirAlPintar = false;
@@ -7420,7 +7449,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-02";
+const VERSION_APP = "2026-11-03-03";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

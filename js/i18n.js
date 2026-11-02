@@ -111,6 +111,7 @@ const TEXTOS = {
   // --- estados y fases ---
   "Pendiente": ["Upcoming", "Pendente", "À venir"],
   "Victoria": ["Win", "Vitória", "Victoire"],
+  "Último": ["Last", "Último", "Dernier"],
   "Derrota": ["Loss", "Derrota", "Défaite"],
   "Empate": ["Draw", "Empate", "Nul"],
   "Victorias": ["Wins", "Vitórias", "Victoires"],

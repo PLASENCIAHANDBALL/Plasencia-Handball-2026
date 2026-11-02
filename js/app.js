@@ -4000,43 +4000,113 @@ async function verClub(id) {
     html += `<p class="estado-vacio">No hay equipos en este club</p>`;
   }
 
-  equiposClub.forEach(e => {
-  html += `
-    <div class="team-ios-card team-clicable" data-cat="${e.categoria}" role="button" tabindex="0"
-         aria-expanded="false" aria-controls="partidos-club-${e.id}"
-         onclick="togglePartidosEquipoClub(${Number(e.id)}, this)">
-      <div class="team-ios-header">
-        <span class="team-cat">${e.categoria}</span>
-        <span class="team-gen">${e.genero}</span>
-      </div>
+  // Equipos agrupados por categoría (Infantil, Cadete, Juvenil) y, dentro, masculino primero
+  const porCategoria = {};
+  equiposClub.forEach(e => (porCategoria[e.categoria || "Sin categoría"] ||= []).push(e));
 
-      <div class="team-name">
-        ${e.nombre}
-      </div>
+  Object.keys(porCategoria)
+    .sort((x, y) => posicionEn(ORDEN_CATEGORIAS, x) - posicionEn(ORDEN_CATEGORIAS, y))
+    .forEach(categoria => {
+      const lista = porCategoria[categoria].sort((x, y) =>
+        posicionEn(ORDEN_GENEROS, x.genero) - posicionEn(ORDEN_GENEROS, y.genero) ||
+        (x.nombre || "").localeCompare(y.nombre || ""));
 
-      <div class="team-group">
-        ${e.grupo}
-      </div>
-
-      <div class="team-ver-partidos">
-        <span>Ver partidos</span>${ico("chev", 16)}
-      </div>
-
-      ${
-        adminActivo ? `
-          <div class="team-actions">
-            <button onclick="event.stopPropagation(); editarEquipo(${e.id})">Editar</button>
-            <button onclick="event.stopPropagation(); borrarEquipo(${e.id})">Borrar</button>
+      html += `
+        <section class="ct-seccion ct-${claseCategoria(categoria)}">
+          <h4 class="ct-seccion-titulo">
+            <span>${escaparHtml(categoria)}</span>
+            <span class="ct-seccion-num">${lista.length}</span>
+          </h4>
+          <div class="ct-lista">
+            ${lista.map(e => renderEquipoClub(e, club)).join("")}
           </div>
-        ` : ""
-      }
-
-      <div id="partidos-club-${e.id}" class="partidos-club oculto" onclick="event.stopPropagation()"></div>
-    </div>
-  `;
-});
+        </section>`;
+    });
 
   contenido.innerHTML = html;
+}
+
+// Tarjeta de un equipo dentro del club: color del género, racha de los últimos partidos
+// y el siguiente (o el último) partido a la vista. Al pulsarla se despliegan sus partidos.
+function renderEquipoClub(e, club) {
+  const suyos = partidos.filter(p => p.local_id === e.id || p.visitante_id === e.id)
+    .sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
+  const jugados = suyos.filter(p => calcularEstadoPartido(p) === "finalizado");
+  const pendientes = suyos.filter(p => calcularEstadoPartido(p) !== "finalizado");
+
+  const balance = { victoria: 0, empate: 0, derrota: 0 };
+  jugados.forEach(p => balance[resultadoParaEquipo(p, e.id)]++);
+
+  const letra = { victoria: "V", empate: "E", derrota: "D" };
+  const racha = jugados.slice(-5).map(p => {
+    const r = resultadoParaEquipo(p, e.id);
+    return `<span class="ct-r ${r}" title="${r}">${letra[r]}</span>`;
+  }).join("");
+
+  const rival = p => equipos.find(x => x.id === (p.local_id === e.id ? p.visitante_id : p.local_id))?.nombre || "Por definir";
+
+  let destacado = "";
+  if (pendientes.length) {
+    const p = pendientes[0];
+    const vivo = calcularEstadoPartido(p) === "en_juego";
+    destacado = `
+      <div class="ct-sig ${vivo ? "vivo" : ""}">
+        <span class="ct-sig-etq">${vivo ? "En juego" : "Próximo"}</span>
+        <span class="ct-sig-txt">
+          ${vivo ? "" : `<small>${escaparHtml(formatearFecha(p.fecha))} · ${formatearHora(p.hora)}</small>`}
+          <span>vs <b>${escaparHtml(rival(p))}</b></span>
+        </span>
+      </div>`;
+  } else if (jugados.length) {
+    const p = jugados[jugados.length - 1];
+    const r = resultadoParaEquipo(p, e.id);
+    const propios = p.local_id === e.id ? p.goles_local : p.goles_visitante;
+    const ajenos = p.local_id === e.id ? p.goles_visitante : p.goles_local;
+    destacado = `
+      <div class="ct-sig ${r}">
+        <span class="ct-sig-etq">Último</span>
+        <span class="ct-sig-txt">
+          <small>${escaparHtml(formatearFecha(p.fecha))}</small>
+          <span><b>${propios} – ${ajenos}</b> vs ${escaparHtml(rival(p))}</span>
+        </span>
+      </div>`;
+  }
+
+  return `
+    <article class="ct ct-${claseGenero(e.genero)}">
+      <div class="ct-cab" role="button" tabindex="0" aria-expanded="false" aria-controls="partidos-club-${e.id}"
+           onclick="togglePartidosEquipoClub(${Number(e.id)}, this)">
+        <span class="ct-escudo"><img src="${escaparHtml(club.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
+        <span class="ct-info">
+          <strong class="ct-nombre">${escaparHtml(e.nombre)}</strong>
+          <span class="ct-meta">
+            <span class="ct-gen"><i aria-hidden="true"></i>${escaparHtml(e.genero || "")}</span>
+            ${e.grupo ? `<span class="ct-grupo">${escaparHtml(e.grupo)}</span>` : ""}
+          </span>
+        </span>
+        <span class="ct-flecha" aria-hidden="true">${ico("chev", 18)}</span>
+      </div>
+
+      <div class="ct-datos">
+        <span class="ct-balance">
+          <span><b>${suyos.length}</b> PJ</span>
+          <span class="v"><b>${balance.victoria}</b> V</span>
+          <span class="e"><b>${balance.empate}</b> E</span>
+          <span class="d"><b>${balance.derrota}</b> D</span>
+        </span>
+        ${racha ? `<span class="ct-racha" aria-label="Últimos resultados">${racha}</span>` : ""}
+      </div>
+
+      ${destacado}
+
+      ${adminActivo ? `
+        <div class="team-actions">
+          <button onclick="event.stopPropagation(); editarEquipo(${e.id})">Editar</button>
+          <button onclick="event.stopPropagation(); borrarEquipo(${e.id})">Borrar</button>
+        </div>` : ""}
+
+      <div id="partidos-club-${e.id}" class="partidos-club oculto"></div>
+    </article>`;
 }
 
 // Despliega, dentro del club, los partidos de un equipo: primero los que quedan y luego los jugados
@@ -4044,11 +4114,12 @@ function togglePartidosEquipoClub(idEquipo, tarjeta) {
   const panel = document.getElementById(`partidos-club-${idEquipo}`);
   if (!panel || !tarjeta) return;
 
+  const tarjetaEntera = tarjeta.closest(".ct") || tarjeta;
   const abrir = panel.classList.contains("oculto");
 
   panel.classList.toggle("oculto", !abrir);
   tarjeta.setAttribute("aria-expanded", abrir ? "true" : "false");
-  tarjeta.classList.toggle("abierto", abrir);
+  tarjetaEntera.classList.toggle("abierto", abrir);
 
   if (!abrir) {
     panel.innerHTML = "";
@@ -7331,7 +7402,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-02-61";
+const VERSION_APP = "2026-11-03-01";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -4476,3 +4476,58 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .pmb.victoria { background: #dcf5ea; color: #157a50; }
 .pmb.empate { background: #edf1f5; color: #5d6d7e; }
 .pmb.derrota { background: #fde3e1; color: #c0342c; }
+
+/* ===== Club: equipos por categoría ===== */
+.ct-seccion { margin: 0 0 20px; }
+.ct-seccion-titulo { display: flex; align-items: center; gap: 10px; margin: 0 2px 10px; font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--tile-ink); }
+.ct-seccion-titulo::before { content: ""; width: 6px; height: 18px; border-radius: 3px; background: var(--azul-medio); }
+.ct-infantil .ct-seccion-titulo::before { background: #5bb8f0; }
+.ct-cadete .ct-seccion-titulo::before { background: #2b86d9; }
+.ct-juvenil .ct-seccion-titulo::before { background: #0a3a80; }
+.ct-seccion-num { font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--accent-text); background: var(--tile); padding: 2px 9px; border-radius: 999px; }
+.ct-lista { display: grid; gap: 12px; }
+@media (min-width: 760px) { .ct-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+
+.ct { --gen: #2b86d9; --gen-suave: #e3f1fc; position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 8px 22px rgba(27,111,184,.08); overflow: hidden; }
+.ct-femenino { --gen: #d0447a; --gen-suave: #fde4ee; }
+.ct::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--gen); }
+.ct.abierto { border-color: var(--gen); }
+.ct-cab { display: flex; align-items: center; gap: 12px; padding: 16px 16px 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ct-cab:focus-visible { outline: 3px solid var(--accent-text); outline-offset: -3px; }
+.ct-escudo { flex: none; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 16px; background: var(--gen-suave); }
+.ct-escudo img { width: 36px; height: 36px; object-fit: contain; }
+.ct-info { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.ct-nombre { font-size: 17px; line-height: 1.2; color: var(--text); overflow-wrap: anywhere; }
+.ct-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.ct-gen, .ct-grupo { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.ct-gen { background: var(--gen-suave); color: var(--gen); }
+.ct-gen i { width: 8px; height: 8px; border-radius: 50%; background: var(--gen); }
+.ct-grupo { background: var(--tile); color: var(--accent-text); }
+.ct-flecha { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--gen); color: #fff; transition: transform .25s ease; }
+.ct.abierto .ct-flecha { transform: rotate(180deg); }
+
+.ct-datos { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 0 16px 12px; }
+.ct-balance { display: flex; gap: 12px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.ct-balance b { font-size: 16px; font-weight: 800; color: var(--text); margin-right: 2px; }
+.ct-balance .v b { color: #157a50; }
+.ct-balance .e b { color: #5d6d7e; }
+.ct-balance .d b { color: #c0342c; }
+.ct-racha { display: inline-flex; gap: 4px; }
+.ct-r { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; font-size: 11px; font-weight: 800; color: #fff; }
+.ct-r.victoria { background: #23a26d; }
+.ct-r.empate { background: #9aa9b8; }
+.ct-r.derrota { background: #e5483f; }
+
+.ct-sig { display: flex; align-items: center; gap: 10px; margin: 0 12px 12px; padding: 10px 12px; border-radius: 14px; background: var(--ground, #f2f8fd); font-size: 13px; color: var(--text); }
+.ct-sig-etq { flex: none; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--gen); color: #fff; }
+.ct-sig-txt { min-width: 0; display: grid; gap: 2px; }
+.ct-sig-txt > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ct-sig-txt small { font-size: 12px; color: var(--muted); }
+.ct-sig-txt small::first-letter { text-transform: uppercase; }
+.ct-sig.vivo .ct-sig-etq { background: #e5483f; }
+.ct-sig.victoria .ct-sig-etq { background: #23a26d; }
+.ct-sig.empate .ct-sig-etq { background: #9aa9b8; }
+.ct-sig.derrota .ct-sig-etq { background: #e5483f; }
+.ct .team-actions { padding: 0 16px 12px; }
+.ct.abierto .ct-sig { display: none; }
+.ct .partidos-club { margin: 0; padding: 4px 12px 12px; border-top: 1px solid var(--border); }

@@ -4517,6 +4517,14 @@ function pintarRadar() {
   const chips = (lista, actual, fn) => lista.map(([id, nombre]) =>
     `<button type="button" class="hl-chip ${actual === id ? "activo" : ""}" aria-pressed="${actual === id}" onclick="${fn}('${id}')">${nombre}</button>`).join("");
 
+  // Se guardan las fotos ya cargadas para reutilizarlas: así al pulsar un pabellón no
+  // vuelven a cargarse ni parpadean.
+  const fotosCargadas = new Map();
+  contenido.querySelectorAll("img").forEach(img => {
+    const src = img.getAttribute("src");
+    if (src && img.complete && !fotosCargadas.has(src)) fotosCargadas.set(src, img);
+  });
+
   contenido.innerHTML = `
     ${barraPabellones("radar")}
     <div class="rd-panel">
@@ -4548,6 +4556,14 @@ function pintarRadar() {
       </div>
       ${fichaRadar(radarSeleccion)}
     </div>`;
+
+  contenido.querySelectorAll("img").forEach(nueva => {
+    const vieja = fotosCargadas.get(nueva.getAttribute("src"));
+    if (!vieja) return;
+    fotosCargadas.delete(nueva.getAttribute("src"));
+    vieja.className = nueva.className;
+    nueva.replaceWith(vieja);
+  });
 
   // conserva el desplazamiento del mapa al refrescar; la primera vez lo centra
   const sc = document.getElementById("rd-scroll");
@@ -7452,7 +7468,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-04";
+const VERSION_APP = "2026-11-03-05";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -3076,12 +3076,13 @@ function togglePartidosEquipo(idEquipo) {
 
   html += `<div class="bloque-partidos"><strong>Próximos partidos</strong></div>`;
   html += proximos.length
-    ? proximos.map(p => renderMiniPartido(p)).join("")
+    ? proximos.map(p => renderMiniPartido(p, false, idEquipo)).join("")
     : `<p class="partido-vacio">No hay próximos partidos</p>`;
 
   html += `<div class="bloque-partidos"><strong>Partidos finalizados</strong></div>`;
+  html += renderBalanceEquipo(finalizados, idEquipo);
   html += finalizados.length
-    ? finalizados.map(p => renderMiniPartido(p, true)).join("")
+    ? finalizados.map(p => renderMiniPartido(p, true, idEquipo)).join("")
     : `<p class="partido-vacio">No hay partidos finalizados</p>`;
 
   contenedor.innerHTML = html;
@@ -3096,23 +3097,74 @@ function marcarEquipoAbierto(contenedor, abierto) {
   tarjeta.querySelector(".cat-cab")?.setAttribute("aria-expanded", abierto ? "true" : "false");
 }
 
-function renderMiniPartido(p, finalizado = false) {
+// Resultado de un partido visto desde un equipo: "victoria", "derrota", "empate" o null
+function resultadoParaEquipo(p, idEquipo) {
+  if (calcularEstadoPartido(p) !== "finalizado" || !idEquipo) return null;
+  const propios = p.local_id === idEquipo ? Number(p.goles_local) : Number(p.goles_visitante);
+  const rivales = p.local_id === idEquipo ? Number(p.goles_visitante) : Number(p.goles_local);
+  return propios > rivales ? "victoria" : propios < rivales ? "derrota" : "empate";
+}
+
+// Balance del equipo (victorias, empates, derrotas) encima de la lista de partidos
+function renderBalanceEquipo(lista, idEquipo) {
+  const r = { victoria: 0, empate: 0, derrota: 0 };
+  lista.forEach(p => { const x = resultadoParaEquipo(p, idEquipo); if (x) r[x]++; });
+  if (!r.victoria && !r.empate && !r.derrota) return "";
+  return `
+    <div class="pm-balance">
+      <span class="pmb victoria"><b>${r.victoria}</b> Victorias</span>
+      <span class="pmb empate"><b>${r.empate}</b> Empates</span>
+      <span class="pmb derrota"><b>${r.derrota}</b> Derrotas</span>
+    </div>`;
+}
+
+// Tarjeta de partido en Categorías y Clubs: marcador grande con escudos y, si ya se jugó,
+// una etiqueta de color con el resultado para el equipo que se está mirando.
+function renderMiniPartido(p, finalizado = false, idEquipo = null) {
+  const estado = calcularEstadoPartido(p);
   const local = equipos.find(e => e.id === p.local_id);
   const visitante = equipos.find(e => e.id === p.visitante_id);
+  const clubLocal = clubes.find(c => c.id === local?.club_id);
+  const clubVisitante = clubes.find(c => c.id === visitante?.club_id);
   const gl = Number(p.goles_local), gv = Number(p.goles_visitante);
+  const resultado = resultadoParaEquipo(p, idEquipo);
+
+  const escudo = c => c?.escudo
+    ? `<img src="${escaparHtml(c.escudo)}" class="pm-escudo" alt="" loading="lazy" decoding="async">`
+    : `<span class="pm-escudo pm-escudo-vacio"></span>`;
+
+  const lado = (club, equipo, gana) => `
+    <span class="pm-eq ${equipo?.id === idEquipo ? "propio" : ""} ${gana ? "gana" : ""}">
+      ${escudo(club)}
+      <span class="pm-nombre">${escaparHtml(equipo?.nombre || "Por definir")}</span>
+    </span>`;
+
+  const etiqueta = resultado
+    ? `<span class="pm-etiqueta ${resultado}">${{ victoria: "Victoria", derrota: "Derrota", empate: "Empate" }[resultado]}</span>`
+    : estado === "en_juego"
+      ? `<span class="pm-etiqueta vivo">En juego</span>`
+      : `<span class="pm-etiqueta proximo">Próximo</span>`;
+
+  const centro = estado === "pendiente"
+    ? `<span class="pm-hora">${formatearHora(p.hora)}</span>`
+    : `<span class="pm-marcador"><b class="${gl > gv ? "gana" : ""}">${Number.isFinite(gl) ? gl : 0}</b><i>–</i><b class="${gv > gl ? "gana" : ""}">${Number.isFinite(gv) ? gv : 0}</b></span>`;
+
+  const detalles = [estado === "pendiente" ? null : formatearHora(p.hora), p.pabellon, p.grupo]
+    .filter(t => t && t !== "-").map(t => `<span>${escaparHtml(t)}</span>`).join("");
 
   return `
-    <div class="card partido-card-mini pm ${finalizado ? "finalizado" : ""}" role="button" tabindex="0"
+    <div class="pm ${estado} ${resultado || ""}" role="button" tabindex="0"
          onclick="event.stopPropagation(); abrirPartido(${p.id})">
-      <div class="pm-fecha">
-        <strong>${formatearFecha(p.fecha)}</strong>
-        ${!finalizado ? `<span>${formatearHora(p.hora)} · ${p.pabellon || "-"}</span>` : ""}
+      <div class="pm-cab">
+        <strong class="pm-fecha">${formatearFecha(p.fecha)}</strong>
+        ${etiqueta}
       </div>
       <div class="pm-duelo">
-        <span class="pm-eq ${finalizado && gl > gv ? "gana" : ""}">${local?.nombre || "-"}</span>
-        <span class="pm-res">${finalizado ? `${p.goles_local} – ${p.goles_visitante}` : "vs"}</span>
-        <span class="pm-eq ${finalizado && gv > gl ? "gana" : ""}">${visitante?.nombre || "-"}</span>
+        ${lado(clubLocal, local, estado === "finalizado" && gl > gv)}
+        <span class="pm-centro">${centro}</span>
+        ${lado(clubVisitante, visitante, estado === "finalizado" && gv > gl)}
       </div>
+      ${detalles ? `<div class="pm-pie">${detalles}</div>` : ""}
     </div>
   `;
 }
@@ -4016,12 +4068,13 @@ function togglePartidosEquipoClub(idEquipo, tarjeta) {
   panel.innerHTML = `
     <div class="bloque-partidos"><strong>Próximos partidos</strong></div>
     ${proximos.length
-      ? proximos.map(p => renderMiniPartido(p)).join("")
+      ? proximos.map(p => renderMiniPartido(p, false, idEquipo)).join("")
       : `<p class="partido-vacio">No hay próximos partidos</p>`}
 
     <div class="bloque-partidos"><strong>Partidos finalizados</strong></div>
+    ${renderBalanceEquipo(finalizados, idEquipo)}
     ${finalizados.length
-      ? finalizados.map(p => renderMiniPartido(p, true)).join("")
+      ? finalizados.map(p => renderMiniPartido(p, true, idEquipo)).join("")
       : `<p class="partido-vacio">No hay partidos finalizados</p>`}
   `;
 }
@@ -7278,7 +7331,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-02-60";
+const VERSION_APP = "2026-11-02-61";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

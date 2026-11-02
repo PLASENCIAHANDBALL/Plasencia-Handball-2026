@@ -110,6 +110,12 @@ const TEXTOS = {
 
   // --- estados y fases ---
   "Pendiente": ["Upcoming", "Pendente", "À venir"],
+  "Victoria": ["Win", "Vitória", "Victoire"],
+  "Derrota": ["Loss", "Derrota", "Défaite"],
+  "Empate": ["Draw", "Empate", "Nul"],
+  "Victorias": ["Wins", "Vitórias", "Victoires"],
+  "Derrotas": ["Losses", "Derrotas", "Défaites"],
+  "Empates": ["Draws", "Empates", "Nuls"],
   "Finalizado": ["Finished", "Terminado", "Terminé"],
   "Finalizados": ["Finished", "Terminados", "Terminés"],
   "Próximos": ["Upcoming", "Próximos", "À venir"],

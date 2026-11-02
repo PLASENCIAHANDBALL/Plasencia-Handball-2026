@@ -4409,3 +4409,22 @@ body.vista-chat .info-fab,body.vista-chat .hub{display:none!important}
 .ch-alias-fila input{flex:1;min-width:0;padding:10px 6px 10px 14px;border:0;outline:0;background:transparent;font:inherit;font-size:16px}
 .ch-alias-fila button{width:auto;margin:0;padding:0 20px;min-height:42px;border-radius:99px;box-shadow:none}
 .ch-alias small{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.4}
+
+/* ---------- fecha y hora (iOS Safari) ----------
+   Safari en iPhone da a los campos de fecha/hora un ancho mínimo propio y los
+   encoge cuando están vacíos: aquí se fuerzan al ancho y alto de su columna. */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 48px;
+  min-height: 48px;
+  line-height: 46px;
+  box-sizing: border-box;
+}
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; min-height: 0; }
+.fa-campo input[type="date"], .fa-campo input[type="time"] { padding: 0 12px; }

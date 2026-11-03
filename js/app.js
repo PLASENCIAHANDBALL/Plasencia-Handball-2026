@@ -661,26 +661,7 @@ function mostrarHome() {
 
     <div id="bloque-instalar"></div>
 
-    <h3 class="titulo-seccion">Fotos del torneo</h3>
-    <div class="fotos-grid">
-      <section class="galeria2027">
-        <div id="galeria2027-scroll" class="galeria2026-scroll">
-          <div class="galeria2026-loading">Cargando imágenes…</div>
-        </div>
-      </section>
-
-      <section class="galeria2026">
-        <div id="galeria2026-scroll" class="galeria2026-scroll">
-          <div class="galeria2026-loading">Cargando imágenes…</div>
-        </div>
-      </section>
-
-      <section class="galeria">
-        <div id="galeria-scroll" class="galeria-scroll">
-          <div class="galeria-loading">Cargando imágenes…</div>
-        </div>
-      </section>
-    </div>
+    ${renderFotosTorneo()}
 
     <!-- 🔴 ACTUALIZACIONES EN VIVO -->
     <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
@@ -734,11 +715,7 @@ function mostrarHome() {
   // los partidos en juego se pintan ya (antes iban con retraso y la página daba un salto)
   renderActualizacionesHome();
 
-  requestAnimationFrame(() => {
-    cargarGaleria2025();
-    cargarGaleria2026();
-    cargarGaleria2027();
-  });
+
 }
 
 async function moverPatrocinador(id, direccion) {
@@ -1267,56 +1244,42 @@ async function iniciarApp() {
   ocultarSplash();
 }
 
-/* ================== GALERÍA ================== */
-function cargarGaleria2027() {
-  const contenedor = document.getElementById("galeria2027-scroll");
-  if (!contenedor) return;
+/* ================== FOTOS DEL TORNEO ================== */
+// Álbumes de fotos (carpetas compartidas). La edición más reciente va destacada.
+const ALBUMES_FOTOS = [
+  { anio: 2027, url: "https://www.amazon.es/photos/share/KXGh7Cy7vuudvBxrWVuoY35LBAPWx7eMIZBOdLmFBbF", portada: "img/splash-poster.webp" },
+  { anio: 2026, url: "https://www.amazon.es/photos/share/BNF0g9ckA7PPdmq1jetkgeJ9zO8BwiJW6Gj4KPumS5", portada: "img/pabellones/municipal.webp" },
+  { anio: 2025, url: "https://www.amazon.es/photos/share/aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s", portada: "img/pabellones/la-data.webp" }
+];
 
-  const urlCarpeta = "https://www.amazon.es/photos/share/KXGh7Cy7vuudvBxrWVuoY35LBAPWx7eMIZBOdLmFBbF";
+function renderFotosTorneo() {
+  const [actual, ...anteriores] = ALBUMES_FOTOS;
+  const album = (a, destacado) => `
+    <a class="ft-album ${destacado ? "destacado" : ""}" href="${a.url}" target="_blank" rel="noopener noreferrer"
+       aria-label="Ver fotos del torneo ${a.anio}">
+      <img class="ft-portada" src="${a.portada}" alt="" loading="lazy" decoding="async">
+      <span class="ft-capa" aria-hidden="true"></span>
+      ${destacado ? `<span class="ft-nuevo">${ico("camara", 14)} Edición actual</span>` : ""}
+      <span class="ft-pie">
+        <span class="ft-txt">
+          <small>Torneo</small>
+          <b>${a.anio}</b>
+        </span>
+        <span class="ft-ver">${destacado ? "Ver fotos" : ""} ${ico("derecha", 16)}</span>
+      </span>
+    </a>`;
 
-  contenedor.innerHTML = `
-  <a href="${urlCarpeta}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
-    <div class="badge-icon">${ico("camara", 24)}</div>
-    <div class="badge-texto">
-      <strong>Torneo 2027</strong>
-      <span>Ver carpeta de fotos</span>
-    </div>
-  </a>
-`;
-}
-
-function cargarGaleria2026() {
-  const contenedor = document.getElementById("galeria2026-scroll");
-  if (!contenedor) return;
-
-  const urlCarpeta = "https://www.amazon.es/photos/share/BNF0g9ckA7PPdmq1jetkgeJ9zO8BwiJW6Gj4KPumS5";
-
-  contenedor.innerHTML = `
-  <a href="${urlCarpeta}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
-    <div class="badge-icon">${ico("camara", 24)}</div>
-    <div class="badge-texto">
-      <strong>Torneo 2026</strong>
-      <span>Ver carpeta de fotos</span>
-    </div>
-  </a>
-`;
-}
-
-function cargarGaleria2025() {
-  const contenedor = document.getElementById("galeria-scroll");
-  if (!contenedor) return;
-
-  const urlCarpeta2025 = "https://www.amazon.es/photos/share/aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s";
-
-  contenedor.innerHTML = `
-  <a href="${urlCarpeta2025}" target="_blank" rel="noopener noreferrer" class="galeria-badge">
-    <div class="badge-icon">${ico("camara", 24)}</div>
-    <div class="badge-texto">
-      <strong>Torneo 2025</strong>
-      <span>Ver carpeta de fotos</span>
-    </div>
-  </a>
-`;
+  return `
+    <section class="ft">
+      <div class="ft-cab">
+        <h3 class="titulo-seccion">Fotos del torneo</h3>
+        <span class="ft-sub">${ico("camara", 14)} ${ALBUMES_FOTOS.length} álbumes</span>
+      </div>
+      ${album(actual, true)}
+      <div class="ft-anteriores">
+        ${anteriores.map(a => album(a, false)).join("")}
+      </div>
+    </section>`;
 }
 
 /* ================== GALERÍA (SUPABASE) ================== */
@@ -7713,7 +7676,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-21";
+const VERSION_APP = "2026-11-03-22";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

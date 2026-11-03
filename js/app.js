@@ -4307,7 +4307,24 @@ function mostrarEquipos() {
   setNavActivoPorVista("clubs");
   registrarNavegacion("clubs");
 
-  let html = `<h2>Clubs Participantes</h2>`;
+  const jugados = partidos.filter(p => calcularEstadoPartido(p) === "finalizado").length;
+
+  let html = `
+    <section class="cl-hero">
+      <span class="cl-etiqueta">${ico("escudo", 14)} Clubs participantes</span>
+      <h2>Los equipos del torneo</h2>
+      <div class="cl-stats">
+        <span><b>${clubes.length}</b> clubs</span>
+        <span><b>${equipos.length}</b> equipos</span>
+        <span><b>${jugados}</b> partidos jugados</span>
+      </div>
+      ${clubes.length ? `
+        <label class="cl-buscar">
+          ${ico("lupa", 18)}
+          <input type="search" id="buscar-club" placeholder="Buscar club" autocomplete="off"
+                 aria-label="Buscar club" oninput="filtrarClubes()">
+        </label>` : ""}
+    </section>`;
 
   if (adminActivo) {
     html += `
@@ -4321,25 +4338,26 @@ function mostrarEquipos() {
   if (clubes.length === 0) {
     html += `<p class="estado-vacio">No hay clubes creados</p>`;
   } else {
+    const ordenados = [...clubes].sort((x, y) => String(x.nombre || "").localeCompare(String(y.nombre || ""), "es"));
     html += `
-      <p class="pab-intro">${clubes.length} clubs · ${equipos.length} equipos. Toca un club para ver sus equipos.</p>
-      <label class="clubs-buscar">
-        ${ico("lupa", 18)}
-        <input type="search" id="buscar-club" placeholder="Buscar club" autocomplete="off"
-               aria-label="Buscar club" oninput="filtrarClubes()">
-      </label>
-      <div class="clubs-grid" id="clubs-grid">
-        ${clubes.map(c => {
-          const n = equipos.filter(e => e.club_id === c.id).length;
+      <div class="cl-grid" id="clubs-grid">
+        ${ordenados.map(c => {
+          const suyos = equipos.filter(e => e.club_id === c.id);
+          const porCat = ORDEN_CATEGORIAS.map(cat => [cat, suyos.filter(e => e.categoria === cat).length]).filter(([, n]) => n);
+          const masc = suyos.filter(e => e.genero === "Masculino").length;
+          const fem = suyos.filter(e => e.genero === "Femenino").length;
+          const escudo = escaparHtml(c.escudo || PLACEHOLDER_ESCUDO);
           return `
-          <div class="club-card club-tile" role="button" tabindex="0" data-nombre="${escaparHtml(String(c.nombre || "").toLowerCase())}" onclick="verClub(${c.id})">
-            <div class="club-tile-fila">
-              <span class="club-tile-escudo"><img src="${escaparHtml(c.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
-              <div class="club-tile-texto">
-                <strong>${c.nombre}</strong>
-                <span>${n} ${n === 1 ? "equipo" : "equipos"}</span>
-              </div>
-              <span class="cat-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
+          <div class="cl-card club-tile" role="button" tabindex="0" data-nombre="${escaparHtml(String(c.nombre || "").toLowerCase())}" onclick="verClub(${c.id})">
+            <div class="cl-portada" aria-hidden="true">
+              <img class="cl-fondo" src="${escudo}" alt="" loading="lazy" decoding="async">
+            </div>
+            <span class="cl-escudo"><img src="${escudo}" alt="" loading="lazy" decoding="async"></span>
+            <div class="cl-cuerpo">
+              <strong class="cl-nombre">${escaparHtml(c.nombre || "")}</strong>
+              <span class="cl-equipos">${suyos.length} ${suyos.length === 1 ? "equipo" : "equipos"}</span>
+              ${porCat.length ? `<span class="cl-cats">${porCat.map(([cat, n]) => `<i class="cl-cat cl-${claseCategoria(cat)}">${cat.charAt(0)}<b>${n}</b></i>`).join("")}</span>` : ""}
+              ${masc || fem ? `<span class="cl-gens">${masc ? `<span class="m">${masc} masc.</span>` : ""}${fem ? `<span class="f">${fem} fem.</span>` : ""}</span>` : ""}
             </div>
             ${adminActivo ? `
               <div class="club-acciones">
@@ -7854,7 +7872,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-26";
+const VERSION_APP = "2026-11-03-27";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

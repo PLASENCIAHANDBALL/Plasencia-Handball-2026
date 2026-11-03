@@ -4108,20 +4108,20 @@ body.splash-activo .hub { display: none !important; }
 @keyframes hubLatido { 50% { transform: scale(1.25); } }
 
 /* los tres botones salen en abanico desde el "+" */
-.hub .music-fab, .hub .social-fab, .hub #admin-fab {
+.hub .music-fab, .hub .social-fab, .hub #info-fab {
   position: absolute; left: auto; right: 4px; bottom: 4px; top: auto; z-index: 1;
   opacity: 0; visibility: hidden; pointer-events: none;
   transform: translate(0, 0) scale(.2);
   transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), opacity .2s ease, visibility 0s linear .42s;
 }
 .hub .music-fab, .hub .social-fab { align-items: flex-end; width: auto; }
-.hub.open .music-fab, .hub.open .social-fab, .hub.open #admin-fab { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
-.hub.open #admin-fab  { transform: translate(-84px, 0) scale(1); transition-delay: .02s; }
+.hub.open .music-fab, .hub.open .social-fab, .hub.open #info-fab { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.hub.open #info-fab  { transform: translate(-84px, 0) scale(1); transition-delay: .02s; }
 .hub.open .social-fab { transform: translate(-59px, -59px) scale(1); transition-delay: .07s; }
 .hub.open .music-fab  { transform: translate(0, -84px) scale(1); transition-delay: .12s; }
-.hub #admin-fab { display: flex; align-items: center; justify-content: center; }
+.hub #info-fab { display: flex; align-items: center; justify-content: center; }
 .hub .music-panel { transform-origin: bottom right; }
-@media (prefers-reduced-motion: reduce) { .hub .music-fab, .hub .social-fab, .hub #admin-fab, .hub-main .ico { transition-duration: .01s; } }
+@media (prefers-reduced-motion: reduce) { .hub .music-fab, .hub .social-fab, .hub #info-fab, .hub-main .ico { transition-duration: .01s; } }
 
 /* ================== ZONA FAN + PH PORRA ================== */
 .zona-barra{display:flex;gap:4px;padding:4px;margin:0 0 16px;background:var(--tile);border-radius:14px}
@@ -4537,3 +4537,12 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .ct .team-actions { padding: 0 16px 12px; }
 .ct.abierto .ct-sig { display: none; }
 .ct .partidos-club { margin: 0; padding: 4px 12px 12px; border-top: 1px solid var(--border); }
+
+/* "i" dentro del abanico del "+", donde antes estaba el candado */
+.hub #info-fab { width: 48px; height: 48px; min-width: 48px; min-height: 48px; max-height: 48px; border: 1px solid var(--border); background: var(--surface); color: var(--azul-fuerte); box-shadow: 0 6px 16px rgba(27,111,184,.22); }
+.hub #info-fab .ico { width: 24px; height: 24px; }
+
+/* candado de organización en la cabecera, debajo del idioma */
+.header-wrapper #admin-fab { position: absolute; top: 58px; right: 12px; bottom: auto; left: auto; z-index: 30; box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; min-height: 40px; max-height: 40px; padding: 0; margin: 0; border-radius: 50%; border: 2px solid #fff; background: #fff; color: var(--azul-fuerte); box-shadow: 0 2px 10px rgba(10, 58, 128, .28); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.header-wrapper #admin-fab .ico { width: 19px; height: 19px; }
+.header-wrapper #admin-fab.admin-activo { background: #2ecc71; border-color: #fff; color: #fff; }

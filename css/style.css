@@ -4758,3 +4758,8 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .ft-album:hover::after { transform: rotate(3.5deg) translate(7px, 4px); }
 .ft-album .ft-capa { border-radius: inherit; }
 .ft-anteriores { gap: 16px; }
+
+/* mientras llegan las fotos: brillo de carga en vez de una portada fija */
+.ft-album.cargando .ft-fotos { background: linear-gradient(110deg, #2a6fb8 20%, #4f93d6 40%, #2a6fb8 60%) 0 0 / 250% 100%; animation: ft-brillo 1.4s linear infinite; }
+@keyframes ft-brillo { to { background-position: -250% 0; } }
+@media (prefers-reduced-motion: reduce) { .ft-album.cargando .ft-fotos { animation: none; } }

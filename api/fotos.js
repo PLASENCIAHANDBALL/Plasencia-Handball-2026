@@ -39,9 +39,9 @@ async function pedir(url, paso) {
   return r.json();
 }
 
-async function hijos(dominio, nodo, share) {
+async function hijos(dominio, nodo, share, maximo = 1000) {
   const todos = [];
-  for (let offset = 0; offset < 1000; offset += 200) {
+  for (let offset = 0; offset < maximo; offset += 200) {
     const url = `${dominio}/drive/v1/nodes/${nodo}/children?asset=ALL&limit=200&offset=${offset}` +
       `&searchOnFamily=false&tempLink=true&shareId=${share}&resourceVersion=V2&ContentType=JSON`;
     const datos = await pedir(url, "listar fotos");
@@ -80,16 +80,19 @@ export default async function handler(req, res) {
       const raiz = info.nodeInfo?.id;
       if (!raiz) throw new Error("abrir carpeta: no viene el id de la carpeta");
 
-      // Recorre la carpeta compartida y lo que tenga dentro (carpetas, álbumes...) hasta 3 niveles
+      // Recorre la carpeta compartida y lo que tenga dentro (carpetas, álbumes...) hasta 3 niveles.
+      // Las subcarpetas se piden a la vez y hay un tope de tiempo para responder rápido.
+      const limite = Date.now() + 6000;
       const fotos = [];
       const vistos = [];
       let pendientes = [raiz];
-      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 600; nivel++) {
+      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 400 && Date.now() < limite; nivel++) {
         const siguientes = [];
-        for (const nodo of pendientes.slice(0, 12)) {
-          const lista = await hijos(dominio, nodo, share);
+        const listas = await Promise.all(pendientes.slice(0, 10).map(nodo =>
+          hijos(dominio, nodo, share, nivel === 0 ? 1000 : 200).catch(() => [])));
+        for (const lista of listas) {
           for (const n of lista) {
-            vistos.push(`${n.kind}${n.tempLink ? "+link" : ""}${n.contentProperties?.contentType ? ":" + n.contentProperties.contentType : ""}`);
+            vistos.push(`${n.kind}${n.tempLink ? "+link" : ""}`);
             if (esFoto(n)) fotos.push(n);
             else if (n.kind !== "FILE") siguientes.push(n.id);
           }
@@ -99,7 +102,8 @@ export default async function handler(req, res) {
       if (!fotos.length) throw new Error(`la carpeta no tiene fotos (vistos: ${vistos.slice(0, 10).join(", ") || "nada"}; raíz: ${info.nodeInfo?.kind || "?"})`);
 
       const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
-      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=900");
+      // 5 min de caché; después Vercel sigue sirviendo la última respuesta al instante mientras renueva
+      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=86400");
       res.status(200).json({ anio: Number(anio), fotos: urls });
       return;
     } catch (e) {

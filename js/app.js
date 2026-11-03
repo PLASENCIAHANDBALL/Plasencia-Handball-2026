@@ -1256,10 +1256,10 @@ const ALBUMES_FOTOS = [
 function renderFotosTorneo() {
   const [actual, ...anteriores] = ALBUMES_FOTOS;
   const album = (a, destacado) => `
-    <a class="ft-album ${destacado ? "destacado" : ""}" data-anio="${a.anio}" href="${a.url}" target="_blank" rel="noopener noreferrer"
+    <a class="ft-album cargando ${destacado ? "destacado" : ""}" data-anio="${a.anio}" href="${a.url}" target="_blank" rel="noopener noreferrer"
        aria-label="Ver fotos del torneo ${a.anio}">
       <span class="ft-fotos" data-anio="${a.anio}">
-        <img class="ft-portada visible" src="${a.portada}" alt="" loading="lazy" decoding="async">
+        <img class="ft-portada" src="${a.portada}" alt="" loading="lazy" decoding="async">
       </span>
       <span class="ft-capa" aria-hidden="true"></span>
       ${destacado ? `<span class="ft-nuevo">${ico("camara", 14)} Edición actual</span>` : ""}
@@ -1286,49 +1286,91 @@ function renderFotosTorneo() {
 }
 
 // Book de fotos: cada álbum enseña fotos aleatorias de su carpeta de Amazon Photos que
-// van pasando solas con un fundido. Las pide a /api/fotos (función de Vercel). Si no
-// llegan (sin conexión, Amazon no responde...) se queda la portada de siempre.
+// van pasando solas con un fundido. Las pide a /api/fotos (función de Vercel).
+// - Se piden nada más abrir la app, para que estén listas al llegar al inicio.
+// - La última lista se guarda en el móvil: la siguiente visita enseña una foto al instante.
+// - Mientras llegan se ve un brillo de carga; la portada fija solo sale si todo falla.
 const fotosAlbumCache = {};
+const CLAVE_FOTOS = "fotosAlbum:";
+const VIDA_FOTOS_GUARDADAS = 2 * 60 * 60 * 1000; // los enlaces de Amazon caducan; 2 h es seguro
 
-async function fotosDeAlbum(anio) {
-  if (fotosAlbumCache[anio]) return fotosAlbumCache[anio];
-  fotosAlbumCache[anio] = fetch(`/api/fotos?anio=${anio}`)
+function fotosGuardadas(anio) {
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE_FOTOS + anio) || "null");
+    if (d && Date.now() - d.t < VIDA_FOTOS_GUARDADAS && Array.isArray(d.fotos)) return d.fotos;
+  } catch (e) {}
+  return [];
+}
+
+function pedirFotosAlbum(anio, intento = 0) {
+  return fetch(`/api/fotos?anio=${anio}`)
     .then(r => r.ok ? r.json() : { fotos: [] })
     .then(d => Array.isArray(d.fotos) ? d.fotos.filter(u => /^https:\/\//.test(u)) : [])
-    .catch(() => []);
-  const lista = await fotosAlbumCache[anio];
-  if (!lista.length) delete fotosAlbumCache[anio]; // se reintenta la próxima vez
-  return lista;
+    .catch(() => [])
+    .then(lista => {
+      if (lista.length) {
+        try { localStorage.setItem(CLAVE_FOTOS + anio, JSON.stringify({ t: Date.now(), fotos: lista })); } catch (e) {}
+        return lista;
+      }
+      // un reintento por si la función estaba "dormida" la primera vez
+      return intento < 1 ? new Promise(ok => setTimeout(() => ok(pedirFotosAlbum(anio, intento + 1)), 2500)) : [];
+    });
 }
+
+function fotosDeAlbum(anio) {
+  if (!fotosAlbumCache[anio]) {
+    fotosAlbumCache[anio] = pedirFotosAlbum(anio).then(lista => {
+      if (!lista.length) delete fotosAlbumCache[anio];
+      return lista;
+    });
+  }
+  return fotosAlbumCache[anio];
+}
+
+// se piden ya, en segundo plano, al cargar la app
+ALBUMES_FOTOS.forEach(a => fotosDeAlbum(a.anio));
 
 function precargar(url) {
   return new Promise(ok => {
     const img = new Image();
+    img.decoding = "async";
     img.onload = () => ok(true);
     img.onerror = () => ok(false);
     img.src = url;
   });
 }
 
+// la primera de varias fotos que termine de cargar
+async function primeraQueCargue(urls) {
+  const intentos = urls.slice(0, 3);
+  if (!intentos.length) return -1;
+  return new Promise(ok => {
+    let fallos = 0;
+    intentos.forEach((u, i) => precargar(u).then(bien => {
+      if (bien) ok(i);
+      else if (++fallos === intentos.length) ok(-1);
+    }));
+  });
+}
+
+function barajarLista(lista) {
+  const l = [...lista];
+  for (let k = l.length - 1; k > 0; k--) {
+    const j = Math.floor(Math.random() * (k + 1));
+    [l[k], l[j]] = [l[j], l[k]];
+  }
+  return l;
+}
+
 function iniciarFotosTorneo() {
   const reducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  document.querySelectorAll(".ft-fotos[data-anio]").forEach(async (caja, i) => {
-    const lista = await fotosDeAlbum(caja.dataset.anio);
-    if (!caja.isConnected || !lista.length) return;
-
-    // se barajan en cada visita para que nunca salgan las mismas ni en el mismo orden
-    const barajadas = [...lista];
-    for (let k = barajadas.length - 1; k > 0; k--) {
-      const j = Math.floor(Math.random() * (k + 1));
-      [barajadas[k], barajadas[j]] = [barajadas[j], barajadas[k]];
-    }
-    lista.splice(0, lista.length, ...barajadas);
-
-    // primera foto: sustituye a la portada en cuanto está cargada
-    let pos = 0;
-    while (pos < lista.length && !(await precargar(lista[pos]))) pos++;
-    if (pos >= lista.length || !caja.isConnected) return;
+  document.querySelectorAll(".ft-fotos[data-anio]").forEach((caja, i) => {
+    const anio = caja.dataset.anio;
+    const album = caja.closest(".ft-album");
+    let lista = [];
+    let pos = -1;
+    let enMarcha = false;
 
     const capa = (url) => {
       const img = document.createElement("img");
@@ -1337,28 +1379,55 @@ function iniciarFotosTorneo() {
       img.decoding = "async";
       img.src = url;
       caja.appendChild(img);
+      album?.classList.add("con-fotos");
+      album?.classList.remove("cargando");
       requestAnimationFrame(() => requestAnimationFrame(() => {
         caja.querySelectorAll(".ft-portada.visible").forEach(v => v.classList.remove("visible"));
         img.classList.add("visible");
         setTimeout(() => caja.querySelectorAll(".ft-portada:not(.visible)").forEach(v => v.remove()), 1400);
       }));
     };
-    capa(lista[pos]);
-    caja.closest(".ft-album")?.classList.add("con-fotos");
 
-    if (reducido || lista.length < 2) return;
-
-    // cada álbum cambia de foto a su ritmo (desfasados para que no cambien todos a la vez)
-    const ritmo = 3800 + i * 700;
-    const siguiente = async () => {
-      if (!caja.isConnected) return;
-      if (!document.hidden) {
-        pos = (pos + 1) % lista.length;
-        if (await precargar(lista[pos])) capa(lista[pos]);
+    const empezar = async (nueva) => {
+      const barajada = barajarLista(nueva);
+      if (pos < 0) {
+        const k = await primeraQueCargue(barajada);
+        if (k < 0 || !caja.isConnected) return false;
+        [barajada[0], barajada[k]] = [barajada[k], barajada[0]];
+        pos = 0;
+        capa(barajada[0]);
       }
-      setTimeout(siguiente, ritmo);
+      lista = barajada;
+      if (!enMarcha && !reducido && lista.length > 1) {
+        enMarcha = true;
+        const ritmo = 3800 + i * 700;
+        const siguiente = async () => {
+          if (!caja.isConnected) return;
+          if (!document.hidden) {
+            pos = (pos + 1) % lista.length;
+            if (await precargar(lista[pos])) capa(lista[pos]);
+          }
+          setTimeout(siguiente, ritmo);
+        };
+        setTimeout(siguiente, ritmo);
+      }
+      return true;
     };
-    setTimeout(siguiente, ritmo);
+
+    // 1) al instante: las fotos de la visita anterior (si son recientes)
+    const guardadas = fotosGuardadas(anio);
+    if (guardadas.length) empezar(guardadas);
+
+    // 2) en cuanto llegan, las nuevas (fotos distintas cada vez)
+    fotosDeAlbum(anio).then(async nuevas => {
+      if (!caja.isConnected) return;
+      if (nuevas.length && await empezar(nuevas)) return;
+      if (pos < 0) {
+        // todo falló: se enseña la portada fija
+        album?.classList.remove("cargando");
+        caja.querySelector(".ft-portada")?.classList.add("visible");
+      }
+    });
   });
 }
 
@@ -7756,7 +7825,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-24";
+const VERSION_APP = "2026-11-03-25";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

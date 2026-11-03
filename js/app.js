@@ -4614,6 +4614,15 @@ function pintarRadar() {
   if (viejo) radarScroll = viejo.scrollLeft;
 
   const estados = Object.fromEntries(LISTA_PABELLONES.map(p => [p, estadoRadar(partidosRadarDe(p))]));
+
+  // Con un filtro de categoría o género puesto, solo se listan los pabellones donde hoy
+  // se juega algún partido de esa categoría/género.
+  const hayFiltro = radarCategoria !== "todas" || radarGenero !== "todos";
+  const visibles = hayFiltro ? LISTA_PABELLONES.filter(p => estados[p] !== "sin") : LISTA_PABELLONES;
+  if (hayFiltro && visibles.length && !visibles.includes(radarSeleccion)) radarSeleccion = visibles[0];
+  const textoFiltro = [radarCategoria !== "todas" ? radarCategoria : "", radarGenero !== "todos" ? radarGenero : ""]
+    .filter(Boolean).join(" ");
+
   const cats = [["todas", "Todas"], ["Infantil", "Infantil"], ["Cadete", "Cadete"], ["Juvenil", "Juvenil"]];
   const gens = [["todos", "Todos"], ["Masculino", "Masculino"], ["Femenino", "Femenino"]];
   const chips = (lista, actual, fn) => lista.map(([id, nombre]) =>
@@ -4638,7 +4647,7 @@ function pintarRadar() {
         ${LISTA_PABELLONES.map(p => {
           const [x, y] = POSICIONES_RADAR[p] || [50, 50];
           const e = ESTADOS_RADAR[estados[p]];
-          return `<button type="button" class="rd-punto ${radarSeleccion === p ? "sel" : ""} ${estados[p]}" style="left:${x}%;top:${y}%;--c:${e.color}"
+          return `<button type="button" class="rd-punto ${radarSeleccion === p ? "sel" : ""} ${estados[p]} ${hayFiltro && estados[p] === "sin" ? "apagado" : ""}" style="left:${x}%;top:${y}%;--c:${e.color}"
             aria-label="${p}: ${e.texto}" aria-pressed="${radarSeleccion === p}" onclick="radarElegir('${p}')"><i></i><span>${p}</span></button>`;
         }).join("")}
       </div></div>
@@ -4647,8 +4656,9 @@ function pintarRadar() {
       <div class="rd-filtros"><div class="hl-filtros" role="group" aria-label="Categoría">${chips(cats, radarCategoria, "radarCategoriaElegir")}</div>
       <div class="hl-filtros" role="group" aria-label="Género">${chips(gens, radarGenero, "radarGeneroElegir")}</div></div>
       <h3 class="rd-sub">Seleccionar pabellón</h3>
+      ${visibles.length ? "" : `<p class="rd-nada rd-sin-pabellones">Hoy no se juega ningún partido de ${escaparHtml(textoFiltro)} en ningún pabellón.</p>`}
       <div class="rd-lista">
-        ${LISTA_PABELLONES.map(p => `
+        ${visibles.map(p => `
           <button type="button" class="rd-item ${radarSeleccion === p ? "sel" : ""}" onclick="radarElegir('${p}')">
             ${IMAGENES_PABELLONES[p] ? `<img class="rd-foto" src="${IMAGENES_PABELLONES[p]}" alt="" loading="lazy" decoding="async">` : ""}
             <span class="rd-texto">
@@ -4656,7 +4666,7 @@ function pintarRadar() {
             </span>
           </button>`).join("")}
       </div>
-      ${fichaRadar(radarSeleccion)}
+      ${visibles.length ? fichaRadar(radarSeleccion) : ""}
     </div>`;
 
   contenido.querySelectorAll("img").forEach(nueva => {
@@ -7567,7 +7577,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-14";
+const VERSION_APP = "2026-11-03-15";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

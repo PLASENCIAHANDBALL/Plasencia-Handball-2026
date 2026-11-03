@@ -79,15 +79,23 @@ export default async function handler(req, res) {
       const raiz = info.nodeInfo?.id;
       if (!raiz) throw new Error("abrir carpeta: no viene el id de la carpeta");
 
-      // fotos de la carpeta y, si hay subcarpetas (por días), también de unas cuantas de ellas
-      const nivel1 = await hijos(dominio, raiz, share);
-      const fotos = nivel1.filter(esFoto);
-      const subcarpetas = barajar(nivel1.filter(n => n.kind === "FOLDER")).slice(0, 4);
-      for (const carpeta of subcarpetas) {
-        if (fotos.length >= 300) break;
-        fotos.push(...(await hijos(dominio, carpeta.id, share)).filter(esFoto));
+      // Recorre la carpeta compartida y lo que tenga dentro (carpetas, álbumes...) hasta 3 niveles
+      const fotos = [];
+      const vistos = [];
+      let pendientes = [raiz];
+      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 300; nivel++) {
+        const siguientes = [];
+        for (const nodo of pendientes.slice(0, 6)) {
+          const lista = await hijos(dominio, nodo, share);
+          for (const n of lista) {
+            vistos.push(`${n.kind}${n.tempLink ? "+link" : ""}${n.contentProperties?.contentType ? ":" + n.contentProperties.contentType : ""}`);
+            if (esFoto(n)) fotos.push(n);
+            else if (n.kind !== "FILE") siguientes.push(n.id);
+          }
+        }
+        pendientes = barajar(siguientes);
       }
-      if (!fotos.length) throw new Error(`la carpeta no tiene fotos (${nivel1.length} elementos)`);
+      if (!fotos.length) throw new Error(`la carpeta no tiene fotos (vistos: ${vistos.slice(0, 10).join(", ") || "nada"}; raíz: ${info.nodeInfo?.kind || "?"})`);
 
       const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
       res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");

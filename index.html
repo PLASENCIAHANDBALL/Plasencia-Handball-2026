@@ -101,7 +101,7 @@
     </div>
   </footer>
 
-  <!-- BOTÓN "+" : reúne la canción, las redes sociales y la información del torneo -->
+  <!-- BOTÓN "+" : abre una hoja con la canción, las redes sociales y la información del torneo -->
   <div class="info-panel" id="info-panel" hidden>
     <div class="info-fondo" onclick="cerrarInfo()"></div>
     <section class="info-hoja" role="dialog" aria-modal="true" aria-label="Información del torneo">
@@ -115,68 +115,52 @@
             aria-label="Más opciones" aria-expanded="false" aria-controls="hub-items">
       <svg class="ico" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
     </button>
-    <div class="hub-items" id="hub-items">
-  <!-- REPRODUCTOR DE LA CANCIÓN (botón flotante a la izquierda) -->
-  <div class="music-fab" id="music-fab">
-    <button type="button" class="music-main" onclick="toggleReproductor()"
-            aria-label="Canción del torneo" aria-expanded="false" aria-controls="panel-musica">
-      <svg class="ico ico-nota" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
-      <span class="ecualizador" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    </button>
-
-    <div class="music-panel" id="panel-musica" role="group" aria-label="Reproductor de la canción del torneo">
-      <div class="music-cabecera">
-        <span class="reproductor-etiqueta">Suena en Plasencia</span>
-        <strong class="reproductor-titulo">Canción del torneo</strong>
+    <div class="hub-fondo" onclick="toggleHub(true)" aria-hidden="true"></div>
+    <section class="hub-items hub-hoja" id="hub-items" role="dialog" aria-label="Más del torneo">
+      <div class="hub-asa" aria-hidden="true"></div>
+      <div class="hub-cab">
+        <span class="hub-cab-ico" aria-hidden="true"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8L3.5 9.7l5.9-.9z"/></svg></span>
+        <div><small>Plasencia Handball</small><strong>Más del torneo</strong></div>
+        <button type="button" class="hub-cerrar" onclick="toggleHub(true)" aria-label="Cerrar"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
 
-      <input type="range" id="barra-cancion" value="0" min="0" max="100" step="0.1" style="--p:0%"
-             aria-label="Posición de la canción" oninput="moverBarraCancion()">
-
-      <div class="reproductor-pie">
-        <span id="tiempo-actual">0:00</span>
-        <div class="controles-cancion">
-          <button type="button" onclick="reiniciarCancion()" class="btn-control" aria-label="Volver al principio de la canción">
-            <svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14M19 5.5v13L9 12z"/></svg>
-          </button>
-          <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control btn-play" aria-label="Reproducir canción">
-            <svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-          </button>
+      <!-- CANCIÓN DEL TORNEO -->
+      <div class="hub-musica" id="music-fab">
+        <div class="hub-musica-cab">
+          <span class="hub-musica-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="ecualizador" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span>
+          <div><small class="reproductor-etiqueta">Suena en Plasencia</small><strong class="reproductor-titulo">Canción del torneo</strong></div>
+          <button type="button" onclick="toggleCancionTorneo()" id="btn-play" class="btn-control btn-play" aria-label="Reproducir canción"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></button>
         </div>
-        <span id="tiempo-total">--:--</span>
+        <input type="range" id="barra-cancion" value="0" min="0" max="100" step="0.1" style="--p:0%"
+               aria-label="Posición de la canción" oninput="moverBarraCancion()">
+        <div class="reproductor-pie">
+          <span id="tiempo-actual">0:00</span>
+          <button type="button" onclick="reiniciarCancion()" class="btn-control hub-reiniciar" aria-label="Volver al principio de la canción"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14M19 5.5v13L9 12z"/></svg></button>
+          <span id="tiempo-total">--:--</span>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- BOTÓN REDES SOCIALES -->
-  <div class="social-fab">
-    <button type="button" class="social-main" onclick="toggleSocial()"
-            aria-label="Redes sociales" aria-expanded="false" aria-controls="menu-social">
-      <img src="img/redes.webp" alt="" width="34" height="34" />
-    </button>
+      <!-- REDES SOCIALES -->
+      <h3 class="hub-sub">Síguenos</h3>
+      <div class="hub-redes">
+        <a href="https://instagram.com/plasenciahandball" target="_blank" rel="noopener noreferrer" class="hub-red ig">
+          <img src="img/instagram.webp" alt="" width="30" height="30" loading="lazy"><span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/plasenciahandball/?locale=es_ES" target="_blank" rel="noopener noreferrer" class="hub-red fb">
+          <img src="img/facebook.webp" alt="" width="30" height="30" loading="lazy"><span>Facebook</span>
+        </a>
+        <a href="https://swltv.es/prohandballplasencia/" target="_blank" rel="noopener noreferrer" class="hub-red tw">
+          <img src="img/twitch.webp" alt="" width="30" height="30" loading="lazy"><span>Directos</span>
+        </a>
+      </div>
 
-    <div class="social-menu" id="menu-social">
-      <a href="https://instagram.com/plasenciahandball" target="_blank" rel="noopener noreferrer" class="social-btn">
-        <img src="img/instagram.webp" alt="" width="22" height="22" loading="lazy" />
-        <span>Instagram</span>
-      </a>
-
-      <a href="https://www.facebook.com/plasenciahandball/?locale=es_ES" target="_blank" rel="noopener noreferrer" class="social-btn">
-        <img src="img/facebook.webp" alt="" width="22" height="22" loading="lazy" />
-        <span>Facebook</span>
-      </a>
-
-      <a href="https://swltv.es/prohandballplasencia/" target="_blank" rel="noopener noreferrer" class="social-btn">
-        <img src="img/twitch.webp" alt="" width="22" height="22" loading="lazy" />
-        <span>Twitch</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- INFORMACIÓN DEL TORNEO -->
-  <button type="button" class="info-fab" id="info-fab" onclick="abrirInfo()" aria-label="Información del torneo"><svg class="ico" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.2"/></svg></button>
-
-    </div>
+      <!-- INFORMACIÓN DEL TORNEO -->
+      <button type="button" class="hub-fila" id="hub-info" onclick="abrirInfo()">
+        <span class="hub-fila-ico"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8v.2"/></svg></span>
+        <span class="hub-fila-txt"><strong>Información del torneo</strong><small>Horarios, normas, contacto y más</small></span>
+        <span class="hub-fila-ir"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+    </section>
   </div>
 
   <!-- AVISOS (sustituyen a los alert() del navegador) -->
@@ -211,6 +195,7 @@
       if (!hub) return;
       var abrir = forzarCerrar === true ? false : !hub.classList.contains('open');
       hub.classList.toggle('open', abrir);
+      document.body.classList.toggle('hub-abierto', abrir);
       var boton = document.getElementById('hub-main');
       if (boton) {
         boton.setAttribute('aria-expanded', abrir ? 'true' : 'false');
@@ -230,7 +215,7 @@
     });
     // al abrir el acceso de organización el menú se recoge
     document.addEventListener('click', function (e) {
-      if (e.target.closest && e.target.closest('#info-fab')) setTimeout(function () { toggleHub(true); }, 150);
+      if (e.target.closest && e.target.closest('#hub-info')) setTimeout(function () { toggleHub(true); }, 50);
     });
   </script>
 

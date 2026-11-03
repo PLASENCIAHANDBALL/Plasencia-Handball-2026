@@ -44,6 +44,8 @@ export const DE = {
   "partidos jugados": "Spiele gespielt",
   "masc.": "männl.",
   "fem.": "weibl.",
+  "Calendario del torneo": "Turnierkalender",
+  "Partido de fase final": "Finalrundenspiel",
   "Historia del Torneo": "Geschichte des Turniers",
   "Edición actual": "Aktuelle Ausgabe",
   "Ver fotos": "Fotos ansehen",

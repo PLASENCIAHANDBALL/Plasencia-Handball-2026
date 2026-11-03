@@ -1488,6 +1488,14 @@ const partidosPorDiaPintado = new Map();
 // de filtro no los vuelva a cerrar. Por defecto solo se abre el día de hoy.
 const estadoFechas = {};
 
+// Hoja de calendario pequeña (mes + número de día) para la cabecera de cada día
+const formatoMesCorto = new Intl.DateTimeFormat("es-ES", { month: "short" });
+function hojaCalendario(fecha, esHoy) {
+  const d = parseFecha(fecha);
+  if (!d) return `<span class="fecha-hoja vacia" aria-hidden="true">${ico("calendario", 18)}</span>`;
+  return `<span class="fecha-hoja ${esHoy ? "hoy" : ""}" aria-hidden="true"><small>${formatoMesCorto.format(d).replace(".", "")}</small><b>${d.getDate()}</b></span>`;
+}
+
 function renderBloquesPorFecha(lista, tipo) {
   if (lista.length === 0) return `<p>No hay partidos</p>`;
 
@@ -1509,7 +1517,13 @@ function renderBloquesPorFecha(lista, tipo) {
       <div class="fecha-bloque ${abierta ? "abierta" : ""}">
         <div class="fecha-header" role="button" tabindex="0" aria-expanded="${abierta}"
              data-clave="${escaparHtml(clave)}" onclick="toggleFecha(this)">
-          <span class="fecha-texto">${fechaBonita}${esHoy ? ` <em class="chip-hoy">Hoy</em>` : ""}</span>
+          ${hojaCalendario(fecha, esHoy)}
+          <span class="fecha-texto">${(() => {
+            const [dia, resto] = fechaBonita.split(", ");
+            return resto
+              ? `<b class="fecha-dia">${dia}${esHoy ? ` <em class="chip-hoy">Hoy</em>` : ""}</b><small class="fecha-resto">${resto}</small>`
+              : `${fechaBonita}${esHoy ? ` <em class="chip-hoy">Hoy</em>` : ""}`;
+          })()}</span>
           <span class="fecha-cuenta">${textoNumPartidos(partidosDia.length)}</span>
           <span class="flecha" aria-hidden="true">${ico("chev", 18)}</span>
         </div>
@@ -1694,15 +1708,7 @@ function mostrarPartidos() {
   setNavActivoPorVista("partidos");
   registrarNavegacion("partidos");
 
-  let html = `<h2>Partidos</h2>`;
-  
-  if (adminActivo) {
-  html += `<button onclick="formCrearFaseFinal()">Crear partido de fase final</button>`;
-}
-
-  if (adminActivo) {
-    html += `<button onclick="formNuevoPartido()">Crear partido</button>`;
-  }
+  let html = "";
 
   const ordenados = aplicarFiltroPartidos([...partidos]).sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
 
@@ -1716,22 +1722,34 @@ const finalizados = ordenados
 
   const enJuego = proximos.filter(p => calcularEstadoPartido(p) === "en_juego").length;
   html += `
-    <div class="pt-resumen">
-      <div class="pt-dato ${enJuego ? "vivo" : ""}"><strong>${enJuego}</strong><span>En juego</span></div>
-      <div class="pt-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>
-      <div class="pt-dato"><strong>${finalizados.length}</strong><span>Finalizados</span></div>
-    </div>`;
+    <section class="pt-hero">
+      <span class="pt-hero-etq">${ico("calendario", 14)} Calendario del torneo</span>
+      <h2>Partidos</h2>
+      <div class="pt-hero-datos">
+        <div class="pt-hero-dato ${enJuego ? "vivo" : ""}"><strong>${enJuego}</strong><span>${enJuego ? "<i></i>" : ""}En juego</span></div>
+        <div class="pt-hero-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>
+        <div class="pt-hero-dato"><strong>${finalizados.length}</strong><span>Finalizados</span></div>
+      </div>
+    </section>`;
+
+  if (adminActivo) {
+    html += `
+      <div class="pt-admin">
+        <button type="button" onclick="formNuevoPartido()">${ico("mas", 16)} Crear partido</button>
+        <button type="button" onclick="formCrearFaseFinal()">${ico("trofeo", 16)} Partido de fase final</button>
+      </div>`;
+  }
 
   html += renderFiltroPartidos();
 
   /* ===== PRÓXIMOS ===== */
-html += `<h3 class="bloque-titulo pt-titulo">Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
+html += `<h3 class="pt-sec"><span class="pt-sec-ico prox">${ico("reloj", 16)}</span>Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
 html += proximos.length
   ? renderBloquesPorFecha(proximos, "proximos")
   : `<p class="estado-vacio">No hay próximos partidos</p>`;
 
 /* ===== FINALIZADOS ===== */
-html += `<h3 class="bloque-titulo pt-titulo">Partidos finalizados <span class="pt-cuenta">${finalizados.length}</span></h3>`;
+html += `<h3 class="pt-sec"><span class="pt-sec-ico fin">${ico("check", 16)}</span>Partidos finalizados <span class="pt-cuenta">${finalizados.length}</span></h3>`;
 html += finalizados.length
   ? renderBloquesPorFecha(finalizados, "finalizados")
   : `<p class="estado-vacio">No hay partidos finalizados</p>`;
@@ -7874,7 +7892,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-31";
+const VERSION_APP = "2026-11-03-32";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

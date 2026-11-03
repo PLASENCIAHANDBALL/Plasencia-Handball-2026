@@ -84,6 +84,8 @@ const TEXTOS = {
   "partidos jugados": ["matches played", "jogos disputados", "matchs joués"],
   "masc.": ["boys", "masc.", "masc."],
   "fem.": ["girls", "fem.", "fém."],
+  "Calendario del torneo": ["Tournament schedule", "Calendário do torneio", "Calendrier du tournoi"],
+  "Partido de fase final": ["Knockout match", "Jogo da fase final", "Match de phase finale"],
   "Historia del Torneo": ["Tournament history", "História do Torneio", "Histoire du tournoi"],
   "Edición actual": ["Current edition", "Edição atual", "Édition actuelle"],
   "Ver fotos": ["See photos", "Ver fotos", "Voir les photos"],

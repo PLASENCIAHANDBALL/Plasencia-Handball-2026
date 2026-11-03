@@ -4852,3 +4852,40 @@ main .zf h2, .zf h2 { margin: 2px 0 4px; color: #fff; font-size: 26px; font-weig
 .zf-arriba { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .zf-vivo { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; padding: 6px 11px; border-radius: 999px; background: #fff; color: #0e7f9e; }
 .zf-vivo i { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; animation: pf-latido 1.4s ease-in-out infinite; }
+
+/* ===== Partidos: cabecera, secciones y días ===== */
+.pt-hero { position: relative; overflow: hidden; display: grid; gap: 12px; margin: 4px 0 16px; padding: 18px 16px 16px; border-radius: 28px; color: #fff;
+  background: linear-gradient(140deg, var(--azul-medio) 0%, var(--azul-fuerte) 100%); box-shadow: 0 14px 32px rgba(27,111,184,.28); }
+.pt-hero::before { content: ""; position: absolute; width: 220px; height: 220px; right: -70px; top: -100px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.pt-hero > * { position: relative; z-index: 1; }
+.pt-hero-etq { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,.18); padding: 6px 12px; border-radius: 999px; }
+.pt-hero-etq .ico { width: 14px; height: 14px; }
+main .pt-hero h2, .pt-hero h2 { margin: 0; color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+.pt-hero-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pt-hero-dato { display: grid; gap: 2px; padding: 10px 8px; border-radius: 18px; background: rgba(255,255,255,.16); text-align: center; }
+.pt-hero-dato strong { font-size: 26px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.pt-hero-dato span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; font-weight: 700; opacity: .92; }
+.pt-hero-dato.vivo { background: #fff; color: #d63b33; }
+.pt-hero-dato.vivo i { width: 8px; height: 8px; border-radius: 50%; background: #e5483f; animation: pf-latido 1.2s ease-in-out infinite; }
+
+.pt-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
+.pt-admin button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 0; min-height: 44px; font-size: 14px; }
+
+.pt-sec { display: flex; align-items: center; gap: 10px; margin: 22px 2px 12px; font-size: 19px; font-weight: 800; color: var(--text); }
+.pt-sec::before { display: none; }
+.pt-sec-ico { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 11px; color: #fff; }
+.pt-sec-ico.prox { background: linear-gradient(140deg, var(--azul-medio), var(--azul-fuerte)); }
+.pt-sec-ico.fin { background: linear-gradient(140deg, #3ccf8e, #1f9d6a); }
+
+.fecha-header { padding: 10px 14px 10px 10px; gap: 12px; }
+.fecha-hoja { flex: none; display: grid; grid-template-rows: auto 1fr; width: 46px; height: 50px; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 3px 8px rgba(27,111,184,.1); text-align: center; }
+.fecha-hoja small { display: block; padding: 2px 0; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--azul-medio); }
+.fecha-hoja b { display: grid; place-items: center; font-size: 20px; font-weight: 800; color: var(--tile-ink); line-height: 1; }
+.fecha-hoja.hoy small { background: #e5483f; }
+.fecha-hoja.vacia { place-items: center; grid-template-rows: 1fr; color: var(--accent-text); }
+.fecha-bloque.abierta .fecha-header { border-color: var(--accent); box-shadow: 0 8px 20px rgba(27,111,184,.14); }
+
+.fecha-header .fecha-texto { display: grid; gap: 1px; }
+.fecha-dia { font-size: 16px; font-weight: 800; }
+.fecha-dia::first-letter { text-transform: uppercase; }
+.fecha-resto { font-size: 13px; font-weight: 600; color: var(--muted); }

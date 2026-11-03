@@ -5101,6 +5101,14 @@ function pintarRadar() {
     nueva.replaceWith(vieja);
   });
 
+  // el barrido y el icono del radar siguen girando desde donde iban: al volver a pintar
+  // (al elegir un pabellón, un filtro o el refresco) se retoma la vuelta, no empieza de cero
+  const t = (performance.now() - radarInicio) / 1000;
+  const barrido = contenido.querySelector(".rd-barrido");
+  if (barrido) barrido.style.animationDelay = `-${(t % 6).toFixed(3)}s`;
+  const icono = contenido.querySelector(".rd-radar i");
+  if (icono) icono.style.animationDelay = `-${(t % 2.6).toFixed(3)}s`;
+
   // conserva el desplazamiento del mapa al refrescar; la primera vez lo centra
   const sc = document.getElementById("rd-scroll");
   if (sc) sc.scrollLeft = radarScroll !== null ? radarScroll : (sc.scrollWidth - sc.clientWidth) * 0.45;
@@ -5115,9 +5123,12 @@ function pintarRadar() {
   }
 }
 
+let radarInicio = 0;
+
 function mostrarRadar() {
   setNavActivoPorVista("radar");
   registrarNavegacion("radar");
+  radarInicio = performance.now(); // el barrido empieza de cero solo al entrar en el radar
   if (!LISTA_PABELLONES.includes(radarSeleccion)) radarSeleccion = LISTA_PABELLONES[0];
   pintarRadar();
 
@@ -8008,7 +8019,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-40";
+const VERSION_APP = "2026-11-03-41";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

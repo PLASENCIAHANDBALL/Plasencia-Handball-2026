@@ -4803,3 +4803,47 @@ main .cl-hero h2, .cl-hero h2 { margin: 0; color: #fff; font-size: 26px; font-we
 .cl-gens .m::before { background: #2b86d9; }
 .cl-gens .f::before { background: #e0578a; }
 .cl-card .club-acciones { margin-top: 10px; }
+
+/* ===== Zona Fan: cabecera por sección y fichas de secciones ===== */
+.zf { --a1: #ff7a59; --a2: #e8436f; position: relative; overflow: hidden; display: grid; gap: 14px; margin: 4px 0 18px; padding: 18px 16px 14px; border-radius: 28px; color: #fff;
+  background: linear-gradient(140deg, var(--a1) 0%, var(--a2) 100%); box-shadow: 0 14px 32px color-mix(in srgb, var(--a2) 35%, transparent); }
+.zf-chat    { --a1: #2bc4b4; --a2: #0e7f9e; }
+.zf-porra   { --a1: #ffb23e; --a2: #f0712a; }
+.zf-sorteos { --a1: #a77bff; --a2: #6b3fd6; }
+.zf-tienda  { --a1: var(--azul-medio); --a2: var(--azul-fuerte); }
+.zf::before { content: ""; position: absolute; width: 220px; height: 220px; right: -70px; top: -100px; border-radius: 50%; background: rgba(255,255,255,.14); }
+.zf::after { content: ""; position: absolute; width: 120px; height: 120px; left: -50px; bottom: -60px; border-radius: 50%; background: rgba(255,255,255,.08); }
+.zf > * { position: relative; z-index: 1; }
+.zf.compacta { padding: 8px; gap: 0; border-radius: 22px; margin-bottom: 12px; }
+.zf-etiqueta { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; background: rgba(255,255,255,.2); padding: 6px 12px; border-radius: 999px; }
+.zf-etiqueta .ico { width: 13px; height: 13px; }
+.zf-titulo { display: flex; align-items: flex-start; gap: 14px; }
+.zf-ico { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 18px; background: #fff; color: var(--a2); box-shadow: 0 8px 18px rgba(0,0,0,.15); }
+main .zf h2, .zf h2 { margin: 2px 0 4px; color: #fff; font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.zf-titulo p { margin: 0; font-size: 14px; line-height: 1.45; color: rgba(255,255,255,.92); }
+.zf-titulo p strong { color: #fff; }
+
+.zf-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; padding: 4px; margin: 0 -6px; border-radius: 20px; background: rgba(255,255,255,.18); }
+.zf-tabs::-webkit-scrollbar { display: none; }
+.zf-tab { display: grid; justify-items: center; gap: 4px; min-width: 0; width: auto; margin: 0; padding: 8px 1px 7px; border: 0; border-radius: 15px; background: transparent; box-shadow: none; color: #fff; font: inherit; font-size: 11px; font-weight: 700; letter-spacing: -.02em; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .2s, color .2s, transform .15s; }
+.zf-tab-txt { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zf-tab:active { transform: scale(.94); }
+.zf-tab-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: rgba(255,255,255,.2); }
+.zf-tab.activo { background: #fff; color: var(--a2); box-shadow: 0 6px 14px rgba(0,0,0,.14); }
+.zf-tab.activo .zf-tab-ico { background: color-mix(in srgb, var(--a2) 14%, #fff); }
+.zf-tab:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.zf.compacta .zf-tabs { display: flex; background: transparent; margin: 0; padding: 0; }
+.zf.compacta .zf-tab { flex: 1 1 0; }
+.zf.compacta .zf-tab.activo { flex: 2.2 1 0; }
+.zf.compacta .zf-tab { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px; }
+.zf.compacta .zf-tab-ico { width: 28px; height: 28px; border-radius: 10px; }
+.zf.compacta .zf-tab:not(.activo) .zf-tab-txt { display: none; }
+@media (max-width: 360px) { .zf-tab { font-size: 10.5px; } .zf-tab-ico { width: 30px; height: 30px; } }
+
+/* la sección toma el color de su cabecera en botones y fichas activas */
+.zf-highlights ~ .hl-filtros .hl-chip.activo { background: #e8436f; border-color: #e8436f; }
+.zf-porra ~ .hl-filtros .hl-chip.activo, .zf-porra ~ * .hl-chip.activo { background: #f0712a; border-color: #f0712a; }
+.zf-sorteos ~ * .tienda-nuevo, .zf-tienda ~ .tienda-nuevo { border-radius: 14px; }
+.zf-highlights ~ .hl-cab .hl-subir { background: linear-gradient(135deg, #ff7a59, #e8436f); box-shadow: 0 8px 20px rgba(232,67,111,.3); }
+.zf-highlights ~ .hl-cab { margin-top: 0; }
+.zf-highlights ~ .hl-cab .hl-subir { margin-top: 0; }

@@ -5069,8 +5069,6 @@ async function mostrarTienda() {
     if (vistaActual !== "tienda") return;
     contenido.innerHTML = `
       ${barraZona("tienda")}
-      <h2>Tienda del torneo</h2>
-      <p class="tienda-intro">Productos oficiales a la venta en el <strong>Pabellón Municipal</strong> durante el torneo.</p>
       ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoProducto()">Añadir producto</button>` : ""}
       ${cuerpo}
     `;
@@ -5497,8 +5495,6 @@ function pintarHighlights() {
   contenido.innerHTML = `
     ${barraZona("highlights")}
     <div class="hl-cab">
-      <h2>PH Highlights</h2>
-      <p class="pab-intro">Goles, paradas y jugadas subidos por jugadores y entrenadores. ¡Valora tus favoritos con estrellas!</p>
       <button type="button" class="hl-subir" onclick="formSubirHighlight()">${ico("subir", 20)}Subir mi momento</button>
     </div>
 
@@ -5530,14 +5526,14 @@ async function mostrarHighlights() {
 
   if (!highlightsCargados) {
     contenido.innerHTML = `
-      ${barraZona("highlights")}<div class="hl-cab"><h2>PH Highlights</h2></div>
+      ${barraZona("highlights")}
       <div class="estado-vacio">Cargando vídeos…</div>`;
 
     const ok = await cargarHighlights();
     if (vistaActual !== "highlights") return;
     if (!ok) {
       contenido.innerHTML = `
-        ${barraZona("highlights")}<div class="hl-cab"><h2>PH Highlights</h2></div>
+        ${barraZona("highlights")}
         <div class="estado-vacio"><strong>No se han podido cargar los vídeos. Comprueba tu conexión e inténtalo de nuevo.</strong>
         <button type="button" class="hl-subir" onclick="mostrarHighlights()">Reintentar</button></div>`;
       return;
@@ -5775,22 +5771,38 @@ window.enviarHighlight = enviarHighlight;
 /* ================== ZONA FAN: HIGHLIGHTS · TIENDA · PORRA ================== */
 
 const SECCIONES_ZONA = [
-  { id: "highlights", nombre: "Highlights", icono: "play", abrir: () => mostrarHighlights() },
-  { id: "chat",       nombre: "Chat",       icono: "chat", abrir: () => mostrarChat() },
-  { id: "porra",      nombre: "Porra",      icono: "trofeo", abrir: () => mostrarPorra() },
-  { id: "sorteos",    nombre: "Sorteos",    icono: "regalo", abrir: () => mostrarSorteos() },
-  { id: "tienda",     nombre: "Tienda",     icono: "bolsa", abrir: () => mostrarTienda() }
+  { id: "highlights", nombre: "Highlights", titulo: "PH Highlights", icono: "play", abrir: () => mostrarHighlights(),
+    texto: "Goles, paradas y jugadas subidos por jugadores y entrenadores. ¡Valora tus favoritos con estrellas!" },
+  { id: "chat",       nombre: "Chat",       titulo: "PH Chat",       icono: "chat", abrir: () => mostrarChat(),
+    texto: "Habla con otros aficionados del torneo" },
+  { id: "porra",      nombre: "Porra",      titulo: "PH Porra",      icono: "trofeo", abrir: () => mostrarPorra(),
+    texto: "¿Serás el mejor pronosticador del torneo? Adivina los resultados y sube en la clasificación." },
+  { id: "sorteos",    nombre: "Sorteos",    titulo: "PH Sorteos",    icono: "regalo", abrir: () => mostrarSorteos(),
+    texto: "Participa gratis para ganar premios de los patrocinadores del torneo." },
+  { id: "tienda",     nombre: "Tienda",     titulo: "Tienda del torneo", icono: "bolsa", abrir: () => mostrarTienda(),
+    texto: "Productos oficiales a la venta en el <strong>Pabellón Municipal</strong> durante el torneo." }
 ];
 
-// Barra de secciones que se ve arriba en las tres pantallas de la Zona Fan
+// Cabecera de la Zona Fan: título y descripción de la sección y, debajo, las cinco
+// secciones como fichas de colores. En el chat va en versión compacta para dejar sitio.
 function barraZona(actual) {
   lsSet("zona_seccion", actual);
+  const s = SECCIONES_ZONA.find(x => x.id === actual) || SECCIONES_ZONA[0];
+  const compacta = actual === "chat";
   return `
-    <div class="zona-barra" role="tablist" aria-label="Zona Fan">
-      ${SECCIONES_ZONA.map(s => `
-        <button type="button" role="tab" class="${s.id === actual ? "activo" : ""}" aria-selected="${s.id === actual}"
-          onclick="mostrarSeccionZona('${s.id}')">${ico(s.icono, 18)}<span>${s.nombre}</span></button>`).join("")}
-    </div>`;
+    <section class="zf zf-${s.id} ${compacta ? "compacta" : ""}">
+      ${compacta ? "" : `
+        <span class="zf-etiqueta">${ico("estrella", 13)} Zona Fan</span>
+        <div class="zf-titulo">
+          <span class="zf-ico" aria-hidden="true">${ico(s.icono, 26)}</span>
+          <div><h2>${s.titulo}</h2><p>${s.texto}</p></div>
+        </div>`}
+      <div class="zf-tabs" role="tablist" aria-label="Zona Fan">
+        ${SECCIONES_ZONA.map(x => `
+          <button type="button" role="tab" class="zf-tab zf-t-${x.id} ${x.id === actual ? "activo" : ""}" aria-selected="${x.id === actual}"
+            onclick="mostrarSeccionZona('${x.id}')"><span class="zf-tab-ico">${ico(x.icono, 18)}</span><span class="zf-tab-txt">${x.nombre}</span></button>`).join("")}
+      </div>
+    </section>`;
 }
 
 function mostrarSeccionZona(id) {
@@ -6300,8 +6312,6 @@ function pintarPorra() {
 
   contenido.innerHTML = `
     ${barraZona("porra")}
-    <h2>PH Porra</h2>
-    <p class="pab-intro">¿Serás el mejor pronosticador del torneo? Adivina los resultados y sube en la clasificación.</p>
     ${aliasHtml}
     <div class="hl-filtros" role="tablist" aria-label="Porra">
       ${secciones.map(([id, nombre]) => `<button type="button" role="tab" class="hl-chip ${porraSeccion === id ? "activo" : ""}" aria-selected="${porraSeccion === id}" onclick="porraVer('${id}')">${nombre}</button>`).join("")}
@@ -6313,13 +6323,13 @@ async function mostrarPorra() {
   setNavActivoPorVista("porra");
   registrarNavegacion("porra");
 
-  contenido.innerHTML = `${barraZona("porra")}<h2>PH Porra</h2><div class="estado-vacio">Cargando…</div>`;
+  contenido.innerHTML = `${barraZona("porra")}<div class="estado-vacio">Cargando…</div>`;
 
   const ok = await cargarPorra();
   if (vistaActual !== "porra") return;
 
   if (!ok) {
-    contenido.innerHTML = `${barraZona("porra")}<h2>PH Porra</h2>
+    contenido.innerHTML = `${barraZona("porra")}
       <div class="estado-vacio"><strong>No se han podido cargar los datos</strong>
       <button type="button" class="hl-subir" onclick="mostrarPorra()">Reintentar</button></div>`;
     return;
@@ -6490,8 +6500,6 @@ function pintarSorteos(cuerpo) {
   if (vistaActual !== "sorteos") return;
   contenido.innerHTML = `
     ${barraZona("sorteos")}
-    <h2>PH Sorteos</h2>
-    <p class="pab-intro">Participa gratis para ganar premios de los patrocinadores del torneo.</p>
     <p class="sr-ig">Para que tu participación sea válida, síguenos en Instagram: <a href="https://www.instagram.com/plasenciahandball" target="_blank" rel="noopener noreferrer">@plasenciahandball</a> y participa con tu @ de Instagram.</p>
     ${adminActivo ? `<button type="button" class="tienda-nuevo" onclick="formNuevoSorteo()">Crear sorteo</button>` : ""}
     ${cuerpo}`;
@@ -7872,7 +7880,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-27";
+const VERSION_APP = "2026-11-03-29";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

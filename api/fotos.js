@@ -12,24 +12,38 @@ const CARPETAS = {
   2025: "aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s"
 };
 
-const DOMINIO = "https://www.amazon.es";
+// Se prueba primero Amazon España y, si falla, Amazon.com (las carpetas compartidas valen en ambos)
+const DOMINIOS = ["https://www.amazon.es", "https://www.amazon.com"];
 const CUANTAS = 8;          // fotos que se devuelven
 const ANCHO = 900;          // tamaño de las miniaturas (px)
 
-async function pedir(url) {
-  const r = await fetch(url, {
-    headers: { "Accept": "application/json", "User-Agent": "Mozilla/5.0 (PlasenciaHandball)" }
-  });
-  if (!r.ok) throw new Error(`Amazon respondió ${r.status}`);
+const CABECERAS = {
+  "Accept": "application/json, text/plain, */*",
+  "Accept-Language": "es-ES,es;q=0.9",
+  "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+  "x-amzn-sessionid": ""
+};
+
+async function pedir(url, paso) {
+  const r = await fetch(url, { headers: CABECERAS, redirect: "follow" });
+  if (!r.ok) {
+    const texto = (await r.text().catch(() => "")).slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(`${paso}: Amazon respondió ${r.status} ${texto}`);
+  }
+  const tipo = r.headers.get("content-type") || "";
+  if (!tipo.includes("json")) {
+    const texto = (await r.text().catch(() => "")).slice(0, 120).replace(/\s+/g, " ");
+    throw new Error(`${paso}: Amazon no devolvió datos (${tipo}) ${texto}`);
+  }
   return r.json();
 }
 
-async function hijos(nodo, share) {
+async function hijos(dominio, nodo, share) {
   const todos = [];
   for (let offset = 0; offset < 1000; offset += 200) {
-    const url = `${DOMINIO}/drive/v1/nodes/${nodo}/children?asset=ALL&limit=200&offset=${offset}` +
+    const url = `${dominio}/drive/v1/nodes/${nodo}/children?asset=ALL&limit=200&offset=${offset}` +
       `&searchOnFamily=false&tempLink=true&shareId=${share}&resourceVersion=V2&ContentType=JSON`;
-    const datos = await pedir(url);
+    const datos = await pedir(url, "listar fotos");
     const lista = datos.data || [];
     todos.push(...lista);
     if (lista.length < 200) break;
@@ -58,26 +72,32 @@ export default async function handler(req, res) {
     return;
   }
 
-  try {
-    const info = await pedir(`${DOMINIO}/drive/v1/shares/${share}?shareId=${share}&resourceVersion=V2&ContentType=JSON`);
-    const raiz = info.nodeInfo?.id;
-    if (!raiz) throw new Error("Carpeta no encontrada");
+  const errores = [];
+  for (const dominio of DOMINIOS) {
+    try {
+      const info = await pedir(`${dominio}/drive/v1/shares/${share}?shareId=${share}&resourceVersion=V2&ContentType=JSON`, "abrir carpeta");
+      const raiz = info.nodeInfo?.id;
+      if (!raiz) throw new Error("abrir carpeta: no viene el id de la carpeta");
 
-    // fotos de la carpeta y, si hay subcarpetas (por días), también de unas cuantas de ellas
-    const nivel1 = await hijos(raiz, share);
-    let fotos = nivel1.filter(esFoto);
-    const subcarpetas = barajar(nivel1.filter(n => n.kind === "FOLDER")).slice(0, 4);
-    for (const carpeta of subcarpetas) {
-      if (fotos.length >= 300) break;
-      fotos.push(...(await hijos(carpeta.id, share)).filter(esFoto));
+      // fotos de la carpeta y, si hay subcarpetas (por días), también de unas cuantas de ellas
+      const nivel1 = await hijos(dominio, raiz, share);
+      const fotos = nivel1.filter(esFoto);
+      const subcarpetas = barajar(nivel1.filter(n => n.kind === "FOLDER")).slice(0, 4);
+      for (const carpeta of subcarpetas) {
+        if (fotos.length >= 300) break;
+        fotos.push(...(await hijos(dominio, carpeta.id, share)).filter(esFoto));
+      }
+      if (!fotos.length) throw new Error(`la carpeta no tiene fotos (${nivel1.length} elementos)`);
+
+      const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
+      res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");
+      res.status(200).json({ anio: Number(anio), fotos: urls });
+      return;
+    } catch (e) {
+      errores.push(`${dominio}: ${e.message || e}`);
     }
-
-    const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
-
-    res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");
-    res.status(200).json({ anio: Number(anio), fotos: urls });
-  } catch (e) {
-    res.setHeader("Cache-Control", "s-maxage=60");
-    res.status(502).json({ anio: Number(anio), fotos: [], error: String(e.message || e) });
   }
+
+  res.setHeader("Cache-Control", "no-store");
+  res.status(502).json({ anio: Number(anio), fotos: [], error: errores });
 }

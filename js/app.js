@@ -4935,11 +4935,19 @@ let radarScroll = null;
 let radarCentrar = false;
 
 function barraPabellones(actual) {
-  const items = [["radar", "Radar", "diana", "mostrarRadar()"], ["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"]];
+  const hoy = hoyISO();
+  const vivos = partidos.filter(p => p.fecha === hoy && calcularEstadoPartido(p) === "en_juego").length;
+  const items = [
+    { id: "radar", nombre: "Radar", sub: vivos ? `${vivos} en juego` : "En tiempo real", icono: "diana", fn: "mostrarRadar()", vivo: vivos > 0 },
+    { id: "pabellones", nombre: "Pabellones", sub: `${LISTA_PABELLONES.length} sedes`, icono: "pabellon", fn: "mostrarPabellones()" }
+  ];
   return `
-    <div class="zona-barra pb-switch" role="tablist" aria-label="Pabellones">
-      ${items.map(([id, nombre, icono, fn]) => `
-        <button type="button" role="tab" class="${id === actual ? "activo" : ""}" aria-selected="${id === actual}" onclick="${fn}">${ico(icono, 18)}<span>${nombre}</span></button>`).join("")}
+    <div class="pbx" role="tablist" aria-label="Pabellones">
+      ${items.map(it => `
+        <button type="button" role="tab" class="pbx-btn pbx-${it.id} ${it.id === actual ? "activo" : ""}" aria-selected="${it.id === actual}" onclick="${it.fn}">
+          <span class="pbx-ico">${ico(it.icono, 20)}${it.vivo ? `<i class="pbx-vivo" aria-hidden="true"></i>` : ""}</span>
+          <span class="pbx-txt"><strong>${it.nombre}</strong><small>${it.sub}</small></span>
+        </button>`).join("")}
     </div>`;
 }
 
@@ -4967,14 +4975,20 @@ function nombreEquipoRadar(id) {
 }
 
 function lineaPartidoRadar(p, conMarcador) {
+  const escudo = id => {
+    const club = clubes.find(c => c.id === equipos.find(e => e.id === id)?.club_id);
+    return club?.escudo ? `<img src="${escaparHtml(club.escudo)}" alt="" loading="lazy" decoding="async">` : `<span></span>`;
+  };
   const marcador = conMarcador
-    ? `<b class="rd-marc">${p.goles_local ?? 0} – ${p.goles_visitante ?? 0}</b>`
+    ? `<b class="rd-marc">${p.goles_local ?? 0}<i>–</i>${p.goles_visitante ?? 0}</b>`
     : `<b class="rd-marc rd-hora">${formatearHora(p.hora)}</b>`;
   return `
-    <div class="rd-partido">
-      <span class="rd-eq">${nombreEquipoRadar(p.local_id)}</span>${marcador}<span class="rd-eq der">${nombreEquipoRadar(p.visitante_id)}</span>
-      <small>${p.categoria} · ${p.genero}</small>
-    </div>`;
+    <button type="button" class="rd-partido" onclick="abrirPartido(${p.id})">
+      <span class="rd-eq"><span class="rd-esc">${escudo(p.local_id)}</span>${escaparHtml(nombreEquipoRadar(p.local_id))}</span>
+      ${marcador}
+      <span class="rd-eq der"><span class="rd-esc">${escudo(p.visitante_id)}</span>${escaparHtml(nombreEquipoRadar(p.visitante_id))}</span>
+      <small>${escaparHtml(p.categoria || "")} · ${escaparHtml(p.genero || "")}${p.grupo ? ` · ${escaparHtml(p.grupo)}` : ""}</small>
+    </button>`;
 }
 
 function fichaRadar(pabellon) {
@@ -4996,11 +5010,15 @@ function fichaRadar(pabellon) {
 
   return `
     <section class="rd-ficha">
-      <div class="rd-ficha-cab"><h3>${pabellon}</h3><span class="rd-pill" style="--c:${est.color}">${est.texto}</span></div>
+      <div class="rd-ficha-cab">
+        ${IMAGENES_PABELLONES[pabellon] ? `<img class="rd-ficha-foto" src="${IMAGENES_PABELLONES[pabellon]}" alt="" decoding="async">` : ""}
+        <div><small>Pabellón</small><h3>${pabellon}</h3></div>
+        <span class="rd-pill" style="--c:${est.color}">${est.texto}</span>
+      </div>
       ${cuerpo}
       <div class="rd-acciones">
-        <a class="rd-enlace" href="${UBICACIONES_PABELLONES[pabellon] || "#"}" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
-        <button type="button" class="rd-enlace" onclick="mostrarPartidosPorPabellon('${pabellon}')">Ver programación</button>
+        <a class="rd-enlace" href="${UBICACIONES_PABELLONES[pabellon] || "#"}" target="_blank" rel="noopener noreferrer">${ico("pabellon", 15)} Cómo llegar</a>
+        <button type="button" class="rd-enlace sec" onclick="mostrarPartidosPorPabellon('${pabellon}')">${ico("calendario", 15)} Programación</button>
         ${directo}
       </div>
     </section>`;
@@ -5038,10 +5056,17 @@ function pintarRadar() {
     ${barraPabellones("radar")}
     <div class="rd-panel">
       <div class="rd-cab">
-        <div><h2>RADAR</h2><p>El torneo en tiempo real</p></div>
+        <span class="rd-radar" aria-hidden="true"><i></i></span>
+        <div class="rd-cab-txt"><h2>Radar</h2><p>El torneo en tiempo real · hoy</p></div>
         <span class="rd-live"><i></i>LIVE</span>
       </div>
-      <div class="rd-mapa-scroll" id="rd-scroll"><div class="rd-mapa" role="group" aria-label="Mapa de pabellones">
+      <div class="rd-cuentas">
+        ${["en_juego", "descanso", "proximo", "finalizado"].map(k => {
+          const n = Object.values(estados).filter(v => v === k).length;
+          return `<span class="rd-cuenta" style="--c:${ESTADOS_RADAR[k].color}"><b>${n}</b><small><i></i>${ESTADOS_RADAR[k].texto}</small></span>`;
+        }).join("")}
+      </div>
+      <div class="rd-mapa-scroll" id="rd-scroll"><div class="rd-mapa" role="group" aria-label="Mapa de pabellones"><span class="rd-barrido" aria-hidden="true"></span>
         ${LISTA_PABELLONES.map(p => {
           const [x, y] = POSICIONES_RADAR[p] || [50, 50];
           const e = ESTADOS_RADAR[estados[p]];
@@ -5049,11 +5074,12 @@ function pintarRadar() {
             aria-label="${p}: ${e.texto}" aria-pressed="${radarSeleccion === p}" onclick="radarElegir('${p}')"><i></i><span>${p}</span></button>`;
         }).join("")}
       </div></div>
-      <p class="rd-nota">Desliza el mapa para ver toda la ciudad. Pulsa "Cómo llegar" para la ruta.</p>
-      <div class="rd-leyenda">${["en_juego", "descanso", "proximo", "finalizado"].map(k => `<span><i style="background:${ESTADOS_RADAR[k].color}"></i>${ESTADOS_RADAR[k].texto}</span>`).join("")}</div>
-      <div class="rd-filtros"><div class="hl-filtros" role="group" aria-label="Categoría">${chips(cats, radarCategoria, "radarCategoriaElegir")}</div>
-      <div class="hl-filtros" role="group" aria-label="Género">${chips(gens, radarGenero, "radarGeneroElegir")}</div></div>
-      <h3 class="rd-sub">Seleccionar pabellón</h3>
+      <p class="rd-nota">${ico("mano", 14)} Desliza el mapa para ver toda la ciudad · toca un punto para ver el pabellón</p>
+      <div class="rd-filtros">
+        <div class="hl-filtros" role="group" aria-label="Categoría">${chips(cats, radarCategoria, "radarCategoriaElegir")}</div>
+        <div class="hl-filtros rd-gen" role="group" aria-label="Género">${chips(gens, radarGenero, "radarGeneroElegir")}</div>
+      </div>
+      <h3 class="rd-sub">${ico("pabellon", 16)} Seleccionar pabellón <span>${visibles.length}</span></h3>
       ${visibles.length ? "" : `<p class="rd-nada rd-sin-pabellones">Hoy no se juega ningún partido de ${escaparHtml(textoFiltro)} en ningún pabellón.</p>`}
       <div class="rd-lista">
         ${visibles.map(p => `
@@ -7982,7 +8008,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-37";
+const VERSION_APP = "2026-11-03-38";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

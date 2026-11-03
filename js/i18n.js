@@ -111,6 +111,10 @@ const TEXTOS = {
   // --- estados y fases ---
   "Pendiente": ["Upcoming", "Pendente", "À venir"],
   "Victoria": ["Win", "Vitória", "Victoire"],
+  "Tabla del torneo": ["Tournament table", "Tabela do torneio", "Classement du tournoi"],
+  "Toca un equipo para ver su club y sus partidos.": ["Tap a team to see its club and matches.", "Toque numa equipa para ver o clube e os jogos.", "Touchez une équipe pour voir son club et ses matchs."],
+  "Todos los grupos": ["All groups", "Todos os grupos", "Tous les groupes"],
+  "Líder": ["Leader", "Líder", "Leader"],
   "Gracias a quienes lo hacen posible": ["Thanks to those who make it possible", "Obrigado a quem o torna possível", "Merci à ceux qui le rendent possible"],
   "¿Quieres aparecer aquí?": ["Want to appear here?", "Quer aparecer aqui?", "Vous voulez apparaître ici ?"],
   "Hazte patrocinador del torneo": ["Become a tournament sponsor", "Seja patrocinador do torneio", "Devenez sponsor du tournoi"],

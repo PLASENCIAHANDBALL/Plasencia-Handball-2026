@@ -4640,3 +4640,53 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .pf-acc-btn.borrar { color: #c0342c; }
 .pf-acc-btn:active { background: var(--tile); }
 .pf-acc-btn.borrar:active { background: #fde3e1; }
+
+/* ===== Tabla: cabecera, filtros y tarjetas de grupo ===== */
+.tb-cab { margin: 4px 0 14px; }
+.tb-etiqueta { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); background: var(--tile); padding: 6px 12px; border-radius: 999px; }
+.tb-etiqueta .ico { width: 14px; height: 14px; }
+.tb-cab h2 { margin: 10px 0 4px; }
+.tb-cab p { margin: 0; font-size: 14px; color: var(--muted); }
+.tb-tabs { margin: 0 0 10px; }
+.tb-fila { margin: 0 0 8px; }
+.tb-grupos { margin: 0 0 14px; }
+.tb-grupos .pf-chip { min-height: 36px; font-size: 13px; }
+
+.tb-card { --g1: var(--azul-medio); --g2: var(--azul-fuerte); --suave: var(--tile); border-radius: 24px; }
+.tb-card.tb-femenino { --g1: #ea6d9b; --g2: #b8336a; --suave: #fde4ee; }
+.tb-card-cab { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px 52px; background: linear-gradient(140deg, var(--g1), var(--g2)); color: #fff; }
+.tb-card-cab::after { content: ""; position: absolute; width: 180px; height: 180px; right: -60px; top: -90px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.tb-card-cab > * { position: relative; z-index: 1; }
+.tb-card-sub { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; opacity: .85; }
+.tb-card .tb-card-cab h3 { margin: 2px 0 0; padding: 0; font-size: 22px; font-weight: 800; color: #fff; }
+.tb-card .tb-card-cab h3::before { display: none; }
+.tb-card-num { flex: none; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.22); }
+
+.tb-lider { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; width: calc(100% - 24px); margin: -40px 12px 10px; padding: 12px 14px; border: 0; border-radius: 18px; background: #fff; color: var(--text); text-align: left; font: inherit; box-shadow: 0 10px 24px rgba(6,40,90,.16); cursor: pointer; }
+.tb-lider:active { transform: scale(.98); }
+.tb-lider-escudo { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--suave); }
+.tb-lider-escudo img { width: 38px; height: 38px; object-fit: contain; }
+.tb-lider-txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.tb-lider-txt small { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #c48a00; }
+.tb-lider-txt small .ico { width: 13px; height: 13px; }
+.tb-lider-txt strong { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-lider-txt > span { font-size: 12.5px; letter-spacing: 0; color: var(--muted); }
+.tb-lider-pts { flex: none; display: grid; justify-items: center; padding: 6px 12px; border-radius: 14px; background: linear-gradient(140deg, var(--g1), var(--g2)); color: #fff; line-height: 1; }
+.tb-lider-pts b { font-size: 22px; font-weight: 800; }
+.tb-lider-pts small { font-size: 11px; font-weight: 700; opacity: .85; margin-top: 2px; }
+
+.tb-card .clas-tabla th { background: transparent; }
+.tb-card .clas-tabla tr.tb-clic { cursor: pointer; }
+.tb-card .clas-tabla tr.tb-clic:active { background: var(--suave); }
+.tb-card .clas-tabla tr.es-lider { background: linear-gradient(90deg, var(--suave), transparent 75%); }
+.tb-card .pos-1 { background: linear-gradient(135deg, #ffd45c, #f0a800); color: #5a3b00; box-shadow: 0 4px 10px rgba(240,168,0,.35); }
+.tb-card .pos-2 { background: linear-gradient(135deg, #eef2f6, #c3ccd6); color: #44515f; }
+.tb-card .pos-3 { background: linear-gradient(135deg, #f3c8a0, #cd8a52); color: #5b3214; }
+.tb-card .pts-pill { background: var(--suave); color: var(--g2); }
+.tb-card .es-lider .pts-pill { background: var(--g2); color: #fff; }
+.tb-eq-txt { display: grid; gap: 3px; min-width: 0; }
+.tb-racha { display: inline-flex; gap: 3px; }
+.tb-racha i { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 4px; font-style: normal; font-size: 9px; font-weight: 800; color: #fff; }
+.tb-racha i.victoria { background: #23a26d; }
+.tb-racha i.empate { background: #9aa9b8; }
+.tb-racha i.derrota { background: #e5483f; }

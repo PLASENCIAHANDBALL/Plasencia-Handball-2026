@@ -3474,39 +3474,83 @@ async function borrarEquipo(id) {
 }
 
 /* ================== CLASIFICACION ================== */
+// Selección de la pestaña Tabla (se recuerda al volver)
+const tablaSel = { categoria: "Infantil", genero: "Masculino", grupo: "" };
+
 function mostrarClasificacion() {
   setNavActivoPorVista("tabla");
   registrarNavegacion("tabla");
 
   contenido.innerHTML = `
-  <h2>Clasificación</h2>
-
-  <div class="subfiltros">
-      <select id="clas-cat" onchange="actualizarClasificacion()">
-        <option>Infantil</option>
-        <option>Cadete</option>
-        <option>Juvenil</option>
-      </select>
-
-      <select id="clas-gen" onchange="actualizarClasificacion()">
-        <option>Masculino</option>
-        <option>Femenino</option>
-      </select>
-
-      <select id="clas-grp" onchange="actualizarClasificacion()">
-        <option value="">Todos</option>
-        <option>Grupo A</option>
-        <option>Grupo B</option>
-        <option>Grupo C</option>
-        <option>Grupo D</option>
-        <option>Grupo Único</option>
-      </select>
+    <div class="tb-cab">
+      <span class="tb-etiqueta">${ico("trofeo", 14)} Clasificación</span>
+      <h2>Tabla del torneo</h2>
+      <p>Toca un equipo para ver su club y sus partidos.</p>
     </div>
+
+    <div id="tb-controles"></div>
+
+    <!-- valores que lee actualizarClasificacion() -->
+    <input type="hidden" id="clas-cat"><input type="hidden" id="clas-gen"><input type="hidden" id="clas-grp">
 
     <div id="tablaClasificacion"></div>
   `;
 
+  pintarControlesTabla();
   actualizarClasificacion();
+}
+
+function pintarControlesTabla() {
+  const caja = document.getElementById("tb-controles");
+  if (!caja) return;
+
+  const grupos = [...new Set(equipos
+    .filter(e => e.categoria === tablaSel.categoria && e.genero === tablaSel.genero && e.grupo)
+    .map(e => e.grupo))].sort((a, b) => a.localeCompare(b));
+  if (tablaSel.grupo && !grupos.includes(tablaSel.grupo)) tablaSel.grupo = "";
+
+  document.getElementById("clas-cat").value = tablaSel.categoria;
+  document.getElementById("clas-gen").value = tablaSel.genero;
+  document.getElementById("clas-grp").value = tablaSel.grupo;
+
+  const boton = (campo, valor, texto, clase = "") => {
+    const activo = tablaSel[campo] === valor;
+    return `<button type="button" class="${clase} ${activo ? "activo active" : ""}" aria-pressed="${activo}"
+              onclick="elegirTabla('${campo}', '${escaparHtml(valor)}')">${texto}</button>`;
+  };
+
+  caja.innerHTML = `
+    <div class="tabs tb-tabs" role="group" aria-label="Categoría">
+      ${ORDEN_CATEGORIAS.map(c => boton("categoria", c, c, "tab")).join("")}
+    </div>
+    <div class="tb-fila">
+      <div class="pf-fila pf-segmento" role="group" aria-label="Género">
+        ${ORDEN_GENEROS.map(g => boton("genero", g, `<i aria-hidden="true"></i>${g}`, `pf-chip pf-chip-${claseGenero(g)}`)).join("")}
+      </div>
+    </div>
+    ${grupos.length > 1 ? `
+      <div class="pf-fila tb-grupos" role="group" aria-label="Grupo">
+        ${boton("grupo", "", "Todos los grupos", "pf-chip")}
+        ${grupos.map(g => boton("grupo", g, escaparHtml(g), "pf-chip")).join("")}
+      </div>` : ""}
+  `;
+}
+
+function elegirTabla(campo, valor) {
+  tablaSel[campo] = valor;
+  if (campo !== "grupo") tablaSel.grupo = "";
+  pintarControlesTabla();
+  actualizarClasificacion();
+}
+window.elegirTabla = elegirTabla;
+
+// Últimos resultados (V/E/D) de un equipo, del más antiguo al más reciente
+function rachaEquipo(idEquipo, cuantos = 5) {
+  return partidos
+    .filter(p => (p.local_id === idEquipo || p.visitante_id === idEquipo) && calcularEstadoPartido(p) === "finalizado")
+    .sort((a, b) => marcaTiempo(a) - marcaTiempo(b))
+    .slice(-cuantos)
+    .map(p => resultadoParaEquipo(p, idEquipo));
 }
 
 document.addEventListener("partido-finalizado", () => {
@@ -3514,9 +3558,33 @@ document.addEventListener("partido-finalizado", () => {
 });
 
 function renderTablaClasificacion(data, titulo) {
+  const genero = claseGenero(tablaSel.genero);
+  const lider = data[0];
+  const eqLider = lider && equipos.find(e => e.id === lider.equipo_id);
+  const clubLider = eqLider && clubes.find(c => c.id === eqLider.club_id);
+  const letra = { victoria: "V", empate: "E", derrota: "D" };
+
   let html = `
-    <section class="clas-card">
-      ${titulo ? `<header class="clas-cab"><h3>${titulo}</h3><span>${data.length} equipos</span></header>` : ""}
+    <section class="clas-card tb-card tb-${genero}">
+      <header class="tb-card-cab">
+        <div>
+          <span class="tb-card-sub">${escaparHtml(tablaSel.categoria)} · ${escaparHtml(tablaSel.genero)}</span>
+          <h3>${titulo || "Clasificación"}</h3>
+        </div>
+        <span class="tb-card-num">${data.length} equipos</span>
+      </header>
+
+      ${lider ? `
+        <button type="button" class="tb-lider" ${eqLider ? `onclick="verClub(${Number(eqLider.club_id)})"` : ""}>
+          <span class="tb-lider-escudo"><img src="${escaparHtml(clubLider?.escudo || PLACEHOLDER_ESCUDO)}" alt=""></span>
+          <span class="tb-lider-txt">
+            <small>${ico("trofeo", 13)} Líder</small>
+            <strong>${escaparHtml(eqLider?.nombre || "-")}</strong>
+            <span>${lider.pg} V · ${lider.pe} E · ${lider.pp} D</span>
+          </span>
+          <span class="tb-lider-pts"><b>${lider.puntos}</b><small>pts</small></span>
+        </button>` : ""}
+
       <div class="clas-scroll">
       <table class="clas-tabla">
         <thead>
@@ -3546,12 +3614,18 @@ function renderTablaClasificacion(data, titulo) {
     const escudo = club?.escudo
       ? `<img src="${escaparHtml(club.escudo)}" class="clas-escudo" alt="" loading="lazy" decoding="async">`
       : `<span class="clas-escudo clas-escudo-vacio"></span>`;
+    const racha = equipo ? rachaEquipo(equipo.id) : [];
 
     html += `
-      <tr class="${pos === 1 ? "es-lider" : ""}">
+      <tr class="${pos === 1 ? "es-lider" : ""} ${equipo ? "tb-clic" : ""}" ${equipo ? `onclick="verClub(${Number(equipo.club_id)})"` : ""}>
         <td class="c-pos"><span class="pos-badge pos-${pos <= 3 ? pos : "n"}">${pos}</span></td>
         <td class="c-eq">
-          <div class="clas-equipo">${escudo}<span>${escaparHtml(equipo?.nombre || "-")}</span></div>
+          <div class="clas-equipo">${escudo}
+            <span class="tb-eq-txt">
+              <span>${escaparHtml(equipo?.nombre || "-")}</span>
+              ${racha.length ? `<span class="tb-racha" aria-label="Últimos resultados">${racha.map(r => `<i class="${r}">${letra[r]}</i>`).join("")}</span>` : ""}
+            </span>
+          </div>
         </td>
         <td>${fila.pj}</td>
         <td>${fila.pg}</td>
@@ -7636,7 +7710,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-19";
+const VERSION_APP = "2026-11-03-20";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

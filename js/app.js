@@ -4808,45 +4808,65 @@ function mostrarPabellones() {
   setNavActivoPorVista("pabellones");
   registrarNavegacion("pabellones");
 
-  const pabellones = [
-  "Municipal",
-  "Escuela",
-  "Universitario",
-  "Miralvalle",
-  "San Calixto",
-  "Multipista",
-  "San Miguel"
-];
+  const hoy = hoyISO();
+  const deHoy = partidos.filter(p => p.fecha === hoy);
+  const enJuegoTotal = deHoy.filter(p => calcularEstadoPartido(p) === "en_juego").length;
 
-  const contarPartidos = pabellon =>
-    partidos.filter(p => p.pabellon === pabellon).length;
+  const tarjeta = (p, destacado) => {
+    const todos = partidos.filter(x => x.pabellon === p);
+    const hoyP = deHoy.filter(x => x.pabellon === p).sort((x, y) => marcaTiempo(x) - marcaTiempo(y));
+    const vivos = hoyP.filter(x => calcularEstadoPartido(x) === "en_juego").length;
+    const siguiente = hoyP.find(x => calcularEstadoPartido(x) === "pendiente");
+    const estado = vivos
+      ? `<span class="pb-estado vivo"><i></i>${vivos} en juego</span>`
+      : siguiente
+        ? `<span class="pb-estado prox">${ico("reloj", 13)} Hoy ${formatearHora(siguiente.hora)}</span>`
+        : hoyP.length
+          ? `<span class="pb-estado fin">${ico("check", 13)} Terminado</span>`
+          : `<span class="pb-estado nada">Sin partidos hoy</span>`;
+    const ruta = UBICACIONES_PABELLONES[p];
 
-  const total = partidos.length;
+    return `
+      <div class="pb-card ${destacado ? "destacado" : ""} ${vivos ? "en-vivo" : ""}" role="button" tabindex="0"
+           aria-label="Pabellón ${p}: ${todos.length} partidos" onclick="mostrarPartidosPorPabellon('${p}')">
+        <img class="pb-foto" src="${IMAGENES_PABELLONES[p]}" alt="" loading="lazy" decoding="async">
+        <span class="pb-capa" aria-hidden="true"></span>
+        <div class="pb-arriba">
+          ${estado}
+          ${ruta ? `<a class="pb-ruta" href="${ruta}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" aria-label="Cómo llegar a ${p}">${ico("pabellon", 16)}</a>` : ""}
+        </div>
+        <div class="pb-pie">
+          <strong class="pb-nombre">${p}</strong>
+          <span class="pb-datos">
+            <span><b>${todos.length}</b> ${todos.length === 1 ? "partido" : "partidos"}</span>
+            ${hoyP.length ? `<span><b>${hoyP.length}</b> hoy</span>` : ""}
+          </span>
+        </div>
+        <span class="pb-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
+      </div>`;
+  };
+
+  // el pabellón con más actividad hoy va el primero y destacado
+  const ordenados = [...LISTA_PABELLONES].sort((x, y) => {
+    const peso = p => deHoy.filter(m => m.pabellon === p && calcularEstadoPartido(m) === "en_juego").length * 100 + deHoy.filter(m => m.pabellon === p).length;
+    return peso(y) - peso(x);
+  });
+  const [primero, ...resto] = ordenados;
 
   document.getElementById("contenido").innerHTML = `
     ${barraPabellones("pabellones")}
-    <h2>Pabellones</h2>
-    <p class="pab-intro">${pabellones.length} pabellones · ${total} partidos. Toca uno para ver su programación.</p>
-    <div class="pab-grid">
-      ${pabellones.map(p => {
-        const n = contarPartidos(p);
-        return `
-        <div class="pab-card" role="button" tabindex="0"
-             aria-label="Pabellón ${p}: ${n} partidos"
-             onclick="mostrarPartidosPorPabellon('${p}')">
-          <div class="pab-foto">
-            <img src="${IMAGENES_PABELLONES[p]}" alt="" loading="lazy" decoding="async">
-            <span class="pab-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
-          </div>
-          <div class="pab-info">
-            <div class="pab-texto">
-              <strong class="pab-nombre">${p}</strong>
-              <span class="pab-contador">${n} ${n === 1 ? "partido" : "partidos"}</span>
-            </div>
-          </div>
-        </div>`;
-      }).join("")}
-    </div>
+    <section class="pb-hero">
+      <span class="pb-etq">${ico("pabellon", 14)} Sedes del torneo</span>
+      <h2>Pabellones</h2>
+      <p>Toca uno para ver su programación y cómo llegar.</p>
+      <div class="pb-hero-datos">
+        <span><b>${LISTA_PABELLONES.length}</b> pabellones</span>
+        <span><b>${partidos.length}</b> partidos</span>
+        <span class="${enJuegoTotal ? "vivo" : ""}"><b>${enJuegoTotal ? enJuegoTotal : deHoy.length}</b> ${enJuegoTotal ? "en juego" : "hoy"}</span>
+      </div>
+    </section>
+    ${primero ? tarjeta(primero, true) : ""}
+    <div class="pb-grid">${resto.map(p => tarjeta(p, false)).join("")}</div>
   `;
 }
 
@@ -4883,7 +4903,7 @@ let radarCentrar = false;
 function barraPabellones(actual) {
   const items = [["radar", "Radar", "diana", "mostrarRadar()"], ["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"]];
   return `
-    <div class="zona-barra" role="tablist" aria-label="Pabellones">
+    <div class="zona-barra pb-switch" role="tablist" aria-label="Pabellones">
       ${items.map(([id, nombre, icono, fn]) => `
         <button type="button" role="tab" class="${id === actual ? "activo" : ""}" aria-selected="${id === actual}" onclick="${fn}">${ico(icono, 18)}<span>${nombre}</span></button>`).join("")}
     </div>`;
@@ -7926,7 +7946,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-33";
+const VERSION_APP = "2026-11-03-34";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

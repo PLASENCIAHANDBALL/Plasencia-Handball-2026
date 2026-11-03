@@ -690,35 +690,38 @@ function mostrarHome() {
   html += adminActivo ? renderPatrocinadoresAdmin() : renderPatrocinadores();
 
   // HISTORIA AL FINAL
+  const pasoHistoria = (icono, etiqueta, texto, extra = "") => `
+    <li class="hs-paso">
+      <span class="hs-punto" aria-hidden="true">${ico(icono, 18)}</span>
+      <div class="hs-paso-txt">
+        <span class="hs-paso-etq">${etiqueta}</span>
+        <p>${texto}</p>
+        ${extra}
+      </div>
+    </li>`;
+
   html += `
-    <section class="historia">
-      <h3>Historia del Torneo</h3>
-      <div class="historia-card">
-        <div id="texto-historia">
-          <p>
-  Nuestra historia comienza gracias a un grupo de amigos y grandes aficionados al balonmano que compartíamos una misma ilusión: crear algo especial para este deporte que tanto nos une.
-</p>
+    <section class="historia hs">
+      <div class="hs-hero">
+        <span class="hs-etiqueta">${ico("trofeo", 14)} Historia del Torneo</span>
+        <div class="hs-anio"><small>Desde</small><b>2023</b></div>
+        <p class="hs-lema">La pasión por el balonmano y las ganas de crear recuerdos inolvidables.</p>
+      </div>
 
-<p>
-  De esa pasión nació el <strong>Torneo Internacional Plasencia Handball</strong>, cuya primera edición se celebró en el año <strong>2023</strong>. Aquella primera experiencia estuvo marcada por la ilusión, el esfuerzo y las ganas de demostrar que Plasencia podía acoger un torneo de balonmano base con identidad propia.
-</p>
+      <ol class="hs-linea">
+        ${pasoHistoria("mano", "Los inicios", `Nuestra historia comienza gracias a un grupo de amigos y grandes aficionados al balonmano que compartíamos una misma ilusión: crear algo especial para este deporte que tanto nos une.`)}
+        ${pasoHistoria("estrella", "2023 · Primera edición", `De esa pasión nació el <strong>Torneo Internacional Plasencia Handball</strong>, cuya primera edición se celebró en el año <strong>2023</strong>. Aquella primera experiencia estuvo marcada por la ilusión, el esfuerzo y las ganas de demostrar que Plasencia podía acoger un torneo de balonmano base con identidad propia.`)}
+        ${pasoHistoria("diana", "Nuestro objetivo", `Desde entonces, nuestro objetivo ha sido claro: ofrecer a jugadores y jugadoras una experiencia deportiva única, combinando competición, convivencia y valores como el respeto, el compañerismo y el trabajo en equipo.`, `
+          <div class="hs-valores">
+            <span>Respeto</span><span>Compañerismo</span><span>Trabajo en equipo</span>
+          </div>`)}
+        ${pasoHistoria("rayo", "Un torneo que crece", `A lo largo de los años, el torneo ha ido creciendo tanto en participación como en nivel deportivo, reuniendo en Plasencia a equipos nacionales e internacionales y llenando nuestros pabellones de balonmano, ambiente y emoción durante varios días.`)}
+        ${pasoHistoria("bandera", "Cada edición, un reto", `Cada edición es un nuevo reto y una nueva oportunidad para seguir mejorando, pero siempre manteniendo la esencia con la que empezamos en 2023: la pasión por el balonmano y las ganas de crear recuerdos inolvidables para todos los que forman parte de este torneo.`)}
+      </ol>
 
-<p>
-  Desde entonces, nuestro objetivo ha sido claro: ofrecer a jugadores y jugadoras una experiencia deportiva única, combinando competición, convivencia y valores como el respeto, el compañerismo y el trabajo en equipo.
-</p>
-
-<p>
-  A lo largo de los años, el torneo ha ido creciendo tanto en participación como en nivel deportivo, reuniendo en Plasencia a equipos nacionales e internacionales y llenando nuestros pabellones de balonmano, ambiente y emoción durante varios días.
-</p>
-
-<p>
-  Cada edición es un nuevo reto y una nueva oportunidad para seguir mejorando, pero siempre manteniendo la esencia con la que empezamos en 2023: la pasión por el balonmano y las ganas de crear recuerdos inolvidables para todos los que forman parte de este torneo.
-</p>
-
-<p>
-  Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores, familias, patrocinadores y a todas las personas que confían en nosotros y hacen posible que este proyecto siga creciendo año tras año.
-</p>
-        </div>
+      <div class="hs-gracias">
+        <span class="hs-gracias-ico" aria-hidden="true">${ico("estrella", 20)}</span>
+        <p>Esta historia sigue escribiéndose gracias a los clubes, jugadores, entrenadores, familias, patrocinadores y a todas las personas que confían en nosotros y hacen posible que este proyecto siga creciendo año tras año.</p>
       </div>
     </section>
   `;
@@ -7710,7 +7713,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-20";
+const VERSION_APP = "2026-11-03-21";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

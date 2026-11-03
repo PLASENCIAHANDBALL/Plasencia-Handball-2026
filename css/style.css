@@ -4690,3 +4690,32 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .tb-racha i.victoria { background: #23a26d; }
 .tb-racha i.empate { background: #9aa9b8; }
 .tb-racha i.derrota { background: #e5483f; }
+
+/* ===== Inicio: historia del torneo ===== */
+.hs { padding: 0; margin: 8px 0 24px; }
+.hs-hero { position: relative; overflow: hidden; display: grid; gap: 10px; padding: 22px 20px; border-radius: 28px; color: #fff;
+  background: linear-gradient(140deg, #0f4c8f 0%, var(--azul-fuerte) 55%, var(--azul-medio) 100%); box-shadow: 0 14px 32px rgba(15,76,143,.3); }
+.hs-hero::before { content: ""; position: absolute; width: 230px; height: 230px; right: -70px; top: -90px; border-radius: 50%; border: 26px solid rgba(255,255,255,.08); }
+.hs-hero::after { content: ""; position: absolute; width: 120px; height: 120px; left: -40px; bottom: -60px; border-radius: 50%; background: rgba(255,255,255,.07); }
+.hs-hero > * { position: relative; z-index: 1; }
+.hs-etiqueta { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,.18); padding: 6px 12px; border-radius: 999px; }
+.hs-etiqueta .ico { width: 14px; height: 14px; }
+.hs-anio { display: flex; align-items: baseline; gap: 10px; }
+.hs-anio small { font-size: 15px; font-weight: 600; opacity: .85; }
+.hs-anio b { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.hs-lema { margin: 0; font-size: 15px; line-height: 1.45; color: #e3f2fd; max-width: 34ch; }
+
+.hs-linea { list-style: none; margin: 18px 0 0; padding: 0 0 0 4px; display: grid; gap: 4px; }
+.hs-paso { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding-bottom: 14px; }
+.hs-paso::before { content: ""; position: absolute; left: 19px; top: 40px; bottom: -4px; width: 2px; background: linear-gradient(var(--brillo), transparent); }
+.hs-paso:last-child::before { display: none; }
+.hs-punto { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: linear-gradient(140deg, var(--azul-medio), var(--azul-fuerte)); color: #fff; box-shadow: 0 6px 14px rgba(27,111,184,.3); }
+.hs-paso-txt { padding: 14px 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(27,111,184,.07); }
+.hs-paso-etq { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-text); }
+.hs-paso-txt p { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.hs-valores { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.hs-valores span { font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: var(--tile); color: var(--tile-ink); }
+
+.hs-gracias { display: flex; gap: 12px; align-items: flex-start; margin-top: 6px; padding: 16px; border-radius: 20px; background: linear-gradient(135deg, var(--tile), var(--brillo)); }
+.hs-gracias-ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #f0a800; box-shadow: 0 4px 12px rgba(27,111,184,.18); }
+.hs-gracias p { margin: 0; font-size: 14.5px; line-height: 1.55; font-weight: 600; color: var(--tile-ink); }

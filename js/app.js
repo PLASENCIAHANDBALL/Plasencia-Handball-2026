@@ -7346,6 +7346,7 @@ const hayDirecto = partidosPabellon.some(
 
 
 let html = `
+  <button class="volver volver-arriba" onclick="mostrarPabellones()">${ico("izquierda", 16)} Volver a pabellones</button>
   <h2>${pabellon}</h2>
 
   <div class="pabellon-badges">
@@ -7389,10 +7390,6 @@ html += finalizados.length
   ? renderBloquesPorFecha(finalizados, `pab-${pabellon}-finalizados`)
   : `<p class="estado-vacio">No hay partidos finalizados</p>`;
 
-  /* ===== BOTÓN ÚNICO DE VOLVER ===== */
-  html += `
-    <button class="volver" onclick="mostrarPabellones()">Volver a pabellones</button>
-  `;
 
   contenido.innerHTML = html;
 };
@@ -7468,7 +7465,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-05";
+const VERSION_APP = "2026-11-03-06";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

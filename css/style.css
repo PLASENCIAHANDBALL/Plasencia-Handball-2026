@@ -5120,3 +5120,10 @@ body.hub-abierto { overflow: hidden; }
 .rd-partido small { text-align: center; }
 .rd-ficha h3::before { display: none; }
 .rd-ficha h3 { padding: 0; }
+/* el barrido del radar no puede agrandar la zona deslizable: el mapa recorta lo que sobresale */
+.rd-mapa { overflow: hidden; }
+.rd-mapa-scroll { overflow-y: hidden; overscroll-behavior: contain; touch-action: pan-x pan-y; }
+.rd-panel { overflow: hidden; }
+.rd-cuentas { min-width: 0; }
+.rd-cuenta { min-width: 0; }
+.rd-cuenta small { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }

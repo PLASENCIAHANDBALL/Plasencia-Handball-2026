@@ -214,9 +214,11 @@ function parseFecha(fecha) {
 }
 
 // Fecha de hoy en Madrid con formato "YYYY-MM-DD"
+let formatoHoyMadrid = null;
 function hoyISO() {
   try {
-    const f = new Intl.DateTimeFormat("sv-SE", { timeZone: ZONA_TORNEO }).format(new Date());
+    formatoHoyMadrid ||= new Intl.DateTimeFormat("sv-SE", { timeZone: ZONA_TORNEO });
+    const f = formatoHoyMadrid.format(new Date());
     if (/^\d{4}-\d{2}-\d{2}$/.test(f)) return f;
   } catch (e) { /* se usa el reloj local */ }
   const d = new Date();
@@ -224,31 +226,44 @@ function hoyISO() {
   return `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
 }
 
-// Instante real de inicio de un partido (fecha + hora interpretadas como hora de Madrid)
+// Instante real de inicio de un partido (fecha + hora interpretadas como hora de Madrid).
+// Crear un Intl.DateTimeFormat es muy lento en el móvil y esto se llama cientos de veces al
+// ordenar los partidos: el formateador se crea una vez y cada fecha+hora se calcula una sola vez.
+let formatoMadrid = null;
+const cacheInicioPartido = new Map();
+
 function inicioPartido(p) {
   if (!p || !p.fecha || !p.hora) return null;
 
+  const clave = `${p.fecha}|${p.hora}`;
+  const guardado = cacheInicioPartido.get(clave);
+  if (guardado !== undefined) return guardado === null ? null : new Date(guardado);
+
   const f = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.fecha);
   const h = /^(\d{1,2}):(\d{2})/.exec(p.hora);
-  if (!f || !h) return null;
+  if (!f || !h) { cacheInicioPartido.set(clave, null); return null; }
 
   const supuesto = Date.UTC(Number(f[1]), Number(f[2]) - 1, Number(f[3]), Number(h[1]), Number(h[2]));
+  let ms;
 
   try {
-    const partes = new Intl.DateTimeFormat("en-GB", {
+    formatoMadrid ||= new Intl.DateTimeFormat("en-GB", {
       timeZone: ZONA_TORNEO,
       hourCycle: "h23",
       year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit"
-    }).formatToParts(new Date(supuesto));
-
+    });
+    const partes = formatoMadrid.formatToParts(new Date(supuesto));
     const g = tipo => Number(partes.find(x => x.type === tipo).value);
     const enMadrid = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"));
-
-    return new Date(supuesto - (enMadrid - supuesto));
+    ms = supuesto - (enMadrid - supuesto);
   } catch (e) {
-    return new Date(`${p.fecha}T${p.hora}`);
+    ms = new Date(`${p.fecha}T${p.hora}`).getTime();
   }
+
+  if (cacheInicioPartido.size > 5000) cacheInicioPartido.clear();
+  cacheInicioPartido.set(clave, Number.isFinite(ms) ? ms : null);
+  return Number.isFinite(ms) ? new Date(ms) : null;
 }
 
 // Número para ordenar partidos por fecha y hora (los que no tienen fecha, al final)
@@ -1469,6 +1484,9 @@ function agruparPorFecha(lista) {
   }, {});
 }
 
+// Partidos de cada día, para pintarlos solo cuando se abre ese día
+const partidosPorDiaPintado = new Map();
+
 // Días desplegados por el usuario. Se recuerdan para que el refresco en vivo o un cambio
 // de filtro no los vuelva a cerrar. Por defecto solo se abre el día de hoy.
 const estadoFechas = {};
@@ -1487,6 +1505,8 @@ function renderBloquesPorFecha(lista, tipo) {
     const esHoy = fecha === hoy;
     const clave = `${tipo}|${fecha}`;
     const abierta = clave in estadoFechas ? estadoFechas[clave] : esHoy;
+    // los días cerrados no se pintan hasta que se abren (la pestaña va mucho más rápida)
+    partidosPorDiaPintado.set(clave, partidosDia);
 
     html += `
       <div class="fecha-bloque ${abierta ? "abierta" : ""}">
@@ -1498,7 +1518,7 @@ function renderBloquesPorFecha(lista, tipo) {
         </div>
 
         <div class="fecha-partidos">
-          ${renderPartidosDelDia(partidosDia)}
+          ${abierta ? renderPartidosDelDia(partidosDia) : ""}
         </div>
       </div>
     `;
@@ -1662,6 +1682,10 @@ window.cambiarFiltroPartidos = cambiarFiltroPartidos;
 
 function toggleFecha(header) {
   const bloque = header.parentElement;
+  const caja = bloque.querySelector(".fecha-partidos");
+  if (caja && !caja.firstElementChild && header.dataset.clave && partidosPorDiaPintado.has(header.dataset.clave)) {
+    caja.innerHTML = renderPartidosDelDia(partidosPorDiaPintado.get(header.dataset.clave));
+  }
   const abierta = bloque.classList.toggle("abierta");
   header.setAttribute("aria-expanded", abierta ? "true" : "false");
   if (header.dataset.clave) estadoFechas[header.dataset.clave] = abierta;
@@ -2134,15 +2158,20 @@ async function mostrarCuadrosEliminatorios() {
 }
 
 // "sábado, 05 de junio" (o null si no hay fecha válida)
-function textoFecha(fecha) {
-  const d = parseFecha(fecha);
-  if (!d) return null;
+const cacheTextoFecha = new Map();
+let formatoFechaLarga = null;
 
-  return d.toLocaleDateString("es-ES", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long"
-  });
+function textoFecha(fecha) {
+  if (cacheTextoFecha.has(fecha)) return cacheTextoFecha.get(fecha);
+  const d = parseFecha(fecha);
+  let texto = null;
+  if (d) {
+    formatoFechaLarga ||= new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "2-digit", month: "long" });
+    texto = formatoFechaLarga.format(d);
+  }
+  if (cacheTextoFecha.size > 2000) cacheTextoFecha.clear();
+  cacheTextoFecha.set(fecha, texto);
+  return texto;
 }
 
 function formatearFecha(fecha) {
@@ -7825,7 +7854,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-25";
+const VERSION_APP = "2026-11-03-26";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -726,8 +726,8 @@ function mostrarHome() {
 
   renderTarjetaInstalar();
 
-  // cargar galería
-setTimeout(renderActualizacionesHome, 0);
+  // los partidos en juego se pintan ya (antes iban con retraso y la página daba un salto)
+  renderActualizacionesHome();
 
   requestAnimationFrame(() => {
     cargarGaleria2025();
@@ -2399,14 +2399,13 @@ function abrirPartido(id) {
         <span class="ap-hero-ico">${ico("reloj", 18)}</span>
         <span><small>Hora</small><strong>${formatearHora(partidoActual.hora)}</strong></span>
       </div>
-      <button type="button" class="ap-hero-dato ap-hero-lugar" ${partidoActual.pabellon ? `onclick="window.mostrarPartidosPorPabellon(${escaparHtml(JSON.stringify(partidoActual.pabellon))})"` : "disabled"}>
+      <div class="ap-hero-dato">
         <span class="ap-hero-ico">${ico("pabellon", 18)}</span>
         <span><small>Pabellón</small><strong>${escaparHtml(partidoActual.pabellon || "-")}</strong></span>
-        ${partidoActual.pabellon ? `<span class="ap-hero-ir" aria-hidden="true">${ico("derecha", 16)}</span>` : ""}
-      </button>
+      </div>
     </div>
 
-    ${UBICACIONES_PABELLONES[partidoActual.pabellon] ? `
+    ${estadoReal !== "finalizado" && UBICACIONES_PABELLONES[partidoActual.pabellon] ? `
       <a class="ap-hero-ruta" href="${UBICACIONES_PABELLONES[partidoActual.pabellon]}" target="_blank" rel="noopener noreferrer">
         Cómo llegar ${ico("derecha", 16)}
       </a>` : ""}
@@ -7596,7 +7595,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-16";
+const VERSION_APP = "2026-11-03-17";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

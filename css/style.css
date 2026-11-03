@@ -5034,3 +5034,17 @@ body.hub-abierto { overflow: hidden; }
 .hub-cab-ico { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; color: #fff; background: linear-gradient(140deg, var(--azul-medio), var(--azul-fuerte)); }
 /* la hoja queda por encima del botón "+" (que pasa a ser la X de cerrar) */
 .hub-hoja { bottom: calc(var(--alto-barra, 64px) + 16px + 56px + 12px + env(safe-area-inset-bottom)); }
+
+/* Zona Fan: las cinco secciones van arriba, fuera de la cabecera de color */
+.zf-nav { margin: 4px 0 12px; }
+.zf-nav .zf-tabs-fuera { margin: 0; padding: 5px; gap: 4px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 6px 16px rgba(27,111,184,.08); }
+.zf-tabs-fuera .zf-tab { --c: var(--azul-fuerte); color: var(--muted); }
+.zf-tabs-fuera .zf-t-highlights { --c: #e8436f; --c1: #ff7a59; }
+.zf-tabs-fuera .zf-t-chat { --c: #0e7f9e; --c1: #2bc4b4; }
+.zf-tabs-fuera .zf-t-porra { --c: #f0712a; --c1: #ffb23e; }
+.zf-tabs-fuera .zf-t-sorteos { --c: #6b3fd6; --c1: #a77bff; }
+.zf-tabs-fuera .zf-t-tienda { --c: var(--azul-fuerte); --c1: var(--azul-medio); }
+.zf-tabs-fuera .zf-tab-ico { background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); }
+.zf-tabs-fuera .zf-tab.activo { background: linear-gradient(140deg, var(--c1), var(--c)); color: #fff; box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 35%, transparent); }
+.zf-tabs-fuera .zf-tab.activo .zf-tab-ico { background: rgba(255,255,255,.22); color: #fff; }
+.zf-tabs-fuera .zf-tab:focus-visible { outline: 3px solid var(--accent-text); }

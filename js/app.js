@@ -5892,6 +5892,13 @@ function barraZona(actual) {
   lsSet("zona_seccion", actual);
   const s = SECCIONES_ZONA.find(x => x.id === actual) || SECCIONES_ZONA[0];
   return `
+    <nav class="zf-nav">
+      <div class="zf-tabs zf-tabs-fuera" role="tablist" aria-label="Zona Fan">
+        ${SECCIONES_ZONA.map(x => `
+          <button type="button" role="tab" class="zf-tab zf-t-${x.id} ${x.id === actual ? "activo" : ""}" aria-selected="${x.id === actual}"
+            onclick="mostrarSeccionZona('${x.id}')"><span class="zf-tab-ico">${ico(x.icono, 18)}</span><span class="zf-tab-txt">${x.nombre}</span></button>`).join("")}
+      </div>
+    </nav>
     <section class="zf zf-${s.id}">
       <div class="zf-arriba">
         <span class="zf-etiqueta">${ico("estrella", 13)} Zona Fan</span>
@@ -5901,11 +5908,6 @@ function barraZona(actual) {
           <span class="zf-ico" aria-hidden="true">${ico(s.icono, 26)}</span>
           <div><h2>${s.titulo}</h2><p>${s.texto}</p></div>
         </div>
-      <div class="zf-tabs" role="tablist" aria-label="Zona Fan">
-        ${SECCIONES_ZONA.map(x => `
-          <button type="button" role="tab" class="zf-tab zf-t-${x.id} ${x.id === actual ? "activo" : ""}" aria-selected="${x.id === actual}"
-            onclick="mostrarSeccionZona('${x.id}')"><span class="zf-tab-ico">${ico(x.icono, 18)}</span><span class="zf-tab-txt">${x.nombre}</span></button>`).join("")}
-      </div>
     </section>`;
 }
 
@@ -7980,7 +7982,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-36";
+const VERSION_APP = "2026-11-03-37";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

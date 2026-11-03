@@ -4548,3 +4548,6 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .header-wrapper #admin-fab:active { transform: scale(.92); }
 .header-wrapper #admin-fab:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
 .header-wrapper #admin-fab.admin-activo { background: #2ecc71; border-color: #fff; color: #fff; }
+/* oculto para el público: se entra desde el logo; solo se ve (en verde) con la sesión abierta, para poder salir */
+.header-wrapper #admin-fab:not(.admin-activo) { display: none; }
+.app-header { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

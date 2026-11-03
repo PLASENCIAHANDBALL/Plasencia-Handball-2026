@@ -2609,6 +2609,46 @@ async function validarPinSupabase(pin) {
   return data.rol; // "admin" o "mesa"
 }
 
+/* ---- Acceso de organización oculto: se entra (y se sale) desde el logo de la cabecera ----
+   · manteniendo pulsado el logo 1,5 segundos, o
+   · tocándolo 5 veces seguidas.
+   El candado solo se ve mientras la sesión de organización está abierta (en verde). */
+(function activarGestoAdmin() {
+  const cabecera = document.querySelector(".app-header");
+  if (!cabecera) return;
+
+  const PULSACION_MS = 1500, TOQUES = 5, VENTANA_TOQUES_MS = 2500;
+  let temporizador = null, inicio = null, toques = [], recienAbierto = false;
+
+  const lanzar = () => {
+    recienAbierto = true;
+    setTimeout(() => { recienAbierto = false; }, 600);
+    toques = [];
+    try { navigator.vibrate?.(40); } catch (e) {}
+    toggleAdmin();
+  };
+  const cancelar = () => { clearTimeout(temporizador); temporizador = null; inicio = null; };
+
+  cabecera.addEventListener("pointerdown", (e) => {
+    inicio = { x: e.clientX, y: e.clientY };
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => { temporizador = null; lanzar(); }, PULSACION_MS);
+  });
+  cabecera.addEventListener("pointermove", (e) => {
+    if (inicio && Math.hypot(e.clientX - inicio.x, e.clientY - inicio.y) > 12) cancelar();
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => cabecera.addEventListener(ev, cancelar));
+  cabecera.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  cabecera.addEventListener("click", () => {
+    if (recienAbierto) return;
+    const ahora = Date.now();
+    toques = toques.filter(t => ahora - t < VENTANA_TOQUES_MS);
+    toques.push(ahora);
+    if (toques.length >= TOQUES) lanzar();
+  });
+})();
+
 async function toggleAdmin() {
   // 🔓 Cerrar sesión
   if (rolUsuario) {
@@ -7465,7 +7505,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-12";
+const VERSION_APP = "2026-11-03-13";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

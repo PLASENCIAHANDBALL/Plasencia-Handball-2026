@@ -4847,3 +4847,8 @@ main .zf h2, .zf h2 { margin: 2px 0 4px; color: #fff; font-size: 26px; font-weig
 .zf-highlights ~ .hl-cab .hl-subir { background: linear-gradient(135deg, #ff7a59, #e8436f); box-shadow: 0 8px 20px rgba(232,67,111,.3); }
 .zf-highlights ~ .hl-cab { margin-top: 0; }
 .zf-highlights ~ .hl-cab .hl-subir { margin-top: 0; }
+
+/* Zona Fan: fila superior (etiqueta + "En directo" del chat) */
+.zf-arriba { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.zf-vivo { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; padding: 6px 11px; border-radius: 999px; background: #fff; color: #0e7f9e; }
+.zf-vivo i { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; animation: pf-latido 1.4s ease-in-out infinite; }

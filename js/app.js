@@ -4829,7 +4829,7 @@ let radarScroll = null;
 let radarCentrar = false;
 
 function barraPabellones(actual) {
-  const items = [["radar", "PH Radar", "diana", "mostrarRadar()"], ["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"]];
+  const items = [["radar", "Radar", "diana", "mostrarRadar()"], ["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"]];
   return `
     <div class="zona-barra" role="tablist" aria-label="Pabellones">
       ${items.map(([id, nombre, icono, fn]) => `
@@ -4932,7 +4932,7 @@ function pintarRadar() {
     ${barraPabellones("radar")}
     <div class="rd-panel">
       <div class="rd-cab">
-        <div><h2>PH RADAR</h2><p>El torneo en tiempo real</p></div>
+        <div><h2>RADAR</h2><p>El torneo en tiempo real</p></div>
         <span class="rd-live"><i></i>LIVE</span>
       </div>
       <div class="rd-mapa-scroll" id="rd-scroll"><div class="rd-mapa" role="group" aria-label="Mapa de pabellones">
@@ -5768,13 +5768,13 @@ window.enviarHighlight = enviarHighlight;
 /* ================== ZONA FAN: HIGHLIGHTS · TIENDA · PORRA ================== */
 
 const SECCIONES_ZONA = [
-  { id: "highlights", nombre: "Highlights", titulo: "PH Highlights", icono: "play", abrir: () => mostrarHighlights(),
+  { id: "highlights", nombre: "Highlights", titulo: "Highlights", icono: "play", abrir: () => mostrarHighlights(),
     texto: "Goles, paradas y jugadas subidos por jugadores y entrenadores. ¡Valora tus favoritos con estrellas!" },
-  { id: "chat",       nombre: "Chat",       titulo: "PH Chat",       icono: "chat", abrir: () => mostrarChat(),
+  { id: "chat",       nombre: "Chat",       titulo: "Chat",          icono: "chat", abrir: () => mostrarChat(),
     texto: "Habla con otros aficionados del torneo" },
-  { id: "porra",      nombre: "Porra",      titulo: "PH Porra",      icono: "trofeo", abrir: () => mostrarPorra(),
+  { id: "porra",      nombre: "Porra",      titulo: "Porra",         icono: "trofeo", abrir: () => mostrarPorra(),
     texto: "¿Serás el mejor pronosticador del torneo? Adivina los resultados y sube en la clasificación." },
-  { id: "sorteos",    nombre: "Sorteos",    titulo: "PH Sorteos",    icono: "regalo", abrir: () => mostrarSorteos(),
+  { id: "sorteos",    nombre: "Sorteos",    titulo: "Sorteos",       icono: "regalo", abrir: () => mostrarSorteos(),
     texto: "Participa gratis para ganar premios de los patrocinadores del torneo." },
   { id: "tienda",     nombre: "Tienda",     titulo: "Tienda del torneo", icono: "bolsa", abrir: () => mostrarTienda(),
     texto: "Productos oficiales a la venta en el <strong>Pabellón Municipal</strong> durante el torneo." }
@@ -5785,15 +5785,16 @@ const SECCIONES_ZONA = [
 function barraZona(actual) {
   lsSet("zona_seccion", actual);
   const s = SECCIONES_ZONA.find(x => x.id === actual) || SECCIONES_ZONA[0];
-  const compacta = actual === "chat";
   return `
-    <section class="zf zf-${s.id} ${compacta ? "compacta" : ""}">
-      ${compacta ? "" : `
+    <section class="zf zf-${s.id}">
+      <div class="zf-arriba">
         <span class="zf-etiqueta">${ico("estrella", 13)} Zona Fan</span>
+        ${s.id === "chat" ? `<span class="zf-vivo"><i></i>En directo</span>` : ""}
+      </div>
         <div class="zf-titulo">
           <span class="zf-ico" aria-hidden="true">${ico(s.icono, 26)}</span>
           <div><h2>${s.titulo}</h2><p>${s.texto}</p></div>
-        </div>`}
+        </div>
       <div class="zf-tabs" role="tablist" aria-label="Zona Fan">
         ${SECCIONES_ZONA.map(x => `
           <button type="button" role="tab" class="zf-tab zf-t-${x.id} ${x.id === actual ? "activo" : ""}" aria-selected="${x.id === actual}"
@@ -5942,10 +5943,6 @@ function pintarChat() {
   contenido.innerHTML = `
     ${barraZona("chat")}
     <div class="ch-pagina">
-      <div class="ch-cabecera">
-        <div><h2>PH Chat</h2><p>Habla con otros aficionados del torneo</p></div>
-        <span class="ch-vivo"><i></i>En directo</span>
-      </div>
       <div class="ch-lista" id="ch-lista" aria-live="polite"></div>
       ${pie}
     </div>`;
@@ -6912,7 +6909,7 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
 
       g.fillStyle = "#6fdcf5"; g.font = `800 30px ${FUENTE}`;
       try { g.letterSpacing = "10px"; } catch (e) { /* nada */ }
-      g.fillText("PH SORTEOS", W / 2 + 5, 250);
+      g.fillText("SORTEOS", W / 2 + 5, 250);
       try { g.letterSpacing = "0px"; } catch (e) { /* nada */ }
       g.fillStyle = "#fff"; g.font = `800 56px ${FUENTE}`;
       g.shadowColor = "rgba(111,220,245,.7)"; g.shadowBlur = 28;
@@ -7044,7 +7041,7 @@ function ruletaSorteo({ pin, id, ganador, titulo, repeticion, sonido }) {
     overlay.querySelector("#rl-compartir").onclick = async () => {
       if (!videoBlob) return;
       const archivo = new File([videoBlob], nombreArchivo(), { type: videoBlob.type });
-      try { await navigator.share({ files: [archivo], title: "PH Sorteos" }); }
+      try { await navigator.share({ files: [archivo], title: "Sorteos" }); }
       catch (e) { if (e && e.name !== "AbortError") avisar("No se ha podido compartir el vídeo", "error"); }
     };
     overlay.querySelector("#rl-guardar").onclick = () => {
@@ -7877,7 +7874,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-30";
+const VERSION_APP = "2026-11-03-31";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

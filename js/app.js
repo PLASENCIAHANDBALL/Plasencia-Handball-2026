@@ -4435,7 +4435,7 @@ let radarScroll = null;
 let radarCentrar = false;
 
 function barraPabellones(actual) {
-  const items = [["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"], ["radar", "PH Radar", "diana", "mostrarRadar()"]];
+  const items = [["radar", "PH Radar", "diana", "mostrarRadar()"], ["pabellones", "Pabellones", "pabellon", "mostrarPabellones()"]];
   return `
     <div class="zona-barra" role="tablist" aria-label="Pabellones">
       ${items.map(([id, nombre, icono, fn]) => `
@@ -7465,7 +7465,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-06";
+const VERSION_APP = "2026-11-03-07";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

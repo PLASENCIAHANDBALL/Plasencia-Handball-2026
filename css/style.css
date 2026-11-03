@@ -4889,3 +4889,40 @@ main .pt-hero h2, .pt-hero h2 { margin: 0; color: #fff; font-size: 30px; font-we
 .fecha-dia { font-size: 16px; font-weight: 800; }
 .fecha-dia::first-letter { text-transform: uppercase; }
 .fecha-resto { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* ===== Categorías ===== */
+.ca-hero { --g1: var(--azul-medio); --g2: var(--azul-fuerte); position: relative; overflow: hidden; display: grid; gap: 10px; margin: 4px 0 14px; padding: 18px 16px 16px; border-radius: 28px; color: #fff;
+  background: linear-gradient(140deg, var(--g1) 0%, var(--g2) 100%); box-shadow: 0 14px 32px rgba(27,111,184,.28); transition: background .3s; }
+.ca-hero.ca-femenino { --g1: #ea6d9b; --g2: #b8336a; box-shadow: 0 14px 32px rgba(184,51,106,.28); }
+.ca-hero::before { content: ""; position: absolute; width: 220px; height: 220px; right: -70px; top: -100px; border-radius: 50%; background: rgba(255,255,255,.12); }
+.ca-hero > * { position: relative; z-index: 1; }
+.ca-etq { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,.18); padding: 6px 12px; border-radius: 999px; }
+.ca-etq .ico { width: 14px; height: 14px; }
+main .ca-hero h2, .ca-hero h2 { margin: 0; color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+.ca-hero h2 span { font-weight: 600; opacity: .85; }
+.ca-datos { display: flex; flex-wrap: wrap; gap: 8px; }
+.ca-datos span { display: inline-flex; align-items: baseline; gap: 5px; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,.16); }
+.ca-datos b { font-size: 18px; font-weight: 800; }
+.cat-tabs { margin: 0 0 10px; }
+.ca-gen { margin: 0 0 8px; }
+.ca-grupos { margin: 0 0 4px; }
+.ca-grupos .pf-chip { min-height: 36px; font-size: 13px; }
+.pt-sec-ico.ca-ico-masculino { background: linear-gradient(140deg, var(--azul-medio), var(--azul-fuerte)); }
+.pt-sec-ico.ca-ico-femenino { background: linear-gradient(140deg, #ea6d9b, #b8336a); }
+
+.ca-card { --gen: #2b86d9; --gen-suave: #e3f1fc; position: relative; border: 1px solid var(--border); }
+.ca-card.ca-femenino { --gen: #d0447a; --gen-suave: #fde4ee; }
+.ca-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--gen); }
+.ca-card.abierto { border-color: var(--gen); }
+.ca-card .cat-cab { padding: 14px 14px 14px 18px; align-items: center; }
+.ca-card .cat-escudo { background: var(--gen-suave); }
+.ca-card .cat-info strong { font-size: 16px; font-weight: 800; }
+.ca-card .cat-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.ca-card .cat-grupo { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--gen-suave); color: var(--gen); }
+.ca-bal { font-size: 12px; font-weight: 600; color: var(--muted); }
+.ca-bal b { color: var(--text); font-weight: 800; }
+.ca-bal b.v { color: #157a50; } .ca-bal b.e { color: #5d6d7e; } .ca-bal b.d { color: #c0342c; }
+.ca-flecha { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--gen); color: #fff; transition: transform .25s ease; }
+.ca-card.abierto .ca-flecha { transform: rotate(180deg); }
+
+.ca-card.ca-femenino .bloque-partidos { color: #d0447a; }

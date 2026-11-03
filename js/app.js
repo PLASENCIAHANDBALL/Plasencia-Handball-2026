@@ -3255,106 +3255,140 @@ async function guardarNuevoPartido() {
 }
 
 /* ================== CATEGORIAS ================== */
+// Selección de la pestaña Categorías (se recuerda al volver a la pestaña)
+const catSel = { categoria: "Infantil", genero: "Masculino", grupo: "" };
+
 function mostrarCategorias() {
   setNavActivoPorVista("categorias");
   registrarNavegacion("categorias");
 
   contenido.innerHTML = `
-    <h2>Categorías</h2>
+    <div id="cat-hero"></div>
 
     <!-- TABS DE CATEGORÍA -->
-    <div class="tabs">
-      <button class="tab active" onclick="seleccionarCategoria('Infantil', this)">Infantil</button>
-      <button class="tab" onclick="seleccionarCategoria('Cadete', this)">Cadete</button>
-      <button class="tab" onclick="seleccionarCategoria('Juvenil', this)">Juvenil</button>
+    <div class="tabs cat-tabs">
+      ${ORDEN_CATEGORIAS.map(c => `<button class="tab ${c === catSel.categoria ? "active" : ""}" onclick="seleccionarCategoria('${c}', this)">${c}</button>`).join("")}
     </div>
 
-    <!-- SUBFILTROS -->
-    <div class="subfiltros">
-      <select id="gen" onchange="filtrarCategorias()">
-        <option>Masculino</option>
-        <option>Femenino</option>
-      </select>
-
-      <select id="grp" onchange="filtrarCategorias()">
-        <option value="">Todos los grupos</option>
-        <option>Grupo A</option>
-        <option>Grupo B</option>
-        <option>Grupo C</option>
-        <option>Grupo D</option>
-        <option>Grupo Único</option>
-      </select>
-    </div>
+    <!-- valores que leen los filtros y el despliegue de partidos -->
+    <input type="hidden" id="gen" value="${escaparHtml(catSel.genero)}">
+    <input type="hidden" id="grp" value="${escaparHtml(catSel.grupo)}">
+    <div id="cat-filtros"></div>
 
     <div id="listaCategorias"></div>
   `;
 
-  // categoría por defecto
-  window.categoriaSeleccionada = "Infantil";
+  window.categoriaSeleccionada = catSel.categoria;
   filtrarCategorias();
 }
 
 function seleccionarCategoria(cat, boton) {
   window.categoriaSeleccionada = cat;
+  if (catSel.categoria !== cat) {
+    catSel.grupo = "";
+    const grp = document.getElementById("grp");
+    if (grp) grp.value = "";
+  }
+  catSel.categoria = cat;
 
   clasificacionFiltro.categoria = cat.toLowerCase(); // 🔑
-  
-  document.querySelectorAll(".tab").forEach(t => {
-    t.classList.remove("active");
-  });
 
-  boton.classList.add("active");
+  document.querySelectorAll(".cat-tabs .tab").forEach(t => t.classList.remove("active"));
+  boton?.classList.add("active");
   filtrarCategorias();
 }
 
+function elegirFiltroCat(campo, valor) {
+  const gen = document.getElementById("gen");
+  const grp = document.getElementById("grp");
+  if (campo === "genero" && gen) { gen.value = valor; if (grp) grp.value = ""; }
+  if (campo === "grupo" && grp) grp.value = valor;
+  filtrarCategorias();
+}
+window.elegirFiltroCat = elegirFiltroCat;
+
 function filtrarCategorias() {
   const categoria = window.categoriaSeleccionada;
-  const genero = document.getElementById("gen").value;
-  const grupo = document.getElementById("grp").value;
+  const genero = document.getElementById("gen").value || "Masculino";
+  const grpEl = document.getElementById("grp");
 
+  const delGenero = equipos.filter(e => e.categoria === categoria && e.genero === genero);
+  const grupos = [...new Set(delGenero.map(e => e.grupo).filter(Boolean))].sort((x, y) => x.localeCompare(y));
+  if (grpEl.value && !grupos.includes(grpEl.value)) grpEl.value = "";
+  const grupo = grpEl.value;
+
+  catSel.categoria = categoria; catSel.genero = genero; catSel.grupo = grupo;
   clasificacionFiltro.categoria = categoria.toLowerCase(); // 🔑
   clasificacionFiltro.genero = genero.toLowerCase();       // 🔑
 
-  let html = "";
+  const equiposFiltrados = delGenero
+    .filter(e => !grupo || e.grupo === grupo)
+    .sort((x, y) => (x.grupo || "").localeCompare(y.grupo || "") || (x.nombre || "").localeCompare(y.nombre || ""));
+  const gClase = claseGenero(genero);
+
+  /* ====== CABECERA ====== */
+  document.getElementById("cat-hero").innerHTML = `
+    <section class="ca-hero ca-${gClase}">
+      <span class="ca-etq">${ico("mano", 14)} Categorías</span>
+      <h2>${escaparHtml(categoria)} <span>${escaparHtml(genero)}</span></h2>
+      <div class="ca-datos">
+        <span><b>${delGenero.length}</b> equipos</span>
+        <span><b>${grupos.length}</b> ${grupos.length === 1 ? "grupo" : "grupos"}</span>
+        <span><b>${partidos.filter(p => p.categoria === categoria && p.genero === genero).length}</b> partidos</span>
+      </div>
+    </section>`;
+
+  /* ====== FILTROS ====== */
+  const chip = (campo, valor, texto, extra = "") => {
+    const activo = (campo === "genero" ? genero : grupo) === valor;
+    return `<button type="button" class="pf-chip ${extra} ${activo ? "activo" : ""}" aria-pressed="${activo}"
+              onclick="elegirFiltroCat('${campo}', '${escaparHtml(valor)}')">${texto}</button>`;
+  };
+  document.getElementById("cat-filtros").innerHTML = `
+    <div class="pf-fila pf-segmento ca-gen" role="group" aria-label="Género">
+      ${ORDEN_GENEROS.map(g => chip("genero", g, `<i aria-hidden="true"></i>${g}`, `pf-chip-${claseGenero(g)}`)).join("")}
+    </div>
+    ${grupos.length > 1 ? `
+      <div class="pf-fila ca-grupos" role="group" aria-label="Grupo">
+        ${chip("grupo", "", "Todos los grupos")}
+        ${grupos.map(g => chip("grupo", g, escaparHtml(g))).join("")}
+      </div>` : ""}`;
 
   /* ====== EQUIPOS ====== */
-
-  const equiposFiltrados = equipos.filter(e =>
-    e.categoria === categoria &&
-    e.genero === genero &&
-    (!grupo || e.grupo === grupo)
-  );
-
-  html += `<h3 class="bloque-titulo pt-titulo">Equipos <span class="pt-cuenta">${equiposFiltrados.length}</span></h3>`;
+  let html = `<h3 class="pt-sec"><span class="pt-sec-ico ca-ico-${gClase}">${ico("escudo", 16)}</span>Equipos <span class="pt-cuenta">${equiposFiltrados.length}</span></h3>`;
 
   if (equiposFiltrados.length === 0) {
     html += `<p class="estado-vacio">No hay equipos en esta categoría</p>`;
   }
 
+  const letra = { victoria: "V", empate: "E", derrota: "D" };
   html += `<div class="cat-equipos">`;
   equiposFiltrados.forEach(e => {
-  const club = clubes.find(c => c.id === e.club_id);
-  const nPartidos = partidos.filter(p => p.local_id === e.id || p.visitante_id === e.id).length;
+    const club = clubes.find(c => c.id === e.club_id);
+    const suyos = partidos.filter(p => p.local_id === e.id || p.visitante_id === e.id);
+    const bal = { victoria: 0, empate: 0, derrota: 0 };
+    suyos.forEach(p => { const r = resultadoParaEquipo(p, e.id); if (r) bal[r]++; });
+    const racha = rachaEquipo(e.id);
 
-  html += `
-  <div class="card equipo-card cat-equipo">
-    <div class="cat-cab" role="button" tabindex="0" aria-expanded="false" aria-controls="partidos-equipo-${e.id}"
-         onclick="togglePartidosEquipo(${e.id})">
-      <span class="cat-escudo"><img src="${escaparHtml(club?.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
-      <div class="cat-info">
-        <strong>${escaparHtml(e.nombre)}</strong>
-        <div class="cat-meta">
-          <span class="cat-grupo">${escaparHtml(e.grupo || "Sin grupo")}</span>
-          <span class="cat-n">${nPartidos} ${nPartidos === 1 ? "partido" : "partidos"}</span>
+    html += `
+    <div class="card equipo-card cat-equipo ca-card ca-${gClase}">
+      <div class="cat-cab" role="button" tabindex="0" aria-expanded="false" aria-controls="partidos-equipo-${e.id}"
+           onclick="togglePartidosEquipo(${e.id})">
+        <span class="cat-escudo"><img src="${escaparHtml(club?.escudo || PLACEHOLDER_ESCUDO)}" alt="" loading="lazy" decoding="async"></span>
+        <div class="cat-info">
+          <strong>${escaparHtml(e.nombre)}</strong>
+          <div class="cat-meta">
+            <span class="cat-grupo">${escaparHtml(e.grupo || "Sin grupo")}</span>
+            <span class="ca-bal"><b>${bal.victoria + bal.empate + bal.derrota}</b> PJ · <b class="v">${bal.victoria}</b> V · <b class="e">${bal.empate}</b> E · <b class="d">${bal.derrota}</b> D</span>
+          </div>
+          ${racha.length ? `<span class="tb-racha" aria-label="Últimos resultados">${racha.map(r => `<i class="${r}">${letra[r]}</i>`).join("")}</span>` : ""}
         </div>
+        <span class="ca-flecha" aria-hidden="true">${ico("chev", 18)}</span>
       </div>
-      <span class="cat-flecha" aria-hidden="true">${ico("derecha", 18)}</span>
-    </div>
 
-    <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
-  </div>
-  `;
-});
+      <div id="partidos-equipo-${e.id}" class="partidos-equipo oculto"></div>
+    </div>`;
+  });
   html += `</div>`;
 
   document.getElementById("listaCategorias").innerHTML = html;
@@ -7892,7 +7926,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-32";
+const VERSION_APP = "2026-11-03-33";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

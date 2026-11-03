@@ -709,6 +709,7 @@ function mostrarHome() {
 
   contenido.innerHTML = html;
   iniciarCarruselPatrocinadores();
+  iniciarFotosTorneo();
 
   renderTarjetaInstalar();
 
@@ -1255,9 +1256,11 @@ const ALBUMES_FOTOS = [
 function renderFotosTorneo() {
   const [actual, ...anteriores] = ALBUMES_FOTOS;
   const album = (a, destacado) => `
-    <a class="ft-album ${destacado ? "destacado" : ""}" href="${a.url}" target="_blank" rel="noopener noreferrer"
+    <a class="ft-album ${destacado ? "destacado" : ""}" data-anio="${a.anio}" href="${a.url}" target="_blank" rel="noopener noreferrer"
        aria-label="Ver fotos del torneo ${a.anio}">
-      <img class="ft-portada" src="${a.portada}" alt="" loading="lazy" decoding="async">
+      <span class="ft-fotos" data-anio="${a.anio}">
+        <img class="ft-portada visible" src="${a.portada}" alt="" loading="lazy" decoding="async">
+      </span>
       <span class="ft-capa" aria-hidden="true"></span>
       ${destacado ? `<span class="ft-nuevo">${ico("camara", 14)} Edición actual</span>` : ""}
       <span class="ft-pie">
@@ -1280,6 +1283,75 @@ function renderFotosTorneo() {
         ${anteriores.map(a => album(a, false)).join("")}
       </div>
     </section>`;
+}
+
+// Book de fotos: cada álbum enseña fotos aleatorias de su carpeta de Amazon Photos que
+// van pasando solas con un fundido. Las pide a /api/fotos (función de Vercel). Si no
+// llegan (sin conexión, Amazon no responde...) se queda la portada de siempre.
+const fotosAlbumCache = {};
+
+async function fotosDeAlbum(anio) {
+  if (fotosAlbumCache[anio]) return fotosAlbumCache[anio];
+  fotosAlbumCache[anio] = fetch(`/api/fotos?anio=${anio}`)
+    .then(r => r.ok ? r.json() : { fotos: [] })
+    .then(d => Array.isArray(d.fotos) ? d.fotos.filter(u => /^https:\/\//.test(u)) : [])
+    .catch(() => []);
+  const lista = await fotosAlbumCache[anio];
+  if (!lista.length) delete fotosAlbumCache[anio]; // se reintenta la próxima vez
+  return lista;
+}
+
+function precargar(url) {
+  return new Promise(ok => {
+    const img = new Image();
+    img.onload = () => ok(true);
+    img.onerror = () => ok(false);
+    img.src = url;
+  });
+}
+
+function iniciarFotosTorneo() {
+  const reducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  document.querySelectorAll(".ft-fotos[data-anio]").forEach(async (caja, i) => {
+    const lista = await fotosDeAlbum(caja.dataset.anio);
+    if (!caja.isConnected || !lista.length) return;
+
+    // primera foto: sustituye a la portada en cuanto está cargada
+    let pos = 0;
+    while (pos < lista.length && !(await precargar(lista[pos]))) pos++;
+    if (pos >= lista.length || !caja.isConnected) return;
+
+    const capa = (url) => {
+      const img = document.createElement("img");
+      img.className = "ft-portada";
+      img.alt = "";
+      img.decoding = "async";
+      img.src = url;
+      caja.appendChild(img);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        caja.querySelectorAll(".ft-portada.visible").forEach(v => v.classList.remove("visible"));
+        img.classList.add("visible");
+        setTimeout(() => caja.querySelectorAll(".ft-portada:not(.visible)").forEach(v => v.remove()), 1400);
+      }));
+    };
+    capa(lista[pos]);
+    caja.closest(".ft-album")?.classList.add("con-fotos");
+
+    if (reducido || lista.length < 2) return;
+
+    // cada álbum cambia de foto a su ritmo (desfasados para que no cambien todos a la vez)
+    const ritmo = 4200 + i * 900;
+    const siguiente = async () => {
+      if (!caja.isConnected) return;
+      if (!document.hidden) {
+        pos = (pos + 1) % lista.length;
+        if (await precargar(lista[pos])) capa(lista[pos]);
+      }
+      setTimeout(siguiente, ritmo);
+    };
+    setTimeout(siguiente, ritmo);
+  });
 }
 
 /* ================== GALERÍA (SUPABASE) ================== */
@@ -7676,7 +7748,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-22";
+const VERSION_APP = "2026-11-03-23";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -4729,8 +4729,10 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .ft-album { position: relative; display: block; overflow: hidden; border-radius: 22px; aspect-ratio: 16 / 10; color: #fff; text-decoration: none; background: var(--azul-fuerte);
   box-shadow: 0 10px 26px rgba(15,76,143,.22); -webkit-tap-highlight-color: transparent; isolation: isolate; }
 .ft-album.destacado { aspect-ratio: 16 / 9; border-radius: 26px; }
-.ft-portada { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
-.ft-album:hover .ft-portada { transform: scale(1.05); }
+.ft-fotos { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.ft-portada { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity 1.1s ease, transform 6s ease-out; }
+.ft-portada.visible { opacity: 1; transform: scale(1.12); }
+
 .ft-album:active { transform: scale(.985); }
 .ft-capa { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,28,58,0) 30%, rgba(8,28,58,.82) 100%); }
 .ft-nuevo { position: absolute; top: 12px; left: 12px; z-index: 1; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 6px 11px; border-radius: 999px; background: #fff; color: var(--azul-fuerte); box-shadow: 0 4px 12px rgba(0,0,0,.18); }
@@ -4745,4 +4747,14 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .ft-anteriores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
 .ft-anteriores .ft-album { aspect-ratio: 1 / 1; }
 @media (min-width: 760px) { .ft-anteriores .ft-album { aspect-ratio: 16 / 10; } }
-@media (prefers-reduced-motion: reduce) { .ft-portada { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .ft-portada, .ft-portada.visible { transition: none; transform: none; } }
+
+/* "book": hojas de fotos asomando detrás de cada álbum */
+.ft-album { overflow: visible; }
+.ft-album::before, .ft-album::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: #fff; box-shadow: 0 6px 16px rgba(15,76,143,.16); transition: transform .3s ease; }
+.ft-album::before { transform: rotate(-2.6deg) translate(-3px, 4px); }
+.ft-album::after { transform: rotate(2deg) translate(4px, 3px); background: var(--brillo); }
+.ft-album:hover::before { transform: rotate(-4deg) translate(-6px, 5px); }
+.ft-album:hover::after { transform: rotate(3.5deg) translate(7px, 4px); }
+.ft-album .ft-capa { border-radius: inherit; }
+.ft-anteriores { gap: 16px; }

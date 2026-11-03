@@ -991,11 +991,41 @@ function iniciarCarruselPatrocinadores() {
   requestAnimationFrame(paso);
 }
 
+// ¿Es un enlace de mapas (Google Maps / Apple Maps)?
+function esEnlaceMapa(url) {
+  try {
+    const u = new URL(url);
+    return /^maps\.app\.goo\.gl$/i.test(u.hostname) ||
+      (/^goo\.gl$/i.test(u.hostname) && u.pathname.startsWith("/maps")) ||
+      /^maps\.google\./i.test(u.hostname) ||
+      (/^(www\.)?google\./i.test(u.hostname) && u.pathname.startsWith("/maps")) ||
+      /^maps\.apple\.com$/i.test(u.hostname);
+  } catch (e) { return false; }
+}
+
+// En iPhone/iPad con la app instalada, los enlaces de mapas saltaban a la app de Maps
+// y al volver se quedaba una ventana en blanco. Se abren a través de /api/ir (una
+// redirección): así el mapa se ve en la ventana y al cerrarla vuelves a la app.
+function enlaceSeguroParaVolver(url) {
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  return ios && esEnlaceMapa(url) ? `/api/ir?u=${encodeURIComponent(url)}` : url;
+}
+
 function abrirWeb(url) {
   // solo se abren enlaces http(s)
   if (!url || !/^https?:\/\//i.test(url)) return;
-  window.open(url, "_blank", "noopener,noreferrer");
+  window.open(enlaceSeguroParaVolver(url), "_blank", "noopener,noreferrer");
 }
+
+// Los enlaces <a> de "Cómo llegar" pasan por el mismo camino en iPhone
+document.addEventListener("click", (e) => {
+  const a = e.target.closest?.('a[href^="http"][target="_blank"]');
+  if (!a || !esEnlaceMapa(a.href)) return;
+  const seguro = enlaceSeguroParaVolver(a.href);
+  if (seguro === a.href) return;
+  e.preventDefault();
+  window.open(seguro, "_blank", "noopener,noreferrer");
+}, true);
 
 function toggleReproductor(forzarCerrar) {
   const fab = document.getElementById("music-fab");
@@ -8019,7 +8049,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-41";
+const VERSION_APP = "2026-11-03-42";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

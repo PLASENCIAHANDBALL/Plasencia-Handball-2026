@@ -102,8 +102,8 @@ export default async function handler(req, res) {
       if (!fotos.length) throw new Error(`la carpeta no tiene fotos (vistos: ${vistos.slice(0, 10).join(", ") || "nada"}; raíz: ${info.nodeInfo?.kind || "?"})`);
 
       const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
-      // 5 min de caché; después Vercel sigue sirviendo la última respuesta al instante mientras renueva
-      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=86400");
+      // 5 min de caché (+10 min sirviendo la anterior mientras renueva): los enlaces de Amazon caducan
+      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
       res.status(200).json({ anio: Number(anio), fotos: urls });
       return;
     } catch (e) {

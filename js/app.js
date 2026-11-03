@@ -2383,14 +2383,33 @@ function abrirPartido(id) {
   <button class="volver volver-arriba" onclick="volverDesdePartido()">${ico("izquierda", 16)} ${textoVolver}</button>
   <h2 class="sr-only">${nombreLocal} contra ${nombreVisitante}</h2>
 
-  <section class="ap-cabecera">
-    <div class="ap-chips">
-      <span class="ap-chip">${partidoActual.categoria} · ${partidoActual.genero}</span>
-      ${partidoActual.fase !== "grupos" ? `<span class="ap-chip fase">${textoFase(partidoActual.fase)}</span>` : ""}
-      <span class="badge-estado ${estadoReal}">${textoEstado}</span>
+  <section class="ap-hero ap-${claseGenero(partidoActual.genero)} ap-${estadoReal}">
+    <div class="ap-hero-top">
+      <span class="ap-hero-chip"><i aria-hidden="true"></i>${escaparHtml(partidoActual.categoria || "")} · ${escaparHtml(partidoActual.genero || "")}</span>
+      ${partidoActual.fase && partidoActual.fase !== "grupos"
+        ? `<span class="ap-hero-chip fase">${ico("trofeo", 13)} ${escaparHtml(textoFase(partidoActual.fase))}</span>`
+        : partidoActual.grupo ? `<span class="ap-hero-chip fase">${escaparHtml(partidoActual.grupo)}</span>` : ""}
+      <span class="ap-hero-estado">${textoEstado}</span>
     </div>
-    <div class="ap-cuando"><strong>${fechaBonita}</strong> · ${formatearHora(partidoActual.hora)}</div>
-    <div class="ap-donde">${ico("pabellon", 15)} ${partidoActual.pabellon || "-"}</div>
+
+    <div class="ap-hero-fecha">${escaparHtml(fechaBonita)}</div>
+
+    <div class="ap-hero-datos">
+      <div class="ap-hero-dato">
+        <span class="ap-hero-ico">${ico("reloj", 18)}</span>
+        <span><small>Hora</small><strong>${formatearHora(partidoActual.hora)}</strong></span>
+      </div>
+      <button type="button" class="ap-hero-dato ap-hero-lugar" ${partidoActual.pabellon ? `onclick="window.mostrarPartidosPorPabellon(${escaparHtml(JSON.stringify(partidoActual.pabellon))})"` : "disabled"}>
+        <span class="ap-hero-ico">${ico("pabellon", 18)}</span>
+        <span><small>Pabellón</small><strong>${escaparHtml(partidoActual.pabellon || "-")}</strong></span>
+        ${partidoActual.pabellon ? `<span class="ap-hero-ir" aria-hidden="true">${ico("derecha", 16)}</span>` : ""}
+      </button>
+    </div>
+
+    ${UBICACIONES_PABELLONES[partidoActual.pabellon] ? `
+      <a class="ap-hero-ruta" href="${UBICACIONES_PABELLONES[partidoActual.pabellon]}" target="_blank" rel="noopener noreferrer">
+        Cómo llegar ${ico("derecha", 16)}
+      </a>` : ""}
   </section>
 
   <div class="marcador-ios ap-marcador">
@@ -7577,7 +7596,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-15";
+const VERSION_APP = "2026-11-03-16";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -4171,27 +4171,54 @@ async function verClub(id) {
   const porCategoria = {};
   equiposClub.forEach(e => (porCategoria[e.categoria || "Sin categoría"] ||= []).push(e));
 
-  Object.keys(porCategoria)
-    .sort((x, y) => posicionEn(ORDEN_CATEGORIAS, x) - posicionEn(ORDEN_CATEGORIAS, y))
-    .forEach(categoria => {
-      const lista = porCategoria[categoria].sort((x, y) =>
-        posicionEn(ORDEN_GENEROS, x.genero) - posicionEn(ORDEN_GENEROS, y.genero) ||
-        (x.nombre || "").localeCompare(y.nombre || ""));
+  const categoriasClub = Object.keys(porCategoria)
+    .sort((x, y) => posicionEn(ORDEN_CATEGORIAS, x) - posicionEn(ORDEN_CATEGORIAS, y));
 
-      html += `
-        <section class="ct-seccion ct-${claseCategoria(categoria)}">
-          <h4 class="ct-seccion-titulo">
-            <span>${escaparHtml(categoria)}</span>
-            <span class="ct-seccion-num">${lista.length}</span>
-          </h4>
-          <div class="ct-lista">
-            ${lista.map(e => renderEquipoClub(e, club)).join("")}
-          </div>
-        </section>`;
-    });
+  // Pestañas Infantil · Cadete · Juvenil: solo se ven los equipos de la categoría elegida.
+  // La elección se recuerda (al volver de un partido sigue la misma pestaña).
+  if (!categoriasClub.includes(clubCategoriaActiva)) clubCategoriaActiva = categoriasClub[0] || null;
+
+  if (categoriasClub.length > 1) {
+    html += `
+      <div class="tabs ct-tabs" role="tablist" aria-label="Categoría">
+        ${categoriasClub.map(c => `
+          <button type="button" class="tab ${c === clubCategoriaActiva ? "active" : ""}" role="tab"
+                  aria-selected="${c === clubCategoriaActiva}" data-cat="${escaparHtml(c)}"
+                  onclick="elegirCategoriaClub(this.dataset.cat)">
+            ${escaparHtml(c)} <span class="ct-tab-num">${porCategoria[c].length}</span>
+          </button>`).join("")}
+      </div>`;
+  }
+
+  categoriasClub.forEach(categoria => {
+    const lista = porCategoria[categoria].sort((x, y) =>
+      posicionEn(ORDEN_GENEROS, x.genero) - posicionEn(ORDEN_GENEROS, y.genero) ||
+      (x.nombre || "").localeCompare(y.nombre || ""));
+
+    html += `
+      <section class="ct-seccion ct-${claseCategoria(categoria)}" data-cat="${escaparHtml(categoria)}"
+               ${categoria === clubCategoriaActiva ? "" : "hidden"}>
+        <div class="ct-lista">
+          ${lista.map(e => renderEquipoClub(e, club)).join("")}
+        </div>
+      </section>`;
+  });
 
   contenido.innerHTML = html;
 }
+
+let clubCategoriaActiva = null;
+
+function elegirCategoriaClub(categoria) {
+  clubCategoriaActiva = categoria;
+  document.querySelectorAll(".ct-tabs .tab").forEach(b => {
+    const activa = b.dataset.cat === categoria;
+    b.classList.toggle("active", activa);
+    b.setAttribute("aria-selected", activa ? "true" : "false");
+  });
+  document.querySelectorAll(".ct-seccion").forEach(sec => { sec.hidden = sec.dataset.cat !== categoria; });
+}
+window.elegirCategoriaClub = elegirCategoriaClub;
 
 // Tarjeta de un equipo dentro del club: color del género, racha de los últimos partidos
 // y el siguiente (o el último) partido a la vista. Al pulsarla se despliegan sus partidos.
@@ -7595,7 +7622,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-17";
+const VERSION_APP = "2026-11-03-18";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -16,6 +16,8 @@ const contenido = document.getElementById("contenido");
 
 // Iconos de línea (1,5 px), de un solo estilo, en lugar de emojis
 const ICONOS = {
+  lapiz: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  papelera: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   play:  '<path d="M8 5.5v13l11-6.5z"/>',
   pause: '<path d="M8 5v14M16 5v14"/>',
   prev:  '<path d="M6 5v14M19 5.5v13L9 12z"/>',
@@ -1440,7 +1442,7 @@ function renderPartidosDelDia(partidosDia) {
           <span class="pd-num">${lista.length}</span>
         </h4>
         <div class="pd-lista">
-          ${lista.map(p => adminActivo ? renderPartidoCard(p) : renderFilaPartido(p)).join("")}
+          ${lista.map(p => adminActivo ? renderFilaPartidoAdmin(p) : renderFilaPartido(p)).join("")}
         </div>
       </section>`;
   }).join("");
@@ -1485,6 +1487,18 @@ function renderFilaPartido(p) {
       </span>
       <span class="pf-flecha" aria-hidden="true">${ico("derecha", 16)}</span>
     </button>`;
+}
+
+// Modo admin: la misma fila compacta con una tira fina de acciones (editar / borrar) debajo
+function renderFilaPartidoAdmin(p) {
+  return `
+    <div class="pf-admin">
+      ${renderFilaPartido(p)}
+      <div class="pf-acc">
+        <button type="button" class="pf-acc-btn" onclick="editarPartido(${p.id})">${ico("lapiz", 15)} Editar</button>
+        <button type="button" class="pf-acc-btn borrar" onclick="borrarPartido(${p.id})">${ico("papelera", 15)} Borrar</button>
+      </div>
+    </div>`;
 }
 
 /* ---- filtro de la pantalla Partidos (se elige una vez y vale para todos los días) ---- */
@@ -7622,7 +7636,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-18";
+const VERSION_APP = "2026-11-03-19";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

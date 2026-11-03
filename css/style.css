@@ -4721,7 +4721,7 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .hs-gracias p { margin: 0; font-size: 14.5px; line-height: 1.55; font-weight: 600; color: var(--tile-ink); }
 
 /* ===== Inicio: fotos del torneo (álbumes) ===== */
-.ft { margin: 0 0 22px; }
+.ft { margin: 8px 0 22px; }
 .ft-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .ft-cab .titulo-seccion { margin-bottom: 12px; }
 .ft-sub { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px; font-size: 12px; font-weight: 700; color: var(--accent-text); background: var(--tile); padding: 5px 10px; border-radius: 999px; white-space: nowrap; }

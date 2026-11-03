@@ -1289,10 +1289,7 @@ function renderFotosTorneo() {
 
   return `
     <section class="ft">
-      <div class="ft-cab">
-        <h3 class="titulo-seccion">Fotos del torneo</h3>
-        <span class="ft-sub">${ico("camara", 14)} ${ALBUMES_FOTOS.length} álbumes</span>
-      </div>
+      <h3 class="sr-only">Fotos del torneo</h3>
       ${album(actual, true)}
       <div class="ft-anteriores">
         ${anteriores.map(a => album(a, false)).join("")}
@@ -7880,7 +7877,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-29";
+const VERSION_APP = "2026-11-03-30";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

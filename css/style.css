@@ -4543,7 +4543,7 @@ input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; m
 .hub #info-fab .ico { width: 24px; height: 24px; }
 
 /* candado de organización en la cabecera, debajo de la campana: sin círculo, solo el icono */
-.header-wrapper #admin-fab { position: absolute; top: 56px; left: 12px; right: auto; bottom: auto; z-index: 30; box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; min-height: 40px; max-height: 40px; padding: 0; margin: 0; border: 0; border-radius: 50%; background: transparent; color: var(--azul-fuerte); box-shadow: none; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; filter: drop-shadow(0 1px 2px rgba(255,255,255,.7)); }
+.header-wrapper #admin-fab { position: absolute; top: 72px; left: 12px; right: auto; bottom: auto; z-index: 30; box-sizing: border-box; width: 40px; height: 40px; min-width: 40px; min-height: 40px; max-height: 40px; padding: 0; margin: 0; border: 0; border-radius: 50%; background: transparent; color: var(--azul-fuerte); box-shadow: none; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; filter: drop-shadow(0 1px 2px rgba(255,255,255,.7)); }
 .header-wrapper #admin-fab .ico { width: 22px; height: 22px; stroke-width: 2; }
 .header-wrapper #admin-fab:active { transform: scale(.9); }
 .header-wrapper #admin-fab:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }

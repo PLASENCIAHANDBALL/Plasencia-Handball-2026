@@ -111,6 +111,9 @@ const TEXTOS = {
   // --- estados y fases ---
   "Pendiente": ["Upcoming", "Pendente", "À venir"],
   "Victoria": ["Win", "Vitória", "Victoire"],
+  "Gracias a quienes lo hacen posible": ["Thanks to those who make it possible", "Obrigado a quem o torna possível", "Merci à ceux qui le rendent possible"],
+  "¿Quieres aparecer aquí?": ["Want to appear here?", "Quer aparecer aqui?", "Vous voulez apparaître ici ?"],
+  "Hazte patrocinador del torneo": ["Become a tournament sponsor", "Seja patrocinador do torneio", "Devenez sponsor du tournoi"],
   "Último": ["Last", "Último", "Dernier"],
   "Derrota": ["Loss", "Derrota", "Défaite"],
   "Empate": ["Draw", "Empate", "Nul"],

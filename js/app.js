@@ -683,47 +683,9 @@ function mostrarHome() {
     <!-- 🔴 ACTUALIZACIONES EN VIVO -->
     <section class="actualizaciones-home" id="bloque-actualizaciones"></section>
 
-    <h3>Patrocinadores</h3>
-    <div class="patrocinadores-scroll">
   `;
 
-  patrocinadores.forEach(p => {
-  html += `
-    <div class="patrocinador-card" role="button" tabindex="0"
-         data-web="${p.web}" onclick="abrirWeb(this.dataset.web)"
-         aria-label="Patrocinador: ${p.nombre}">
-
-      ${adminActivo ? `
-        <div class="acciones-admin">
-
-          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)" aria-label="Subir patrocinador">
-            ${ico("up")}
-          </button>
-
-          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)" aria-label="Bajar patrocinador">
-            ${ico("down")}
-          </button>
-
-          <button class="btn-borrar-patrocinador"
-            onclick="event.stopPropagation(); borrarPatrocinador(${p.id})" aria-label="Borrar patrocinador">
-            ${ico("close")}
-          </button>
-
-        </div>
-      ` : ""}
-
-      <img src="${p.imagen}" alt="" loading="lazy" decoding="async">
-      <div class="patrocinador-nombre">${p.nombre}</div>
-
-    </div>
-  `;
-});
-
-  html += `</div>`;
-
-  if (adminActivo) {
-    html += `<button onclick="formNuevoPatrocinador()">Añadir patrocinador</button>`;
-  }
+  html += adminActivo ? renderPatrocinadoresAdmin() : renderPatrocinadores();
 
   // HISTORIA AL FINAL
   html += `
@@ -760,6 +722,7 @@ function mostrarHome() {
   `;
 
   contenido.innerHTML = html;
+  iniciarCarruselPatrocinadores();
 
   renderTarjetaInstalar();
 
@@ -930,6 +893,105 @@ function toggleActualizacionesHome() {
 }
 
 window.toggleActualizacionesHome = toggleActualizacionesHome;
+
+/* ===== Patrocinadores ===== */
+
+// Vista de gestión (modo admin): rejilla con botones para ordenar y borrar
+function renderPatrocinadoresAdmin() {
+  let html = `<h3>Patrocinadores</h3><div class="patrocinadores-scroll">`;
+  patrocinadores.forEach(p => {
+    html += `
+      <div class="patrocinador-card" role="button" tabindex="0"
+           data-web="${escaparHtml(p.web || "")}" onclick="abrirWeb(this.dataset.web)"
+           aria-label="Patrocinador: ${escaparHtml(p.nombre)}">
+        <div class="acciones-admin">
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, -1)" aria-label="Subir patrocinador">${ico("up")}</button>
+          <button onclick="event.stopPropagation(); moverPatrocinador(${p.id}, 1)" aria-label="Bajar patrocinador">${ico("down")}</button>
+          <button class="btn-borrar-patrocinador" onclick="event.stopPropagation(); borrarPatrocinador(${p.id})" aria-label="Borrar patrocinador">${ico("close")}</button>
+        </div>
+        <img src="${escaparHtml(p.imagen)}" alt="" loading="lazy" decoding="async">
+        <div class="patrocinador-nombre">${escaparHtml(p.nombre)}</div>
+      </div>`;
+  });
+  html += `</div><button onclick="formNuevoPatrocinador()">Añadir patrocinador</button>`;
+  return html;
+}
+
+// Vista pública: panel con un carrusel de logos que se mueve solo (y se puede deslizar)
+function renderPatrocinadores() {
+  if (!patrocinadores.length) return "";
+
+  const tarjeta = (p, copia) => {
+    const tieneWeb = /^https?:\/\//i.test(p.web || "");
+    return `
+      <div class="spn-card ${tieneWeb ? "con-web" : ""}" role="button"
+           tabindex="${copia ? -1 : 0}" ${copia ? 'aria-hidden="true"' : ""} data-copia="${copia}"
+           data-web="${escaparHtml(p.web || "")}" onclick="abrirWeb(this.dataset.web)"
+           aria-label="Patrocinador: ${escaparHtml(p.nombre)}">
+        <span class="spn-logo"><img src="${escaparHtml(p.imagen)}" alt="" decoding="async"></span>
+        <span class="spn-nombre">${escaparHtml(p.nombre)}</span>
+      </div>`;
+  };
+
+  // la lista se repite tres veces para que el carrusel dé la vuelta sin cortes
+  const pista = [0, 1, 2].map(c => patrocinadores.map(p => tarjeta(p, c)).join("")).join("");
+
+  return `
+    <section class="spn">
+      <div class="spn-cab">
+        <span class="spn-etiqueta">${ico("estrella", 14)} Patrocinadores</span>
+        <h3>Gracias a quienes lo hacen posible</h3>
+        <p>${patrocinadores.length} ${patrocinadores.length === 1 ? "empresa apoya" : "empresas apoyan"} el torneo. Toca un logo para visitar su web.</p>
+      </div>
+
+      <div class="spn-carrusel" id="spn-carrusel" aria-label="Logos de patrocinadores">
+        <div class="spn-pista">${pista}</div>
+      </div>
+
+      <a class="spn-cta" href="mailto:extremactive.deporte@gmail.com?subject=Patrocinio%20Plasencia%20Handball">
+        <span><strong>¿Quieres aparecer aquí?</strong><small>Hazte patrocinador del torneo</small></span>
+        <span class="spn-cta-ico" aria-hidden="true">${ico("derecha", 18)}</span>
+      </a>
+    </section>`;
+}
+
+// Mueve el carrusel poco a poco. Si alguien lo toca o lo desliza, se para y sigue al rato.
+function iniciarCarruselPatrocinadores() {
+  const caja = document.getElementById("spn-carrusel");
+  if (!caja) return;
+
+  const reducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const anchoVuelta = () => {
+    const primera = caja.querySelector('[data-copia="0"]');
+    const copia = caja.querySelector('[data-copia="1"]');
+    return primera && copia ? copia.offsetLeft - primera.offsetLeft : 0;
+  };
+
+  let parado = 0, ultimo = performance.now(), resto = 0, colocado = false;
+  const pausar = () => { parado = performance.now() + 2500; };
+  ["pointerdown", "touchstart", "wheel", "focusin"].forEach(ev => caja.addEventListener(ev, pausar, { passive: true }));
+
+  const paso = (ahora) => {
+    if (!caja.isConnected) return;
+    const dt = Math.min(64, ahora - ultimo);
+    ultimo = ahora;
+    const vuelta = anchoVuelta();
+    if (vuelta > 0) {
+      // empieza en la copia del medio para poder deslizar hacia los dos lados
+      if (!colocado) { caja.scrollLeft = vuelta; colocado = true; }
+      if (!reducido && ahora > parado && !document.hidden) {
+        resto += dt * 0.035; // unos 35 px por segundo
+        const px = Math.floor(resto);
+        if (px) { caja.scrollLeft += px; resto -= px; }
+      }
+      // da la vuelta sin que se note (también al deslizar a mano)
+      if (caja.scrollLeft >= vuelta * 2) caja.scrollLeft -= vuelta;
+      else if (caja.scrollLeft < 2) caja.scrollLeft += vuelta;
+    }
+    requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
 
 function abrirWeb(url) {
   // solo se abren enlaces http(s)
@@ -7505,7 +7567,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-13";
+const VERSION_APP = "2026-11-03-14";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

@@ -4,7 +4,8 @@
 //
 // El navegador no puede pedir estas fotos directamente a Amazon (lo bloquea CORS), así que
 // esta función hace de intermediaria. Solo acepta las carpetas de la lista de abajo.
-// Vercel guarda la respuesta 10 minutos en su caché, así que Amazon recibe muy pocas visitas.
+// Vercel guarda la respuesta 5 minutos en su caché, así que Amazon recibe muy pocas visitas.
+// Se devuelven muchas fotos y la app las baraja, así cada visita enseña otras distintas.
 
 const CARPETAS = {
   2027: "KXGh7Cy7vuudvBxrWVuoY35LBAPWx7eMIZBOdLmFBbF",
@@ -14,7 +15,7 @@ const CARPETAS = {
 
 // Se prueba primero Amazon España y, si falla, Amazon.com (las carpetas compartidas valen en ambos)
 const DOMINIOS = ["https://www.amazon.es", "https://www.amazon.com"];
-const CUANTAS = 8;          // fotos que se devuelven
+const CUANTAS = 60;         // fotos que se devuelven (la app las baraja en cada visita)
 const ANCHO = 900;          // tamaño de las miniaturas (px)
 
 const CABECERAS = {
@@ -83,9 +84,9 @@ export default async function handler(req, res) {
       const fotos = [];
       const vistos = [];
       let pendientes = [raiz];
-      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 300; nivel++) {
+      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 600; nivel++) {
         const siguientes = [];
-        for (const nodo of pendientes.slice(0, 6)) {
+        for (const nodo of pendientes.slice(0, 12)) {
           const lista = await hijos(dominio, nodo, share);
           for (const n of lista) {
             vistos.push(`${n.kind}${n.tempLink ? "+link" : ""}${n.contentProperties?.contentType ? ":" + n.contentProperties.contentType : ""}`);
@@ -98,7 +99,7 @@ export default async function handler(req, res) {
       if (!fotos.length) throw new Error(`la carpeta no tiene fotos (vistos: ${vistos.slice(0, 10).join(", ") || "nada"}; raíz: ${info.nodeInfo?.kind || "?"})`);
 
       const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
-      res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");
+      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=900");
       res.status(200).json({ anio: Number(anio), fotos: urls });
       return;
     } catch (e) {

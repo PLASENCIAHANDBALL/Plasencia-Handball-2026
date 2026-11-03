@@ -1317,6 +1317,14 @@ function iniciarFotosTorneo() {
     const lista = await fotosDeAlbum(caja.dataset.anio);
     if (!caja.isConnected || !lista.length) return;
 
+    // se barajan en cada visita para que nunca salgan las mismas ni en el mismo orden
+    const barajadas = [...lista];
+    for (let k = barajadas.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [barajadas[k], barajadas[j]] = [barajadas[j], barajadas[k]];
+    }
+    lista.splice(0, lista.length, ...barajadas);
+
     // primera foto: sustituye a la portada en cuanto está cargada
     let pos = 0;
     while (pos < lista.length && !(await precargar(lista[pos]))) pos++;
@@ -1341,7 +1349,7 @@ function iniciarFotosTorneo() {
     if (reducido || lista.length < 2) return;
 
     // cada álbum cambia de foto a su ritmo (desfasados para que no cambien todos a la vez)
-    const ritmo = 4200 + i * 900;
+    const ritmo = 3800 + i * 700;
     const siguiente = async () => {
       if (!caja.isConnected) return;
       if (!document.hidden) {
@@ -7748,7 +7756,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-23";
+const VERSION_APP = "2026-11-03-24";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

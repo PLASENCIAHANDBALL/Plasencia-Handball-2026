@@ -8049,7 +8049,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-03-42";
+const VERSION_APP = "2026-11-04-43";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {
@@ -8068,16 +8068,22 @@ function registrarServiceWorker() {
   navigator.serviceWorker.register("sw.js").then(reg => {
     registroSW = reg;
 
+    // Actualización automática y sin aviso: la versión nueva se activa sola y la
+    // página se recarga una vez (controllerchange). Si el usuario está escribiendo,
+    // se espera a que deje la app en segundo plano para no perder lo que tecleó.
     const avisarActualizacion = worker => {
-      avisar("Hay una versión nueva de la app.", "info", {
-        etiqueta: "Actualizar",
-        duracion: 0,
-        accion: () => {
-          navigator.serviceWorker.addEventListener("controllerchange", () => location.reload(), { once: true });
-          worker.postMessage("saltar-espera");
-          setTimeout(() => location.reload(), 1500);
-        }
-      });
+      const aplicar = () => worker.postMessage("saltar-espera");
+      const escribiendo = () => {
+        const el = document.activeElement;
+        return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+      };
+      if (document.hidden || !escribiendo()) { aplicar(); return; }
+      const alOcultar = () => {
+        if (!document.hidden) return;
+        document.removeEventListener("visibilitychange", alOcultar);
+        aplicar();
+      };
+      document.addEventListener("visibilitychange", alOcultar);
     };
 
     if (reg.waiting && navigator.serviceWorker.controller) avisarActualizacion(reg.waiting);

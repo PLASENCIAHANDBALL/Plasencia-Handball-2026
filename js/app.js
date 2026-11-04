@@ -1335,12 +1335,12 @@ function renderFotosTorneo() {
 //   saltándose la caché, y se reintenta solo hasta que salgan.
 const fotosAlbumCache = {};
 const CLAVE_FOTOS = "fotosAlbum:";
-const VIDA_FOTOS_GUARDADAS = 30 * 60 * 1000;
+const VIDA_FOTOS_GUARDADAS = 24 * 60 * 60 * 1000; // los enlaces /api/foto no caducan
 
 function fotosGuardadas(anio) {
   try {
     const d = JSON.parse(localStorage.getItem(CLAVE_FOTOS + anio) || "null");
-    if (d && Date.now() - d.t < VIDA_FOTOS_GUARDADAS && Array.isArray(d.fotos)) return d.fotos;
+    if (d && Date.now() - d.t < VIDA_FOTOS_GUARDADAS && Array.isArray(d.fotos) && d.fotos.every(u => u.startsWith("/api/foto?"))) return d.fotos;
   } catch (e) {}
   return [];
 }
@@ -1353,7 +1353,7 @@ function pedirFotosAlbum(anio, fresco = false) {
   const url = `/api/fotos?anio=${anio}${fresco ? `&r=${Date.now()}` : ""}`;
   return fetch(url, fresco ? { cache: "no-store" } : undefined)
     .then(r => r.ok ? r.json() : { fotos: [] })
-    .then(d => Array.isArray(d.fotos) ? d.fotos.filter(u => /^https:\/\//.test(u)) : [])
+    .then(d => Array.isArray(d.fotos) ? d.fotos.filter(u => /^(https:\/\/|\/api\/foto\?)/.test(u)) : [])
     .catch(() => [])
     .then(lista => {
       if (lista.length) {
@@ -1453,8 +1453,9 @@ function iniciarFotosTorneo() {
     let intentos = 0;
     const reintentar = () => {
       if (pos >= 0 || !caja.isConnected) return;
-      const espera = Math.min(20000, 2500 * 2 ** intentos++);
-      setTimeout(() => renovar(true), espera);
+      const espera = Math.min(30000, 3000 * 2 ** intentos);
+      const fresco = intentos++ >= 1; // el primer reintento usa la lista guardada en Vercel
+      setTimeout(() => renovar(fresco), espera);
     };
 
     const empezar = async (nueva) => {

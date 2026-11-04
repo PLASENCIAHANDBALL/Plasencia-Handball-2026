@@ -1,68 +1,42 @@
-// Vercel Function: devuelve fotos aleatorias de una carpeta compartida de Amazon Photos.
+// Vercel Function: lista de fotos aleatorias de una carpeta compartida de Amazon Photos.
 //
-//   GET /api/fotos?anio=2027  ->  { anio, fotos: ["https://…", …] }
+//   GET /api/fotos?anio=2026  ->  { anio, fotos: ["/api/foto?anio=2026&p=…&id=…", …] }
 //
-// El navegador no puede pedir estas fotos directamente a Amazon (lo bloquea CORS), así que
-// esta función hace de intermediaria. Solo acepta las carpetas de la lista de abajo.
-// Vercel guarda la respuesta 5 minutos en su caché, así que Amazon recibe muy pocas visitas.
-// Se devuelven muchas fotos y la app las baraja, así cada visita enseña otras distintas.
+// Los enlaces directos de Amazon caducan al rato, así que la lista NO los incluye: cada foto
+// apunta a /api/foto, que busca en ese momento un enlace fresco y redirige a él. Así la
+// lista se puede guardar mucho tiempo (carga al instante) y las fotos nunca salen rotas.
 
-const CARPETAS = {
-  2027: "KXGh7Cy7vuudvBxrWVuoY35LBAPWx7eMIZBOdLmFBbF",
-  2026: "BNF0g9ckA7PPdmq1jetkgeJ9zO8BwiJW6Gj4KPumS5",
-  2025: "aMDlytCvANQmoT7QWp8ZiOqXXSb5emV0vrADnw8qT7s"
-};
+import { CARPETAS, raizDe, hijos, esFoto, barajar } from "./_amazon.js";
 
-// Se prueba primero Amazon España y, si falla, Amazon.com (las carpetas compartidas valen en ambos)
-const DOMINIOS = ["https://www.amazon.es", "https://www.amazon.com"];
-const CUANTAS = 60;         // fotos que se devuelven (la app las baraja en cada visita)
-const ANCHO = 900;          // tamaño de las miniaturas (px)
+const CUANTAS = 80;       // fotos que se devuelven (la app las baraja en cada visita)
+const memoria = {};       // última lista buena por año (mientras la función siga "despierta")
 
-const CABECERAS = {
-  "Accept": "application/json, text/plain, */*",
-  "Accept-Language": "es-ES,es;q=0.9",
-  "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-  "x-amzn-sessionid": ""
-};
+async function buscarFotos(anio, share) {
+  const raiz = await raizDe(share);
+  const limite = Date.now() + 7000;
+  const fotos = [];
+  let pendientes = [raiz];
 
-async function pedir(url, paso) {
-  const r = await fetch(url, { headers: CABECERAS, redirect: "follow" });
-  if (!r.ok) {
-    const texto = (await r.text().catch(() => "")).slice(0, 200).replace(/\s+/g, " ");
-    throw new Error(`${paso}: Amazon respondió ${r.status} ${texto}`);
+  // recorre carpetas y álbumes hasta 3 niveles, de 4 en 4 para no saturar a Amazon
+  for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 500 && Date.now() < limite; nivel++) {
+    const siguientes = [];
+    const tanda = pendientes.slice(0, 8);
+    for (let i = 0; i < tanda.length && Date.now() < limite; i += 4) {
+      const listas = await Promise.all(tanda.slice(i, i + 4).map(nodo =>
+        hijos(nodo, share, nivel === 0 ? 1000 : 400).then(l => ({ nodo, l })).catch(() => ({ nodo, l: [] }))));
+      for (const { nodo, l } of listas) {
+        for (const n of l) {
+          if (esFoto(n)) fotos.push({ id: n.id, p: nodo });
+          else if (n.kind !== "FILE") siguientes.push(n.id);
+        }
+      }
+    }
+    pendientes = barajar(siguientes);
   }
-  const tipo = r.headers.get("content-type") || "";
-  if (!tipo.includes("json")) {
-    const texto = (await r.text().catch(() => "")).slice(0, 120).replace(/\s+/g, " ");
-    throw new Error(`${paso}: Amazon no devolvió datos (${tipo}) ${texto}`);
-  }
-  return r.json();
-}
 
-async function hijos(dominio, nodo, share, maximo = 1000) {
-  const todos = [];
-  for (let offset = 0; offset < maximo; offset += 200) {
-    const url = `${dominio}/drive/v1/nodes/${nodo}/children?asset=ALL&limit=200&offset=${offset}` +
-      `&searchOnFamily=false&tempLink=true&shareId=${share}&resourceVersion=V2&ContentType=JSON`;
-    const datos = await pedir(url, "listar fotos");
-    const lista = datos.data || [];
-    todos.push(...lista);
-    if (lista.length < 200) break;
-  }
-  return todos;
-}
-
-function esFoto(n) {
-  const tipo = n.contentProperties?.contentType || "";
-  return n.kind === "FILE" && n.tempLink && (tipo.startsWith("image/") || /\.(jpe?g|png|webp|heic)$/i.test(n.name || ""));
-}
-
-function barajar(lista) {
-  for (let i = lista.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [lista[i], lista[j]] = [lista[j], lista[i]];
-  }
-  return lista;
+  if (!fotos.length) throw new Error("la carpeta no tiene fotos");
+  return barajar(fotos).slice(0, CUANTAS)
+    .map(f => `/api/foto?anio=${anio}&p=${encodeURIComponent(f.p)}&id=${encodeURIComponent(f.id)}`);
 }
 
 export default async function handler(req, res) {
@@ -73,44 +47,20 @@ export default async function handler(req, res) {
     return;
   }
 
-  const errores = [];
-  for (const dominio of DOMINIOS) {
-    try {
-      const info = await pedir(`${dominio}/drive/v1/shares/${share}?shareId=${share}&resourceVersion=V2&ContentType=JSON`, "abrir carpeta");
-      const raiz = info.nodeInfo?.id;
-      if (!raiz) throw new Error("abrir carpeta: no viene el id de la carpeta");
-
-      // Recorre la carpeta compartida y lo que tenga dentro (carpetas, álbumes...) hasta 3 niveles.
-      // Las subcarpetas se piden a la vez y hay un tope de tiempo para responder rápido.
-      const limite = Date.now() + 6000;
-      const fotos = [];
-      const vistos = [];
-      let pendientes = [raiz];
-      for (let nivel = 0; nivel < 3 && pendientes.length && fotos.length < 400 && Date.now() < limite; nivel++) {
-        const siguientes = [];
-        const listas = await Promise.all(pendientes.slice(0, 10).map(nodo =>
-          hijos(dominio, nodo, share, nivel === 0 ? 1000 : 200).catch(() => [])));
-        for (const lista of listas) {
-          for (const n of lista) {
-            vistos.push(`${n.kind}${n.tempLink ? "+link" : ""}`);
-            if (esFoto(n)) fotos.push(n);
-            else if (n.kind !== "FILE") siguientes.push(n.id);
-          }
-        }
-        pendientes = barajar(siguientes);
-      }
-      if (!fotos.length) throw new Error(`la carpeta no tiene fotos (vistos: ${vistos.slice(0, 10).join(", ") || "nada"}; raíz: ${info.nodeInfo?.kind || "?"})`);
-
-      const urls = barajar(fotos).slice(0, CUANTAS).map(n => `${n.tempLink}?viewBox=${ANCHO}`);
-      // 5 min de caché (+10 min sirviendo la anterior mientras renueva): los enlaces de Amazon caducan
-      res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-      res.status(200).json({ anio: Number(anio), fotos: urls });
+  try {
+    const fotos = await buscarFotos(anio, share);
+    memoria[anio] = fotos;
+    // 1 h de caché y, después, Vercel sigue sirviendo la anterior al instante mientras renueva
+    res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=604800");
+    res.status(200).json({ anio: Number(anio), fotos });
+  } catch (e) {
+    if (memoria[anio]?.length) {
+      // Amazon no responde ahora: se da la última lista buena en vez de un error
+      res.setHeader("Cache-Control", "s-maxage=60");
+      res.status(200).json({ anio: Number(anio), fotos: memoria[anio], aviso: String(e.message || e) });
       return;
-    } catch (e) {
-      errores.push(`${dominio}: ${e.message || e}`);
     }
+    res.setHeader("Cache-Control", "no-store");
+    res.status(502).json({ anio: Number(anio), fotos: [], error: String(e.message || e) });
   }
-
-  res.setHeader("Cache-Control", "no-store");
-  res.status(502).json({ anio: Number(anio), fotos: [], error: errores });
 }

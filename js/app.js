@@ -1333,6 +1333,9 @@ function renderFotosTorneo() {
 // - Mientras no hay foto se ve el brillo de carga (nunca una imagen fija).
 // - Los enlaces de Amazon caducan: si las fotos no cargan, se piden otras nuevas
 //   saltándose la caché, y se reintenta solo hasta que salgan.
+// enlace directo de Amazon de cada foto y dirección que ya se sabe que carga
+const directoDe = new Map();
+const srcBueno = new Map();
 const fotosAlbumCache = {};
 const CLAVE_FOTOS = "fotosAlbum:";
 const VIDA_FOTOS_GUARDADAS = 24 * 60 * 60 * 1000; // los enlaces /api/foto no caducan
@@ -1353,7 +1356,12 @@ function pedirFotosAlbum(anio, fresco = false) {
   const url = `/api/fotos?anio=${anio}${fresco ? `&r=${Date.now()}` : ""}`;
   return fetch(url, fresco ? { cache: "no-store" } : undefined)
     .then(r => r.ok ? r.json() : { fotos: [] })
-    .then(d => Array.isArray(d.fotos) ? d.fotos.filter(u => /^(https:\/\/|\/api\/foto\?)/.test(u)) : [])
+    .then(d => {
+      if (!Array.isArray(d.fotos)) return [];
+      // se recuerda el enlace directo de cada foto (más rápido) para usarlo antes que /api/foto
+      (d.directos || []).forEach((dir, i) => { if (dir && /^https:\/\//.test(dir) && d.fotos[i]) directoDe.set(d.fotos[i], dir); });
+      return d.fotos.filter(u => /^(https:\/\/|\/api\/foto\?)/.test(u));
+    })
     .catch(() => [])
     .then(lista => {
       if (lista.length) {
@@ -1382,15 +1390,26 @@ ALBUMES_FOTOS.forEach(a => {
   fotosDeAlbum(a.anio).then(l => l.slice(0, 3).forEach(u => precargar(u)));
 });
 
-function precargar(url, espera = 12000) {
+// Cada foto se intenta primero con su enlace directo de Amazon (rápido) y, si ha caducado,
+// con /api/foto (que busca uno nuevo). Se recuerda qué dirección funcionó para no repetir.
+
+function cargarImagen(src, espera) {
   return new Promise(ok => {
     const img = new Image();
     const t = setTimeout(() => { img.src = ""; ok(false); }, espera);
     img.decoding = "async";
     img.onload = () => { clearTimeout(t); ok(true); };
     img.onerror = () => { clearTimeout(t); ok(false); };
-    img.src = url;
+    img.src = src;
   });
+}
+
+async function precargar(url, espera = 12000) {
+  if (srcBueno.has(url)) return cargarImagen(srcBueno.get(url), espera);
+  const directo = directoDe.get(url);
+  if (directo && await cargarImagen(directo, Math.min(espera, 6000))) { srcBueno.set(url, directo); return true; }
+  if (await cargarImagen(url, espera)) { srcBueno.set(url, url); return true; }
+  return false;
 }
 
 // la primera de varias fotos que termine de cargar (-1 si no carga ninguna)
@@ -1437,7 +1456,7 @@ function iniciarFotosTorneo() {
       img.className = "ft-portada";
       img.alt = "";
       img.decoding = "async";
-      img.src = url;
+      img.src = srcBueno.get(url) || url;
       caja.appendChild(img);
       album?.classList.add("con-fotos");
       album?.classList.remove("cargando");

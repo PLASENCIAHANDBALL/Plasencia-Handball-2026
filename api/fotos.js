@@ -26,7 +26,7 @@ async function buscarFotos(anio, share) {
         hijos(nodo, share, nivel === 0 ? 1000 : 400).then(l => ({ nodo, l })).catch(() => ({ nodo, l: [] }))));
       for (const { nodo, l } of listas) {
         for (const n of l) {
-          if (esFoto(n)) fotos.push({ id: n.id, p: nodo });
+          if (esFoto(n)) fotos.push({ id: n.id, p: nodo, t: n.tempLink });
           else if (n.kind !== "FILE") siguientes.push(n.id);
         }
       }
@@ -35,8 +35,12 @@ async function buscarFotos(anio, share) {
   }
 
   if (!fotos.length) throw new Error("la carpeta no tiene fotos");
-  return barajar(fotos).slice(0, CUANTAS)
-    .map(f => `/api/foto?anio=${anio}&p=${encodeURIComponent(f.p)}&id=${encodeURIComponent(f.id)}`);
+  const elegidas = barajar(fotos).slice(0, CUANTAS);
+  return {
+    fotos: elegidas.map(f => `/api/foto?anio=${anio}&p=${encodeURIComponent(f.p)}&id=${encodeURIComponent(f.id)}`),
+    // enlaces directos recién sacados de Amazon: cargan más rápido mientras no caduquen
+    directos: elegidas.map(f => f.t ? `${f.t}?viewBox=900` : "")
+  };
 }
 
 export default async function handler(req, res) {
@@ -48,11 +52,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const fotos = await buscarFotos(anio, share);
+    const { fotos, directos } = await buscarFotos(anio, share);
     memoria[anio] = fotos;
-    // 1 h de caché y, después, Vercel sigue sirviendo la anterior al instante mientras renueva
-    res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=604800");
-    res.status(200).json({ anio: Number(anio), fotos });
+    // 30 min de caché y, después, Vercel sigue sirviendo la anterior al instante mientras renueva
+    res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=604800");
+    res.status(200).json({ anio: Number(anio), fotos, directos });
   } catch (e) {
     if (memoria[anio]?.length) {
       // Amazon no responde ahora: se da la última lista buena en vez de un error

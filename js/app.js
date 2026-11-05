@@ -1375,7 +1375,12 @@ function fotosDeAlbum(anio, fresco = false) {
 }
 
 // se piden ya, en segundo plano, al cargar la app
-ALBUMES_FOTOS.forEach(a => fotosDeAlbum(a.anio));
+// y se descargan ya las primeras fotos de cada álbum, para que al llegar al inicio salgan al momento
+ALBUMES_FOTOS.forEach(a => {
+  const guardadas = fotosGuardadas(a.anio);
+  guardadas.slice(0, 2).forEach(u => precargar(u));
+  fotosDeAlbum(a.anio).then(l => l.slice(0, 3).forEach(u => precargar(u)));
+});
 
 function precargar(url, espera = 12000) {
   return new Promise(ok => {
@@ -1410,18 +1415,24 @@ function barajarLista(lista) {
   return l;
 }
 
+// Estado de cada álbum que sobrevive al cambiar de pestaña: lista, posición y la foto que
+// se estaba viendo (ya descargada). Al volver al inicio se enseña al momento, sin carga.
+const estadoAlbum = {};
+
 function iniciarFotosTorneo() {
   const reducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   document.querySelectorAll(".ft-fotos[data-anio]").forEach((caja, i) => {
     const anio = caja.dataset.anio;
     const album = caja.closest(".ft-album");
-    let lista = [];
+    const est = estadoAlbum[anio] ||= { lista: [], pos: -1, url: null };
+    let lista = est.lista;
     let pos = -1;
     let enMarcha = false;
     let fallosSeguidos = 0;
 
-    const capa = (url) => {
+    const capa = (url, inmediata = false) => {
+      est.url = url;
       const img = document.createElement("img");
       img.className = "ft-portada";
       img.alt = "";
@@ -1430,6 +1441,7 @@ function iniciarFotosTorneo() {
       caja.appendChild(img);
       album?.classList.add("con-fotos");
       album?.classList.remove("cargando");
+      if (inmediata) { img.classList.add("visible", "sin-fundido"); return; }
       requestAnimationFrame(() => requestAnimationFrame(() => {
         caja.querySelectorAll(".ft-portada.visible").forEach(v => v.classList.remove("visible"));
         img.classList.add("visible");
@@ -1459,7 +1471,7 @@ function iniciarFotosTorneo() {
     };
 
     const empezar = async (nueva) => {
-      const barajada = barajarLista(nueva);
+      const barajada = pos >= 0 ? [...nueva] : barajarLista(nueva);
       if (pos < 0) {
         const k = await primeraQueCargue(barajada);
         if (!caja.isConnected) return true;
@@ -1469,6 +1481,7 @@ function iniciarFotosTorneo() {
         capa(barajada[0]);
       }
       lista = barajada;
+      est.lista = lista;
       if (!enMarcha && !reducido && lista.length > 1) {
         enMarcha = true;
         const ritmo = 3800 + i * 700;
@@ -1476,6 +1489,10 @@ function iniciarFotosTorneo() {
           if (!caja.isConnected) return;
           if (!document.hidden) {
             pos = (pos + 1) % lista.length;
+            est.pos = pos;
+            // se descarga ya la siguiente, así el cambio es instantáneo
+            const proxima = lista[(pos + 1) % lista.length];
+            if (proxima) precargar(proxima);
             if (await precargar(lista[pos])) { capa(lista[pos]); fallosSeguidos = 0; }
             // si varias seguidas no cargan, los enlaces han caducado: se piden otros
             else if (++fallosSeguidos >= 3) { fallosSeguidos = 0; renovarLista(); }
@@ -1491,6 +1508,14 @@ function iniciarFotosTorneo() {
       const nuevas = await fotosDeAlbum(anio, true);
       if (nuevas.length) lista = barajarLista(nuevas);
     };
+
+    // 0) volviendo de otra pestaña: la foto que ya se veía sale al momento y sigue el pase
+    if (est.url && est.lista.length) {
+      pos = Math.max(0, est.lista.indexOf(est.url));
+      capa(est.url, true);
+      empezar(est.lista.slice(pos).concat(est.lista.slice(0, pos)));
+      return;
+    }
 
     // 1) al instante: las fotos de la visita anterior (si son recientes y siguen valiendo)
     const guardadas = fotosGuardadas(anio);

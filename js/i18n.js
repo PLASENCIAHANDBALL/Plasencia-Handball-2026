@@ -97,6 +97,14 @@ const TEXTOS = {
   "El torneo en tiempo real · hoy": ["The tournament in real time · today", "O torneio em tempo real · hoje", "Le tournoi en temps réel · aujourd'hui"],
   "Desliza el mapa para ver toda la ciudad · toca un punto para ver el pabellón": ["Swipe the map to see the whole city · tap a dot to see the venue", "Deslize o mapa para ver a cidade · toque num ponto para ver o pavilhão", "Faites glisser la carte · touchez un point pour voir le gymnase"],
   "Programación": ["Schedule", "Programação", "Programme"],
+  "equipos": ["teams", "equipas", "équipes"],
+  "grupo": ["group", "grupo", "groupe"],
+  "grupos": ["groups", "grupos", "groupes"],
+  "partidos": ["matches", "jogos", "matchs"],
+  "pabellones": ["venues", "pavilhões", "gymnases"],
+  "hoy": ["today", "hoje", "aujourd'hui"],
+  "en juego": ["live", "a decorrer", "en cours"],
+  "Elige el escudo de tu equipo": ["Choose your team's crest", "Escolhe o emblema da tua equipa", "Choisis l'écusson de ton équipe"],
   "Historia del Torneo": ["Tournament history", "História do Torneio", "Histoire du tournoi"],
   "Edición actual": ["Current edition", "Edição atual", "Édition actuelle"],
   "Ver fotos": ["See photos", "Ver fotos", "Voir les photos"],
@@ -671,6 +679,14 @@ function ordinal(n, i) {
 
 // Cada patrón: [expresión, función(coincidencia, i)] con i: 0 inglés, 1 portugués, 2 francés
 const PATRONES = [
+  [/^(\d+) (empresas apoyan|empresa apoya) el torneo\. Toca un logo para visitar su web\.$/, (m, i) => [
+    `${m[1]} ${plural(m[1], "company supports", "companies support")} the tournament. Tap a logo to visit their website.`,
+    `${m[1]} ${plural(m[1], "empresa apoia", "empresas apoiam")} o torneio. Toca num logótipo para visitar o site.`,
+    `${m[1]} ${plural(m[1], "entreprise soutient", "entreprises soutiennent")} le tournoi. Touchez un logo pour visiter leur site.`][i]],
+  [/^(\d+) masc\.$/, (m, i) => `${m[1]} ${["boys", "masc.", "masc."][i]}`],
+  [/^(\d+) fem\.$/, (m, i) => `${m[1]} ${["girls", "fem.", "fém."][i]}`],
+  [/^(\d+) sedes?$/, (m, i) => `${m[1]} ${[plural(m[1], "venue", "venues"), plural(m[1], "pavilhão", "pavilhões"), plural(m[1], "gymnase", "gymnases")][i]}`],
+  [/^Hoy (\d{1,2}:\d{2})$/, (m, i) => `${["Today", "Hoje", "Aujourd'hui"][i]} ${m[1]}`],
   [/^¡Nuevo ganador! (.+)$/, (m, i) => [`New winner! ${m[1]}`, `Novo vencedor! ${m[1]}`, `Nouveau gagnant ! ${m[1]}`][i]],
   [/^Preparando vídeo… (\d+)%$/, (m, i) => `${["Preparing video…", "A preparar o vídeo…", "Préparation de la vidéo…"][i]} ${m[1]}%`],
   [/^(\d+) participantes?$/, (m, i) => `${m[1]} ${[plural(m[1], "participant", "participants"), plural(m[1], "participante", "participantes"), plural(m[1], "participant", "participants")][i]}`],
@@ -728,6 +744,11 @@ const PATRONES = [
 
 // Patrones en alemán (mismas expresiones, resultado en alemán)
 const PATRONES_DE = [
+  [/^(\d+) (empresas apoyan|empresa apoya) el torneo\. Toca un logo para visitar su web\.$/, m => `${m[1]} ${plural(m[1], "Unternehmen unterstützt", "Unternehmen unterstützen")} das Turnier. Tippe auf ein Logo, um die Website zu besuchen.`],
+  [/^(\d+) masc\.$/, m => `${m[1]} männl.`],
+  [/^(\d+) fem\.$/, m => `${m[1]} weibl.`],
+  [/^(\d+) sedes?$/, m => `${m[1]} ${plural(m[1], "Spielort", "Spielorte")}`],
+  [/^Hoy (\d{1,2}:\d{2})$/, m => `Heute ${m[1]}`],
   [/^¡Nuevo ganador! (.+)$/, m => `Neuer Gewinner! ${m[1]}`],
   [/^(\d+) participantes?$/, m => `${m[1]} ${plural(m[1], "Teilnehmer", "Teilnehmer")}`],
   [/^¡Sorteo realizado! Ganador: (.+)$/, m => `Auslosung erfolgt! Gewinner: ${m[1]}`],

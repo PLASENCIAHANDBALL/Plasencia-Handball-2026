@@ -1889,13 +1889,14 @@ const finalizados = ordenados
   .reverse();
 
   const enJuego = proximos.filter(p => calcularEstadoPartido(p) === "en_juego").length;
+  const archivo = edicionVista !== EDICION_ACTUAL;   // en ediciones pasadas solo interesan los resultados
   html += `
     <section class="pt-hero">
       <span class="pt-hero-etq">${ico("calendario", 14)} Calendario del torneo</span>
       <h2>Partidos</h2>
       <div class="pt-hero-datos">
-        <div class="pt-hero-dato ${enJuego ? "vivo" : ""}"><strong>${enJuego}</strong><span>${enJuego ? "<i></i>" : ""}En juego</span></div>
-        <div class="pt-hero-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>
+        ${archivo ? "" : `<div class="pt-hero-dato ${enJuego ? "vivo" : ""}"><strong>${enJuego}</strong><span>${enJuego ? "<i></i>" : ""}En juego</span></div>
+        <div class="pt-hero-dato"><strong>${proximos.length - enJuego}</strong><span>Próximos</span></div>`}
         <div class="pt-hero-dato"><strong>${finalizados.length}</strong><span>Finalizados</span></div>
       </div>
     </section>`;
@@ -1917,10 +1918,12 @@ const finalizados = ordenados
   html += renderFiltroPartidos();
 
   /* ===== PRÓXIMOS ===== */
-html += `<h3 class="pt-sec"><span class="pt-sec-ico prox">${ico("reloj", 16)}</span>Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
-html += proximos.length
-  ? renderBloquesPorFecha(proximos, "proximos")
-  : `<p class="estado-vacio">No hay próximos partidos</p>`;
+if (!archivo) {
+  html += `<h3 class="pt-sec"><span class="pt-sec-ico prox">${ico("reloj", 16)}</span>Próximos partidos <span class="pt-cuenta">${proximos.length}</span></h3>`;
+  html += proximos.length
+    ? renderBloquesPorFecha(proximos, "proximos")
+    : `<p class="estado-vacio">No hay próximos partidos</p>`;
+}
 
 /* ===== FINALIZADOS ===== */
 html += `<h3 class="pt-sec"><span class="pt-sec-ico fin">${ico("check", 16)}</span>Partidos finalizados <span class="pt-cuenta">${finalizados.length}</span></h3>`;
@@ -8188,7 +8191,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-13-01";
+const VERSION_APP = "2026-11-13-02";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

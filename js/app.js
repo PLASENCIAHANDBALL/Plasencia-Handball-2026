@@ -316,6 +316,14 @@ let clasificacionFiltro = {
 
 window.clasificacionFiltro = clasificacionFiltro;
 
+// Edición del torneo: la nueva es la principal; las anteriores quedan como archivo
+const EDICION_ACTUAL = 2027;
+const EDICIONES = [
+  { anio: 2027, etiqueta: "Próxima edición" },
+  { anio: 2026, etiqueta: "Archivo" }
+];
+let edicionVista = EDICION_ACTUAL;
+
 let partidos = [];
 
 let partidoActual = null;
@@ -632,7 +640,8 @@ function normalizarPartidos(lista) {
 async function recargarPartidos() {
   const { data, error } = await supabase
     .from("partidos")
-    .select("*");
+    .select("*")
+    .eq("edicion", edicionVista);
 
   if (error || !data) {
     console.error("Error recargando partidos:", error);
@@ -1813,11 +1822,61 @@ function toggleFecha(header) {
 
 window.toggleFecha = toggleFecha;
 
+/* ================== EDICIONES (ACTUAL / ARCHIVO) ================== */
+
+function barraEdicion() {
+  const archivo = edicionVista !== EDICION_ACTUAL;
+  return `
+    <div class="ed-barra" role="group" aria-label="Edición">
+      ${EDICIONES.map(e => `
+        <button type="button" class="${e.anio === edicionVista ? "activo" : ""}" aria-pressed="${e.anio === edicionVista}" onclick="cambiarEdicion(${e.anio})">
+          <strong>${e.anio}</strong><span>${e.etiqueta}</span>
+        </button>`).join("")}
+    </div>
+    ${archivo ? `
+      <div class="ed-aviso">
+        ${ico("reloj", 16)}<span>Estás viendo una edición anterior</span>
+        <button type="button" onclick="cambiarEdicion(${EDICION_ACTUAL})">Volver a la próxima edición</button>
+      </div>` : ""}`;
+}
+
+// Pantalla vacía de la próxima edición, con acceso al archivo
+function vacioEdicion(texto) {
+  if (edicionVista !== EDICION_ACTUAL) return `<p class="estado-vacio">${texto}</p>`;
+  const previa = EDICIONES.find(e => e.anio !== EDICION_ACTUAL);
+  return `
+    <div class="ed-vacio">
+      <span>${ico("calendario", 30)}</span>
+      <strong>Próxima edición</strong>
+      <p>${texto}</p>
+      ${previa ? `<button type="button" onclick="cambiarEdicion(${previa.anio})">Ver la edición anterior (${previa.anio})</button>` : ""}
+    </div>`;
+}
+
+async function cambiarEdicion(anio) {
+  if (anio === edicionVista) return;
+  edicionVista = anio;
+  equiposFaseFinalCache = null;
+  contenido.innerHTML = `<p class="estado-vacio">Cargando…</p>`;
+  try {
+    const [e, p] = await Promise.all([obtenerEquiposSupabase(), obtenerPartidosSupabase()]);
+    equipos = e;
+    partidos = normalizarPartidos(p);
+  } catch (err) {
+    console.error("Error cambiando de edición:", err);
+  }
+  const principales = ["partidos", "categorias", "clubs", "tabla"];
+  const vista = principales.includes(vistaActual) ? vistaActual : "partidos";
+  window.scrollTo(0, 0);
+  restaurarVista({ vista, params: {} });
+}
+window.cambiarEdicion = cambiarEdicion;
+
 function mostrarPartidos() {
   setNavActivoPorVista("partidos");
   registrarNavegacion("partidos");
 
-  let html = "";
+  let html = barraEdicion();
 
   const ordenados = aplicarFiltroPartidos([...partidos]).sort((a, b) => marcaTiempo(a) - marcaTiempo(b));
 
@@ -1847,6 +1906,12 @@ const finalizados = ordenados
         <button type="button" onclick="formNuevoPartido()">${ico("mas", 16)} Crear partido</button>
         <button type="button" onclick="formCrearFaseFinal()">${ico("trofeo", 16)} Partido de fase final</button>
       </div>`;
+  }
+
+  if (!partidos.length) {
+    html += vacioEdicion("Todavía no hay partidos publicados.");
+    contenido.innerHTML = html;
+    return;
   }
 
   html += renderFiltroPartidos();
@@ -2220,7 +2285,8 @@ const nuevoPartido = {
   pabellon: document.getElementById("pabellon").value,
   goles_local: 0,
   goles_visitante: 0,
-  estado: "pendiente"
+  estado: "pendiente",
+  edicion: edicionVista
 };
 
   const { error } = await supabase
@@ -2786,6 +2852,7 @@ async function asegurarEquipoEnClasificacion(equipo) {
   const { data } = await supabase
     .from("clasificacion")
     .select("id")
+    .eq("edicion", edicionVista)
     .eq("equipo_id", equipo.id)
     .eq("categoria", equipo.categoria)
     .eq("genero", equipo.genero)
@@ -2797,6 +2864,7 @@ async function asegurarEquipoEnClasificacion(equipo) {
 
   // No existe → crear fila vacía
   await supabase.from("clasificacion").insert({
+    edicion: edicionVista,
     categoria: equipo.categoria,
     genero: equipo.genero,
     grupo: equipo.grupo,
@@ -3200,6 +3268,7 @@ async function obtenerEquiposSupabase() {
   const { data, error } = await supabase
     .from("equipos")
     .select("*")
+    .eq("edicion", edicionVista)
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -3214,6 +3283,7 @@ async function obtenerEquiposPorFiltro(categoria, genero, grupo) {
   const { data, error } = await supabase
     .from("equipos")
     .select("*")
+    .eq("edicion", edicionVista)
     .eq("categoria", categoria)
     .eq("genero", genero)
     .eq("grupo", grupo);
@@ -3257,7 +3327,7 @@ async function cargarEquiposParaPartido() {
 async function crearEquipoSupabase(equipo) {
   const { error } = await supabase
     .from("equipos")
-    .insert([equipo]);
+    .insert([{ ...equipo, edicion: edicionVista }]);
 
   if (error) {
     avisar("Error creando equipo");
@@ -3308,7 +3378,8 @@ async function obtenerEquiposPorClub(clubId) {
 async function obtenerPartidosSupabase() {
   const { data, error } = await supabase
     .from("partidos")
-    .select("*");
+    .select("*")
+    .eq("edicion", edicionVista);
 
   if (error) {
     console.error("Error cargando partidos:", error);
@@ -3346,7 +3417,8 @@ async function guardarNuevoPartido() {
     goles_local: 0,
     goles_visitante: 0,
     estado: "pendiente",
-    fase: "grupos"
+    fase: "grupos",
+    edicion: edicionVista
   };
 
   const { error } = await supabase
@@ -3371,7 +3443,13 @@ function mostrarCategorias() {
   setNavActivoPorVista("categorias");
   registrarNavegacion("categorias");
 
+  if (!equipos.length) {
+    contenido.innerHTML = barraEdicion() + vacioEdicion("Todavía no hay equipos ni categorías publicados.");
+    return;
+  }
+
   contenido.innerHTML = `
+    ${barraEdicion()}
     <div id="cat-hero"></div>
 
     <!-- TABS DE CATEGORÍA -->
@@ -3749,6 +3827,7 @@ async function guardarEdicionEquipo() {
   await supabase
     .from("clasificacion")
     .delete()
+    .eq("edicion", edicionVista)
     .eq("equipo_id", equipoActual.id)
     .eq("categoria", equipoAntes.categoria)
     .eq("genero", equipoAntes.genero);
@@ -3783,7 +3862,13 @@ function mostrarClasificacion() {
   setNavActivoPorVista("tabla");
   registrarNavegacion("tabla");
 
+  if (!equipos.length) {
+    contenido.innerHTML = barraEdicion() + vacioEdicion("Todavía no hay clasificación publicada.");
+    return;
+  }
+
   contenido.innerHTML = `
+    ${barraEdicion()}
     <div class="tb-cab">
       <span class="tb-etiqueta">${ico("trofeo", 14)} Clasificación</span>
       <h2>Tabla del torneo</h2>
@@ -3969,6 +4054,7 @@ async function actualizarClasificacion() {
   let query = supabase
     .from("clasificacion")
     .select("*")
+    .eq("edicion", edicionVista)
     .eq("categoria", categoria)
     .eq("genero", genero)
     .order("puntos", { ascending: false });
@@ -4092,6 +4178,7 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
   // Antes cada equipo se buscaba por NOMBRE; si dos categorías tenían un equipo con el
   // mismo nombre se podía guardar el id del equipo equivocado. Ahora se usa el id.
   const filas = clasificacion.map(e => ({
+    edicion: edicionVista,
     categoria,
     genero,
     grupo,
@@ -4109,6 +4196,7 @@ async function guardarClasificacionSupabase(categoria, genero, grupo) {
   const { error: errorBorrar } = await supabase
     .from("clasificacion")
     .delete()
+    .eq("edicion", edicionVista)
     .eq("categoria", categoria)
     .eq("genero", genero)
     .eq("grupo", grupo);
@@ -4465,18 +4553,23 @@ function mostrarEquipos() {
   setNavActivoPorVista("clubs");
   registrarNavegacion("clubs");
 
+  // clubs de la edición vista (en la próxima edición el admin ve todos para poder asignarles equipos)
+  const clubsVisibles = (adminActivo && edicionVista === EDICION_ACTUAL)
+    ? clubes
+    : clubes.filter(c => equipos.some(e => e.club_id === c.id));
+
   const jugados = partidos.filter(p => calcularEstadoPartido(p) === "finalizado").length;
 
-  let html = `
+  let html = barraEdicion() + `
     <section class="cl-hero">
       <span class="cl-etiqueta">${ico("escudo", 14)} Clubs participantes</span>
       <h2>Los equipos del torneo</h2>
       <div class="cl-stats">
-        <span><b>${clubes.length}</b> clubs</span>
+        <span><b>${clubsVisibles.length}</b> clubs</span>
         <span><b>${equipos.length}</b> equipos</span>
         <span><b>${jugados}</b> partidos jugados</span>
       </div>
-      ${clubes.length ? `
+      ${clubsVisibles.length ? `
         <label class="cl-buscar">
           ${ico("lupa", 18)}
           <input type="search" id="buscar-club" placeholder="Buscar club" autocomplete="off"
@@ -4493,10 +4586,10 @@ function mostrarEquipos() {
     `;
   }
 
-  if (clubes.length === 0) {
-    html += `<p class="estado-vacio">No hay clubes creados</p>`;
+  if (clubsVisibles.length === 0) {
+    html += vacioEdicion("Todavía no hay clubs inscritos.");
   } else {
-    const ordenados = [...clubes].sort((x, y) => String(x.nombre || "").localeCompare(String(y.nombre || ""), "es"));
+    const ordenados = [...clubsVisibles].sort((x, y) => String(x.nombre || "").localeCompare(String(y.nombre || ""), "es"));
     html += `
       <div class="cl-grid" id="clubs-grid">
         ${ordenados.map(c => {
@@ -8038,6 +8131,7 @@ async function refrescarPartidosHoy() {
     const { data, error } = await supabase
       .from("partidos")
       .select("*")
+      .eq("edicion", edicionVista)
       .eq("fecha", hoyISO());
 
     if (error || !data) return;
@@ -8094,7 +8188,7 @@ window.addEventListener("online", refrescarPartidosHoy);
 let registroSW = null;
 let eventoInstalar = null;
 
-const VERSION_APP = "2026-11-12-01";
+const VERSION_APP = "2026-11-13-01";
 { const v = document.getElementById("version-app"); if (v) v.textContent = `v${VERSION_APP}`; }
 
 function registrarServiceWorker() {

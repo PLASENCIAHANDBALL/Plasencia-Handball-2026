@@ -644,7 +644,17 @@ const TEXTOS = {
   "Únete a la conversación": ["Join the conversation", "Junta-te à conversa", "Rejoignez la conversation"],
   "Elige un nombre para chatear con otros aficionados": ["Choose a name to chat with other fans", "Escolhe um nome para conversar com outros adeptos", "Choisissez un nom pour discuter avec les autres supporters"],
   "Oficial": ["Official", "Oficial", "Officiel"],
-  "Cambiar nombre": ["Change name", "Mudar nome", "Changer de nom"]
+  "Cambiar nombre": ["Change name", "Mudar nome", "Changer de nom"],
+  "Próxima edición": ["Next edition", "Próxima edição", "Prochaine édition"],
+  "Archivo": ["Archive", "Arquivo", "Archives"],
+  "Edición": ["Edition", "Edição", "Édition"],
+  "Estás viendo una edición anterior": ["You are viewing a past edition", "Estás a ver uma edição anterior", "Vous consultez une édition précédente"],
+  "Volver a la próxima edición": ["Back to the next edition", "Voltar à próxima edição", "Retour à la prochaine édition"],
+  "Ver la edición anterior": ["View the previous edition", "Ver a edição anterior", "Voir l'édition précédente"],
+  "Todavía no hay partidos publicados.": ["No matches published yet.", "Ainda não há jogos publicados.", "Aucun match publié pour le moment."],
+  "Todavía no hay equipos ni categorías publicados.": ["No teams or categories published yet.", "Ainda não há equipas nem categorias publicadas.", "Aucune équipe ni catégorie publiée pour le moment."],
+  "Todavía no hay clasificación publicada.": ["No standings published yet.", "Ainda não há classificação publicada.", "Aucun classement publié pour le moment."],
+  "Todavía no hay clubs inscritos.": ["No clubs registered yet.", "Ainda não há clubes inscritos.", "Aucun club inscrit pour le moment."]
 };
 
 /* ------------------------- patrones (frases con datos) ------------------------- */

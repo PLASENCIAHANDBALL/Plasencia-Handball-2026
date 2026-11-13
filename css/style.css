@@ -5133,3 +5133,19 @@ body.hub-abierto { overflow: hidden; }
 .cl-portada { border-radius: 22px 22px 0 0; overflow: hidden; clip-path: inset(0 round 22px 22px 0 0); -webkit-transform: translateZ(0); transform: translateZ(0); }
 
 .ft-portada.sin-fundido { transition: transform 6s ease-out; opacity: 1; }
+
+/* ================== EDICIONES (ACTUAL / ARCHIVO) ================== */
+.ed-barra{display:flex;gap:8px;margin:0 0 14px;padding:5px;background:var(--tile);border-radius:18px}
+.ed-barra button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;width:auto;margin:0;min-height:0;padding:9px 6px;border:0;border-radius:14px;background:transparent;color:var(--tile-ink);box-shadow:none;line-height:1.1}
+.ed-barra button strong{font-size:18px;font-weight:800}
+.ed-barra button span{font-size:11px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.04em}
+.ed-barra button.activo{background:#fff;box-shadow:0 3px 10px rgba(27,111,184,.18);color:var(--azul-fuerte)}
+.ed-barra button.activo span{opacity:1}
+.ed-aviso{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 14px;padding:10px 12px;background:#fff7dc;border:1px solid #f2cf63;border-radius:14px;font-size:13px;color:#7a4b00}
+.ed-aviso span{flex:1;min-width:150px;font-weight:700}
+.ed-aviso button{width:auto;margin:0;min-height:0;padding:6px 12px;font-size:12px;font-weight:800;border-radius:99px;background:#f29a00;color:#fff;border:0;box-shadow:none}
+.ed-vacio{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:34px 20px;background:var(--surface);border:1px dashed var(--border);border-radius:22px;margin-top:6px}
+.ed-vacio>span{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5bb8f0,#1b6fb8);color:#fff;margin-bottom:6px}
+.ed-vacio strong{font-size:20px;color:var(--tile-ink)}
+.ed-vacio p{margin:0 0 10px;color:var(--muted)}
+.ed-vacio button{width:auto;margin:0;padding:10px 20px;border-radius:99px;background:var(--tile);color:var(--tile-ink);box-shadow:none;border:0;font-weight:800}

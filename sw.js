@@ -14,7 +14,7 @@
    se refresca sola en la siguiente visita (estrategia "stale-while-revalidate").
    ============================================================ */
 
-const VERSION = "2026-11-04-57";
+const VERSION = "2026-11-13-01";
 
 const CACHE_APP = `ph-app-${VERSION}`;
 const CACHE_IMG = "ph-img-v1";
